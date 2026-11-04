@@ -43,7 +43,7 @@ Thứ tự trước/sau cơ thể theo `MainObject.paint`: Direction up luôn v�
 
 - Chọn vật phẩm thật ở **Vũ khí thường HSO** để thêm lớp vũ khí đã ánh xạ.
 - Chọn **Tấn công** và **kỹ năng #0**: tự chuyển sang frame client 25FPS, khóa FPS thủ công và ẩn điều khiển pose A/B.
-- Chiêu #2 trở lên vẫn giữ bộ đối chiếu thân thử nghiệm; vũ khí bị ẩn ở đường chưa xác minh, không dùng sheet đứng yên thay animation.
+- Skill catalog client hiện có mapping body/WPS cho các slot 0–20. Preview effect chính áp dụng cho các nhóm đánh #1–#8, khống chế #17 và diện rộng #19–#20. Passive/buff không có chuỗi đánh vũ khí.
 - Preview đứng/đi vẫn giữ chu kỳ Studio hiện có; khi có vũ khí dùng mapping crop/anchor và mirror client để khớp rig. Nhịp thở là xử lý Studio, không khẳng định là nguyên bản.
 - WPS trong JAR này chỉ có x1. PNG đứng/đi ưu tiên x4 nguồn server; không tự tạo WPS HD.
 - Xuất tư thế giữ sprite thực tế đang xem (WPS hoặc vũ khí thường) và draw order.
@@ -51,7 +51,7 @@ Thứ tự trước/sau cơ thể theo `MainObject.paint`: Direction up luôn v�
 
 ## Chưa triển khai
 
-Vũ khí thời trang wear17 dùng renderer hiệu ứng riêng; các chiêu skill3–20, các hiệu ứng ngoài phạm vi chiêu #1/#2 bên dưới và thời điểm sát thương chưa được port. Dữ liệu/mapping vừa tìm thấy không nâng các đường đó thành “đã xác minh”.
+Vũ khí thời trang wear17 dùng renderer hiệu ứng riêng; hiệu ứng phụ và thời điểm sát thương chưa được port. Các effect ID 116–123 đi qua nhánh `GameScreen.StartAddEffectSkill` rồi chuyển sang EffectSkill ID 11/20/34/49/51/53/54/55/60/62/65/66/77/91/114/115; preview dùng các FrameImage chính của nhánh đó. Bảng mapping body/WPS và effect ID đủ 84 ô nằm trong `reference/hso403/client.json`.
 
 
 ## Chiêu #1: đối chiếu và bản khôi phục
@@ -92,3 +92,45 @@ Chưa port: Effect29 tụ lực, EffectEnd9 bụi đá, rung màn hình, tương
 | 3 | Phóng điện | 18 | 8 | 22 | 4 | 74 |
 
 Các ảnh `110_83/68/70/72/57/3/74` lấy nguyên từ packet server x4. `arrInfoEff` trong client 4.0.3 xác nhận kích thước frame và số frame; SHA-256 đã lưu trong `reference/hso403/client.json`. Preview tái hiện sprite/đường bay chính cho mục tiêu tĩnh, còn chuyển động hạt ngẫu nhiên, tương tác nước, âm thanh, sát thương và cooldown chưa mô phỏng.
+
+## Chiêu #3: Rồng đất, Tia chớp, Sóng xung kích, Súng phóng lựu
+
+`MainListSkill.mSkillAllClasses[clazz][3]` ánh xạ internal ID **21/22/39/24**; `mEffectKill` cho effect **26/27/49/31**. Xạ thủ chia đôi plash/frame từ **11/11** xuống **5/5**. `SplashSkill.setPlash` cho windup 8 tick với plash 5 và 6 tick với plash 1. FrameImage lấy từ nhánh `EffectSkill.set_New_Effect`; kích thước và số frame lấy từ `arrInfoEff`.
+
+| clazz | Kỹ năng | Internal ID | Plash | Trigger | Effect | FrameImage |
+|---:|---|---:|---:|---:|---:|---|
+| 0 | Rồng đất | 21 | 5 | 11 | 26 | 8, 53 |
+| 1 | Tia chớp | 22 | 1 | 9 | 27 | 50 |
+| 2 | Sóng xung kích | 39 | 5 | 11 | 49 | 23, 24 |
+| 3 | Súng phóng lựu | 24 | 5 | 5 | 31 | 31, 97 |
+
+Preview cho thấy sprite/đường bay chính của các nhánh **EffectSkill 26/27/49/31** trong một mục tiêu tĩnh. Cụm sprite, hướng bay phụ, mảnh ngẫu nhiên, sát thương, âm thanh và cooldown chưa được tái hiện đầy đủ; không dùng preview này như mô phỏng gameplay.
+
+## Chiêu #4: Thiên thạch, Xúc tu gai độc, Rồng băng giá, Tia công phá
+
+`MainListSkill.mSkillAllClasses[clazz][4]` ánh xạ internal ID **5/37/51/40**; `mEffectKill` cho effect **11/47/64/51**. Ba phái đầu dùng plash 5, trigger tick 11. Xạ thủ có raw plash/frame **6/11**; `ListSkill.setFireSkill` chia đôi thành plash 3, trigger tick 5. Type 3 dùng nhánh riêng của `SplashSkill.update`: hai tick đầu body 5/WPS 4, tiếp bốn tick body 4/WPS 4–7, rồi về 0.
+
+| clazz | Kỹ năng | Internal ID | Plash sau xử lý | Trigger | Effect | FrameImage |
+|---:|---|---:|---:|---:|---:|---|
+| 0 | Thiên thạch | 5 | 5 | 11 | 11 | 30, 31, 40 |
+| 1 | Xúc tu gai độc | 37 | 5 | 11 | 47 | 87, 75 |
+| 2 | Rồng băng giá | 51 | 5 | 11 | 64 | 95, 53 |
+| 3 | Tia công phá | 40 | 3 | 5 | 51 | 21, 59 |
+
+Các sprite x4 và kích thước frame lấy từ `arrInfoEff`; SHA-256 lưu trong `reference/hso403/client.json`. Preview thể hiện nhóm sprite chính trên mục tiêu tĩnh; hiệu ứng phụ và chuyển động ngẫu nhiên chưa được port đầy đủ.
+
+## Các chiêu đánh còn lại và chiêu khống chế/diện rộng
+
+`EffectSkill.set_New_Effect` cung cấp FrameImage cho chiêu #5–#8 và #17. Với effect server **116–123**, `GameScreen.StartAddEffectSkill` chuyển ID thành các effect client bên dưới trước khi tạo sprite. Các hàng trong bảng là danh sách sprite x4 chính hiển thị theo thứ tự phái: **Chiến binh / Sát thủ / Pháp sư / Xạ thủ**.
+
+| Slot | Effect ID server | FrameImage chính theo phái |
+|---:|---|---|
+| #5 | 53 / 34 / 12 / 62 | `85,53` / `33,18` / tia nứt vẽ theo nhánh `create_Crack_Earth` / `47` |
+| #6 | 54 / 40 / 61 / 82 | `83,68` / `15,17,26` / `71,5,92` / `127,75` |
+| #7 | 53 / 34 / 60 / 65 | `85,53` / `33,18` / tia điện vẽ theo nhánh effect 60 / `65,94` |
+| #8 | 11 / 20 / 61 / 66 | `30,31,40` / `91,118–121` / `71,5,92` / nhát sáng minh họa; nhánh 66 không gắn FrameImage |
+| #17 | 110 / 112 / 109 / 111 | `115` / `127,75` / `92` / `127,75` |
+| #19 | 116 / 117 / 119 / 118 | `85,53,114,116,115` / `91,118–121` / `24,7` / `65,94,47` |
+| #20 | 120 / 121 / 123 / 122 | `83,68,30,31,40` / `33,18,51` / `23,24` / `21,59` |
+
+Preview dùng trigger tick trong catalog client, sprite frame tuần tự và fixture mục tiêu tĩnh. Các tia trong nhánh không có FrameImage là hình minh họa cố định; đường bay nhiều mục tiêu, số lượng/hướng ngẫu nhiên, hiệu ứng trạng thái phụ, sát thương, âm thanh và cooldown không được tái hiện. Slot passive/buff không bật renderer đánh.

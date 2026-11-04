@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { combatCatalog } from '../lib/combat'
+import { SKILL_CATEGORIES } from '../lib/clientSkillCatalog'
 import { createAttackTrial } from '../lib/attackTrial'
 
 const props = defineProps({ trial: { type: Object, required: true }, clientVerified: { type: Boolean, default: false } })
@@ -11,6 +12,7 @@ const preparePose = ref(props.trial.preparePose), strikePose = ref(props.trial.s
 const profile = computed(() => catalog.classes.find(profile => profile.id === clazz.value))
 const skill = computed(() => profile.value.skills.find(skill => skill.id === skillId.value))
 const detail = computed(() => skill.value.levels[level.value])
+const clientSkillCategory = computed(() => SKILL_CATEGORIES[skillId.value])
 function poseChanged(stage) {
   if (stage === 'prepare') prepareAnchor.value = preparePose.value
   else strikeAnchor.value = strikePose.value
@@ -41,7 +43,9 @@ watch([clazz, skillId, preparePose, strikePose, prepareAnchor, strikeAnchor], ()
       <label class="field">Anchor B<select v-model.number="strikeAnchor" aria-label="Anchor tấn công B"><option v-for="i in 6" :key="i" :value="i - 1">{{ i - 1 }}</option></select></label>
       <span class="badge">0 → {{ preparePose }} → {{ strikePose }} → 0</span>
     </div>
-    <p v-if="clientVerified" class="muted">Kỹ năng #{{ skillId }} dùng timeline cơ thể/WPS đối chiếu client 4.0.3. Chiêu #1 và #2 có hiệu ứng chính trong khung mục tiêu mẫu bên dưới. Các chiêu #3 trở lên và vũ khí thời trang chưa được khôi phục.</p>
-    <p v-else class="muted">Tên kỹ năng, type vũ khí và cooldown lấy từ server. Chuỗi pose, anchor và FPS đang thử nghiệm; cooldown không phải thời lượng animation. Các phái dùng chung chuỗi thử, chưa xác nhận động tác riêng theo phái. Vũ khí được ẩn ở chiêu chưa đối chiếu; chọn kỹ năng #0, #1 hoặc #2 cùng vũ khí thường để xem animation theo client.</p>
+    <p v-if="clientVerified && skillId <= 4" class="muted">Kỹ năng #{{ skillId }} dùng timeline cơ thể/WPS đối chiếu client 4.0.3. Chiêu #1–#4 có preview sprite hiệu ứng chính trong khung mục tiêu mẫu; hiệu ứng phụ và tương tác gameplay chưa mô phỏng.</p>
+    <p v-else-if="clientVerified" class="muted">Kỹ năng #{{ skillId }} · nhóm {{ clientSkillCategory }}. Preview hiệu ứng chính theo client 4.0.3 nằm ngay dưới khung animation; hiệu ứng phụ và tương tác gameplay chưa mô phỏng.</p>
+    <p v-else-if="['passive','self-buff','party-buff'].includes(clientSkillCategory)" class="muted">Kỹ năng #{{ skillId }} thuộc nhóm nội tại/buff; không có chuỗi đánh vũ khí.</p>
+    <p v-else class="muted">Tên kỹ năng, type vũ khí và cooldown lấy từ server. Chuỗi pose, anchor và FPS đang thử nghiệm; cooldown không phải thời lượng animation. Các phái dùng chung chuỗi thử, chưa xác nhận động tác riêng theo phái. Vũ khí được ẩn ở chiêu chưa có mapping client.</p>
   </div>
 </template>

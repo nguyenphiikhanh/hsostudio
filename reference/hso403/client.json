@@ -1889,5 +1889,96 @@
       "SplashSkill.setPlash",
       "FrameImage.drawFrameEffectSkill"
     ]
+  },
+  "skillThree": {
+    "internalIds": [21, 22, 39, 24],
+    "rawPlashTypes": [5, 1, 5, 11],
+    "plashTypes": [5, 1, 5, 5],
+    "rawFrameCounts": [11, 9, 11, 11],
+    "effectTicks": [11, 9, 11, 5],
+    "effectIds": [26, 27, 49, 31],
+    "effectTextures": { "0": [8, 53], "1": [50], "2": [23, 24], "3": [31, 97] },
+    "textures": {
+      "8": { "source": "part_char/imgver/x4/110_8", "image": "fx-8.png", "width": 88, "height": 480, "density": 4, "frameWidth": 22, "frameHeight": 30, "nFrame": 4, "sha256": "e22a0f314252fd3d12fbe9a9b26fef8134b1e23bda95f580f38d0f618b674dbd" },
+      "23": { "source": "part_char/imgver/x4/110_23", "image": "fx-23.png", "width": 48, "height": 240, "density": 4, "frameWidth": 12, "frameHeight": 12, "nFrame": 5, "sha256": "761f81b01d3f44cf83bc8d9be2bcba47869a6c8dee2cf723f3830394aaa1dcd7" },
+      "24": { "source": "part_char/imgver/x4/110_24", "image": "fx-24.png", "width": 152, "height": 456, "density": 4, "frameWidth": 38, "frameHeight": 38, "nFrame": 3, "sha256": "e8bc3605daa5bac1ded5e464cfc72bd5a3d72909e1f468bb902c22561f988f0d" },
+      "31": { "source": "part_char/imgver/x4/110_31", "image": "fx-31.png", "width": 48, "height": 208, "density": 4, "frameWidth": 12, "frameHeight": 13, "nFrame": 4, "sha256": "e525b7aee7affc5e5124cef84829808604cdfd54f677dbe17807728c94c350f6" },
+      "50": { "source": "part_char/imgver/x4/110_50", "image": "fx-50.png", "width": 96, "height": 420, "density": 4, "frameWidth": 24, "frameHeight": 35, "nFrame": 3, "sha256": "03e39d540e3a14b1221f2fffa4f1d25d484a210553e820a4b8b08806230b5329" },
+      "53": { "source": "part_char/imgver/x4/110_53", "image": "fx-53.png", "width": 248, "height": 768, "density": 4, "frameWidth": 62, "frameHeight": 64, "nFrame": 3, "sha256": "cc073285c0876c8cb7758786d4c7bdd0efd6c54d0c1d077bb88e07bf9dcbcbcf" },
+      "97": { "source": "part_char/imgver/x4/110_97", "image": "fx-97.png", "width": 48, "height": 144, "density": 4, "frameWidth": 12, "frameHeight": 12, "nFrame": 3, "sha256": "a7438701c95ad400bc68bfc839109afed2da6b78d82c0c76c20af4045f4b0a8c" }
+    },
+    "verifiedMethods": [
+      "MainListSkill.mSkillAllClasses",
+      "MainListSkill.mEffectKill",
+      "MainListSkill.mPlash",
+      "MainListSkill.mFramePlash",
+      "ListSkill.setFireSkill",
+      "EffectSkill.set_New_Effect",
+      "EffectSkill.create_Kiem_Lv3",
+      "EffectSkill.create_Kill_2Kiem_Lv2",
+      "EffectSkill.create_PS_Xungkich",
+      "EffectSkill.create_Sung_LV2_LV4",
+      "SplashSkill.setPlash",
+      "FrameImage.drawFrameEffectSkill"
+    ]
+  },
+  "skillFour": {
+    "internalIds": [5, 37, 51, 40],
+    "rawPlashTypes": [5, 5, 5, 6],
+    "plashTypes": [5, 5, 5, 3],
+    "rawFrameTicks": [11, 11, 11, 11],
+    "effectTicks": [11, 11, 11, 5],
+    "effectIds": [11, 47, 64, 51],
+    "effectTextures": { "0": [30, 31, 40], "1": [87, 75], "2": [95, 53], "3": [21, 59] },
+    "textures": {
+      "21": { "source": "part_char/imgver/x4/110_21", "image": "fx-21.png", "width": 192, "height": 576, "density": 4, "frameWidth": 48, "frameHeight": 48, "nFrame": 3, "sha256": "7a887e72512ab509f80e50d8d2f6343b191ebdb42c4434e19dc6d5edd68b722d" },
+      "30": { "source": "part_char/imgver/x4/110_30", "image": "fx-30.png", "width": 80, "height": 216, "density": 4, "frameWidth": 20, "frameHeight": 18, "nFrame": 3, "sha256": "257f4dd1cacdc02ff7a7c6252db828bfedba4cc9e667ce59d4190aeed1932ed0" },
+      "31": { "source": "part_char/imgver/x4/110_31", "image": "fx-31.png", "width": 48, "height": 208, "density": 4, "frameWidth": 12, "frameHeight": 13, "nFrame": 4, "sha256": "e525b7aee7affc5e5124cef84829808604cdfd54f677dbe17807728c94c350f6" },
+      "40": { "source": "part_char/imgver/x4/110_40", "image": "fx-40.png", "width": 92, "height": 264, "density": 4, "frameWidth": 23, "frameHeight": 33, "nFrame": 2, "sha256": "6a57e80f7b9c7d9c87be14f28a79af0ecebac3a785d4cdea6f7c7369ef6c274b" },
+      "53": { "source": "part_char/imgver/x4/110_53", "image": "fx-53.png", "width": 248, "height": 768, "density": 4, "frameWidth": 62, "frameHeight": 64, "nFrame": 3, "sha256": "cc073285c0876c8cb7758786d4c7bdd0efd6c54d0c1d077bb88e07bf9dcbcbcf" },
+      "59": { "source": "part_char/imgver/x4/110_59", "image": "fx-59.png", "width": 128, "height": 512, "density": 4, "frameWidth": 32, "frameHeight": 32, "nFrame": 4, "sha256": "8c0f03dc9bb5aa84942d511c9e21805fe66011756102c83ffb05aa0669ce55c5" },
+      "75": { "source": "part_char/imgver/x4/110_75", "image": "fx-75.png", "width": 128, "height": 264, "density": 4, "frameWidth": 32, "frameHeight": 22, "nFrame": 3, "sha256": "96586aa0151bf361079fc0694c26878e9d131ff1d178534b25f42b0e48de1c41" },
+      "87": { "source": "part_char/imgver/x4/110_87", "image": "fx-87.png", "width": 96, "height": 600, "density": 4, "frameWidth": 24, "frameHeight": 30, "nFrame": 5, "sha256": "0f06654200a305ac9e5b40b1277fd6950914091b9cba8351db54aaf93dabd217" },
+      "95": { "source": "part_char/imgver/x4/110_95", "image": "fx-95.png", "width": 100, "height": 180, "density": 4, "frameWidth": 25, "frameHeight": 45, "nFrame": 1, "sha256": "c45bb463bb9f32f955bba372e45082c1bf1b9973914601c363a4ae5ec4f361f7" }
+    },
+    "verifiedMethods": [
+      "MainListSkill.mSkillAllClasses",
+      "MainListSkill.mEffectKill",
+      "MainListSkill.mPlash",
+      "MainListSkill.mFramePlash",
+      "ListSkill.setFireSkill",
+      "EffectSkill.set_New_Effect",
+      "EffectSkill.create_2Kiem_GaiDoc",
+      "SplashSkill.setPlash",
+      "SplashSkill.update",
+      "FrameImage.drawFrameEffectSkill"
+    ]
+  },
+  "skillCatalog": {
+    "rowFormat": "[internalSkillId, effectivePlash, effectTick, effectId]",
+    "classOrder": [0, 1, 2, 3],
+    "categories": ["attack", "attack", "attack", "attack", "attack", "attack", "attack", "attack", "attack", "passive", "passive", "passive", "self-buff", "self-buff", "self-buff", "passive", "passive", "control", "party-buff", "area", "area"],
+    "effectPreviewSlots": [1, 2, 3, 4, 5, 6, 7, 8, 17, 19, 20],
+    "specialEffectMappings": {
+      "116": [53, 77], "117": [20, 91], "118": [65, 62], "119": [114, 115],
+      "120": [54, 11], "121": [34, 55], "122": [51, 66], "123": [60, 49]
+    },
+    "effectPreviewTexturesBySkill": {
+      "5": [[85,53], [33,18], [], [47]],
+      "6": [[83,68], [15,17,26], [71,5,92], [127,75]],
+      "7": [[85,53], [33,18], [], [65,94]],
+      "8": [[30,31,40], [91,118,119,120,121], [71,5,92], []],
+      "17": [[92,115], [127,75], [92,115], [127,75]],
+      "19": [[85,53,114,116,115], [91,118,119,120,121], [24,7], [65,94,47]],
+      "20": [[83,68,30,31,40], [33,18,51], [23,24], [21,59]]
+    },
+    "effectPreviewMethods": ["EffectSkill.set_New_Effect", "EffectSkill.create_Crack_Earth", "EffectSkill.create_Arrow_Rain", "EffectSkill.create_2Kiem_Lv5", "EffectSkill.create_2Kiem_GaiDoc", "GameScreen.StartAddEffectSkill", "FrameImage.drawFrameEffectSkill"],
+    "rows": [
+      [[15,0,5,21],[23,1,9,28],[41,1,9,52],[21,5,11,26],[5,5,11,11],[42,7,15,53],[43,7,15,54],[42,7,15,53],[5,5,11,11],[0,0,5,0],[0,0,5,0],[0,0,5,0],[0,0,5,0],[45,9,5,57],[45,9,5,57],[0,0,5,0],[0,0,5,0],[54,0,5,110],[58,0,5,0],[64,0,5,116],[68,0,5,120]],
+      [[15,0,5,21],[44,1,9,55],[36,1,9,46],[22,1,9,27],[37,5,11,47],[27,4,9,34],[34,7,15,40],[27,4,9,34],[14,7,15,20],[0,0,5,0],[0,0,5,0],[0,0,5,0],[0,0,5,0],[45,9,5,57],[45,9,5,57],[0,0,5,0],[0,0,5,0],[55,0,5,112],[60,0,5,0],[65,0,5,117],[69,0,5,121]],
+      [[31,0,5,38],[46,1,9,59],[20,1,9,25],[39,5,11,49],[51,5,11,64],[6,7,15,12],[48,2,15,61],[47,7,15,60],[48,2,15,61],[0,0,5,0],[0,0,5,0],[0,0,5,0],[0,0,5,0],[45,9,5,57],[45,9,5,57],[0,0,5,0],[0,0,5,0],[56,0,5,109],[61,0,5,0],[62,0,5,119],[66,0,5,123]],
+      [[31,0,5,38],[19,8,4,23],[18,8,4,22],[24,5,5,31],[40,3,5,51],[49,6,5,62],[50,5,5,82],[52,5,10,65],[53,5,10,66],[0,0,5,0],[0,0,5,0],[0,0,5,0],[0,0,5,0],[45,4,2,57],[45,4,2,57],[0,0,5,0],[0,0,5,0],[57,0,2,111],[59,0,5,0],[63,0,2,118],[67,0,2,122]]
+    ],
+    "verifiedMethods": ["MainListSkill.mSkillAllClasses", "MainListSkill.mBuffAllClasses", "MainListSkill.mEffectKill", "MainListSkill.mPlash", "MainListSkill.mFramePlash", "ListSkill.setFireSkill", "SplashSkill.setPlash", "SplashSkill.update"]
   }
 }
