@@ -1,6 +1,6 @@
 // x1 sheets group 15 clothing rectangles as front/back/side × 5 poses.
 // The 24 anchor pairs group four directions × 6 poses. Walking uses poses 0–2;
-import { clientSkillData } from './clientSkillCatalog'
+import { clientSkillData } from './clientSkillCatalog.js'
 
 // Client skill and body/WPS mappings are stored in clientSkillCatalog.js.
 export const DIRECTIONS = [
