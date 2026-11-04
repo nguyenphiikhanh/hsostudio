@@ -13,5 +13,5 @@ export function clientWeaponLayer(item) {
   const [x, y] = source.offsets[0][0]
   const asset = { id: source.source, source: source.source, image: source.image, width: source.width, height: source.height, density: source.density }
   return { slot: 'weapon', name: `${item.name} · #${item.id}`, itemId: item.id, clazz: item.clazz, partId: item.part, provenance: 'official-client-4.0.3', asset,
-    ...source.frames[0], x, y, visible: true, clientWeapon: { ...source, splash: { ...splash, source: `jar:x1/wps/${profile.folder}/0.png` } } }
+    ...source.frames[0], x, y, visible: true, clientWeapon: { ...source, skillOne: reference.skillOne, splash: { ...splash, source: `jar:x1/wps/${profile.folder}/0.png` } } }
 }

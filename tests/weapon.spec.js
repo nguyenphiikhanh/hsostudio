@@ -53,7 +53,7 @@ test('real HSO weapons render from verified class/part and animate with the offi
     await expect(page.getByLabel('Phái tấn công', { exact: true })).toHaveValue(String(clazz))
     await expect(page.locator('.layer-row')).toHaveCount(6)
   }
-  await page.getByLabel('Kỹ năng tấn công', { exact: true }).selectOption('1')
+  await page.getByLabel('Kỹ năng tấn công', { exact: true }).selectOption('2')
   await expect(page.getByTestId('client-weapon-animation')).toHaveCount(0)
   await expect(page.getByLabel('Pose tấn công A', { exact: true })).toBeVisible()
   await page.getByLabel('Cấp nhân vật để đối chiếu', { exact: true }).fill('150')

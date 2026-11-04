@@ -39,6 +39,18 @@ class VerifiedWeaponTests(unittest.TestCase):
                         self.assertLessEqual(frame['sx'] + frame['w'], cls['splash']['width'])
                         self.assertLessEqual(frame['sy'] + frame['h'], cls['splash']['height'])
 
+    def test_skill_one_effects_match_server_packets_and_client_geometry(self):
+        ref = json.loads((ROOT / 'studio/reference/hso403/client.json').read_text())['skillOne']
+        with sqlite3.connect(OUT / 'catalog.sqlite') as db:
+            stored = json.loads(db.execute('SELECT definition FROM hso_client_reference').fetchone()[0])['skillOne']
+        self.assertEqual(ref['internalIds'], [23, 44, 46, 19])
+        self.assertEqual(ref['effectTicks'], [9, 9, 9, 4])
+        for key, info in ref['textures'].items():
+            png, w, h = next(pngs((ROOT / 'hso/data' / info['source']).read_bytes()))
+            self.assertEqual(hashlib.sha256(png).hexdigest(), info['sha256'])
+            self.assertEqual((w, h), (info['frameWidth'] * 4, info['frameHeight'] * info['nFrame'] * 4))
+            self.assertEqual((OUT / stored['textures'][key]['image']).read_bytes(), png)
+
     def test_pinned_download_matches_reference_if_present(self):
         jar = Path('/tmp/hso-client-official-403.jar')
         if not jar.exists():

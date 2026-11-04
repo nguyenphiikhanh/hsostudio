@@ -60,5 +60,16 @@ def prepare_verified_weapons(db, game_root, out, reference_root, pngs):
                 selected.update(clazz=profile['clazz'], part=part, provenance='official-client-4.0.3', clientSha256=reference['jarSha256'])
                 db.execute('INSERT INTO hso_weapon_sheets VALUES (?,?,?)', (profile['clazz'], part, json.dumps(selected)))
                 count += 1
+    for texture in reference.get('skillOne', {}).get('textures', {}).values():
+        image = (reference_root / texture['image']).read_bytes()
+        if hashlib.sha256(image).hexdigest() != texture['sha256']:
+            raise ValueError('Skill #1 texture checksum mismatch')
+        packet = (game_root / texture['source']).read_bytes()
+        png, w, h = next(pngs(packet))
+        if png != image or (w, h) != (texture['width'], texture['height']):
+            raise ValueError('Skill #1 server texture no longer matches reference')
+        path = f"client403/{texture['image']}"
+        (out / path).write_bytes(image)
+        texture['image'] = path
     db.execute('INSERT INTO hso_client_reference VALUES (1,?)', (json.dumps(reference),))
     return count

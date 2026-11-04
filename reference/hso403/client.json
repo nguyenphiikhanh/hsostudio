@@ -48,7 +48,11 @@
     "Skill/MainListSkill": "a718e76458acd6c0d403391f553cca00de7244e2fb649c0e3027304e3a91e3b8",
     "Skill/ListSkill": "a99b1d9b7e2a970bdee4a5ac954ae1e09b6c2663152cfafe0d20c7d45b3a0522",
     "Skill/SplashSkill": "e0c179ef2bea97bf95df3fa2d2420ebae1605fa255d1ee111fe4f590399c6463",
-    "com/silverknight/TemCanvas": "15669f09efc1d9a9661cedd903f5c77780851ee51354e47941e57bb39380f569"
+    "com/silverknight/TemCanvas": "15669f09efc1d9a9661cedd903f5c77780851ee51354e47941e57bb39380f569",
+    "GameEffect/EffectSkill": "2c784d0b91e6fbd72587b81097deaaab93e76e2262791d69af8e0e5c48144ac3",
+    "GameEffect/EffectEnd": "8d64075d898347a4156eae6f0828cf5a7fc9cb0d699960648f41867ef5e24dec",
+    "Main/ImageEffect": "4e2303c7a391f2f7f3d3066f32150274123c361ebbcc1c93baa7aad1d4b8877d",
+    "Model/FrameImage": "cd9108ca70e02041a75451b87e6939e578ac1f570fe0a876c0733f3f15c97c03"
   },
   "classes": [
     {
@@ -1615,5 +1619,129 @@
         ]
       }
     }
-  ]
+  ],
+  "skillOne": {
+    "internalIds": [
+      23,
+      44,
+      46,
+      19
+    ],
+    "rawPlashTypes": [
+      1,
+      1,
+      1,
+      16
+    ],
+    "plashTypes": [
+      1,
+      1,
+      1,
+      8
+    ],
+    "windupTicks": [
+      6,
+      6,
+      6,
+      10
+    ],
+    "effectTicks": [
+      9,
+      9,
+      9,
+      4
+    ],
+    "effectIds": [
+      28,
+      55,
+      59,
+      23
+    ],
+    "textures": {
+      "17": {
+        "id": "part_char/imgver/x4/110_17",
+        "source": "part_char/imgver/x4/110_17",
+        "image": "fx-17.png",
+        "width": 80,
+        "height": 320,
+        "density": 4,
+        "frameWidth": 20,
+        "frameHeight": 20,
+        "nFrame": 4,
+        "sha256": "e676ea1be8c513bb38b350a3858f730c05d7416a94ddfd4eeb7bf070beb4a305"
+      },
+      "24": {
+        "id": "part_char/imgver/x4/110_24",
+        "source": "part_char/imgver/x4/110_24",
+        "image": "fx-24.png",
+        "width": 152,
+        "height": 456,
+        "density": 4,
+        "frameWidth": 38,
+        "frameHeight": 38,
+        "nFrame": 3,
+        "sha256": "e8bc3605daa5bac1ded5e464cfc72bd5a3d72909e1f468bb902c22561f988f0d"
+      },
+      "47": {
+        "id": "part_char/imgver/x4/110_47",
+        "source": "part_char/imgver/x4/110_47",
+        "image": "fx-47.png",
+        "width": 60,
+        "height": 180,
+        "density": 4,
+        "frameWidth": 15,
+        "frameHeight": 15,
+        "nFrame": 3,
+        "sha256": "4ea106d66a2881aec1d0a9ba9ab1acb3d1f72198074d1a85f1a9b67ba915d366"
+      },
+      "51": {
+        "id": "part_char/imgver/x4/110_51",
+        "source": "part_char/imgver/x4/110_51",
+        "image": "fx-51.png",
+        "width": 280,
+        "height": 840,
+        "density": 4,
+        "frameWidth": 70,
+        "frameHeight": 70,
+        "nFrame": 3,
+        "sha256": "8154d5885986d099c48182d66873be136123b8d7c3e93a59d18182e73d1a8c0d"
+      },
+      "53": {
+        "id": "part_char/imgver/x4/110_53",
+        "source": "part_char/imgver/x4/110_53",
+        "image": "fx-53.png",
+        "width": 248,
+        "height": 768,
+        "density": 4,
+        "frameWidth": 62,
+        "frameHeight": 64,
+        "nFrame": 3,
+        "sha256": "cc073285c0876c8cb7758786d4c7bdd0efd6c54d0c1d077bb88e07bf9dcbcbcf"
+      },
+      "60": {
+        "id": "part_char/imgver/x4/110_60",
+        "source": "part_char/imgver/x4/110_60",
+        "image": "fx-60.png",
+        "width": 120,
+        "height": 512,
+        "density": 4,
+        "frameWidth": 30,
+        "frameHeight": 32,
+        "nFrame": 4,
+        "sha256": "faaef3370f8d17bd9bfcea9cfadbc34f2f5f3203f68252e9e1ef1aed6b7e6eea"
+      }
+    },
+    "verifiedMethods": [
+      "MainListSkill.mEffectKill",
+      "ListSkill.setFireSkill",
+      "ListSkill.updateEffSkill",
+      "EffectSkill.set_New_Effect",
+      "EffectSkill.create_Kiem_Lv2",
+      "EffectSkill.create_Sung_Lv3",
+      "EffectSkill.paint",
+      "EffectSkill.update",
+      "ImageEffect.getEffectImgFromRMS",
+      "FrameImage.drawFrameEffectSkill"
+    ]
+  }
 }
