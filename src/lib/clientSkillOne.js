@@ -32,7 +32,7 @@ export function skillOneScene(clazz, direction, tick, reference, distance = claz
   const sprites = [], lines = []
   const sprite = (id, frame, x, y, transform = 0, top = false) => {
     const asset = reference.textures[id]
-    if (!asset) throw new Error(`Thiếu ảnh hiệu ứng HSO #${id}; chạy npm run prepare:game.`)
+    if (!asset) throw new Error(`Thiếu ảnh hiệu ứng HSO #${id} trong bộ dữ liệu đóng gói.`)
     sprites.push({ asset, frame, x, y, transform, top })
   }
   if (f < 0) return { target, sprites, lines, effectFrame: f }

@@ -23,8 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 
-# Reproducible game catalog and PNG extraction
-public/game/
+# Python bytecode (legacy data-generation scripts)
 __pycache__/
 playwright-report/
 test-results/

@@ -10,7 +10,7 @@ Trạng thái: đọc được dữ liệu server; chuỗi animation trong Studi
 - `hso/src/main/java/map/MapService.java`, `use_skill()`: đọc skill ID, yêu cầu `wear[0]` có vũ khí, kiểm tra level/MP/cooldown và tính sát thương. Cooldown dùng `System.currentTimeMillis()`, với giá trị delay điều chỉnh `delay * 199 / 200`.
 - `fire_mob()` gửi message 9 gồm người đánh, skill ID, mục tiêu, sát thương và HP. Đây không phải bảng thứ tự sprite.
 
-Parser `scripts/combat_catalog.py` đọc **21 kỹ năng × 4 phái = 84**, kiểm tra hết byte, ID duy nhất liên tục và SHA-256 packet. Dữ liệu được lưu trong cùng SQLite và xuất trong `combat.json`; không tải JSON sidecar riêng.
+Catalog đóng gói sẵn chứa **21 kỹ năng × 4 phái = 84**, đã kiểm tra hết byte, ID duy nhất liên tục và SHA-256 packet. Dữ liệu được lưu trong cùng SQLite và xuất trong `combat.json`; không tải JSON sidecar riêng.
 
 | clazz | Phái | item3.type vũ khí | Số item | Skill 0 | delay cấp đầu | typePaint | subEff | performDur |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -54,7 +54,7 @@ Các packet ảnh x4 `50_*`, `51_*`, `52_*`, `53_*` có 25 PNG mỗi họ và 32
 
 ## 5. Cách thử
 
-1. Chạy `npm run prepare:game`, mở/tải lại Studio.
+1. Chạy `npm run dev`, mở/tải lại Studio.
 2. Chọn Trạng thái **Tấn công · thử nghiệm**.
 3. Chọn phái, kỹ năng và cấp để đối chiếu dữ liệu server.
 4. Pause và bước từng frame. Thử pose A/B, anchor A/B; thay áo/quần để đánh giá liên kết trên nhiều thiết kế.

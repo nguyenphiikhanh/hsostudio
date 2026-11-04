@@ -6,7 +6,7 @@
 
 Manifest ghi 4.0.3. SHA-256: `f023b34e0ba0a3dcf44249ed5f90b78f0427deee4668562b8e3a0e9e349b18c6`.
 
-Phân tích tĩnh bằng CFR và javap; không chạy client hoặc đăng nhập server. Không đưa code decompile vào repo. `reference/hso403/client.json` lưu hash bytecode, các bảng số phục vụ tương thích, metadata WPS và nguồn; bốn PNG WPS giữ nguyên từ JAR. `scripts/import_client403.py /path/to/original.jar` nhập lại chỉ khi checksum khớp.
+Phân tích tĩnh bằng CFR và javap; không chạy client hoặc đăng nhập server. Không đưa code decompile vào repo. `reference/hso403/client.json` lưu hash bytecode, các bảng số phục vụ tương thích, metadata WPS và nguồn; bốn PNG WPS giữ nguyên từ JAR. Các PNG đã xác minh được đóng gói trong `public/game/client403`.
 
 Đây là bằng chứng theo **client 4.0.3**, không khẳng định mọi client HSO lịch sử dùng cùng animation. Để kiểm tra tương thích, đã so **72 PNG và 72 tail metadata nguyên byte** (part0–17 của cả bốn phái) với dữ liệu x1 trong workspace: trùng toàn bộ. Các thiết kế part18–23 dùng cùng bộ đọc giao thức đã xác minh; geometry từng PNG được kiểm tra riêng.
 

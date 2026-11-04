@@ -1,0 +1,48 @@
+{
+  "tables": {
+    "fashiontemplate": 72,
+    "item3": 4792,
+    "item4": 321,
+    "item5": 33,
+    "item7": 474,
+    "itemoption": 191,
+    "itemsell": 19,
+    "level": 140,
+    "maps": 91,
+    "map_data": 124,
+    "mobs": 198,
+    "pet": 1,
+    "shopitem3": 0,
+    "skills": 1204
+  },
+  "assets": 20936,
+  "decoded": 20450,
+  "imageFiles": 20450,
+  "characterParts": 415,
+  "characterX4": 412,
+  "qualityNotes": [
+    {
+      "slot": "pants",
+      "partId": 44,
+      "source": "part_char/imgver/x1/0_44",
+      "density": 1,
+      "reason": "Metadata x4 có vùng cắt vượt PNG; dùng x1 để tránh cắt sai."
+    },
+    {
+      "slot": "shirt",
+      "partId": 92,
+      "source": "part_char/imgver/x1/1_92",
+      "density": 1,
+      "reason": "Metadata x4 có vùng cắt vượt PNG; dùng x1 để tránh cắt sai."
+    },
+    {
+      "slot": "eyes",
+      "partId": 0,
+      "source": "studio/preview/eyes/0.png",
+      "density": 1,
+      "reason": "Mắt preview là placeholder x1 của Studio, không phải ảnh HSO x4."
+    }
+  ],
+  "combatSkills": 84,
+  "verifiedWeaponSheets": 96
+}

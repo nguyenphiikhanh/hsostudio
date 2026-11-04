@@ -63,7 +63,7 @@ test('real HSO weapons render from verified class/part and animate with the offi
   await ordinary.selectOption('')
   await page.evaluate(async () => { const { query } = await import('/src/lib/catalog.js'); query('DROP TABLE hso_weapon_sheets') })
   await ordinary.selectOption('15')
-  await expect(page.getByTestId('weapon-visual-status')).toContainText('npm run prepare:game')
+  await expect(page.getByTestId('weapon-visual-status')).toContainText('bộ dữ liệu đóng gói')
   await expect(page.locator('.layer-row')).toHaveCount(5)
   expect(errors).toEqual([])
 })

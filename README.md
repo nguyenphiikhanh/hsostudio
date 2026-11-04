@@ -6,18 +6,17 @@ Static Vue workbench for HSO game design data. SQLite runs in the browser throug
 
 ```sh
 npm ci
-npm run prepare:game
 npm run dev
 ```
 
-Preparation requires Python 3 and the sibling `../hso` directory. It converts the supplied MySQL dump with a scalar parser, imports only game-design tables, inventories every file in `hso/data`, and extracts complete embedded PNG streams into images with readable source-relative paths. Original source files are never modified. Accounts, player records, payment history and gift codes are excluded from the public catalog.
+The complete read-only game catalog and extracted images are included in `public/game`; no Python installation or data-preparation command is needed. The bundle contains only game-design data. Accounts, player records, payment history and gift codes are excluded.
 
 ```sh
 npm run build
 npm run preview
 ```
 
-Deploy the entire `dist/` directory to static hosting. For a subdirectory, build with `npm run build -- --base=/your-path/`. SQLite and WASM must be served as files, not rewritten to the HTML fallback. Generated assets occupy about 222 MB. They are ignored by Git and rebuilt before deployment. Browse images load on demand; the SQLite catalog loads once in memory.
+Deploy the entire `dist/` directory to static hosting. For a subdirectory, build with `npm run build -- --base=/your-path/`. SQLite and WASM must be served as files, not rewritten to the HTML fallback. The checked-in game bundle occupies about 170 MB. Browse images load on demand; the SQLite catalog loads once in memory.
 
 ## Workflows
 
@@ -36,13 +35,12 @@ All source files are inventoried; not all formats are decoded. `unresolved` incl
 ## Verification
 
 ```sh
-python3 scripts/test_catalog.py
 npm run build
 npm run test:poses
 npm run test:e2e
 ```
 
-Browser tests use an installed Google Chrome at `/usr/bin/google-chrome` and Playwright. They cover catalog loading, filtering, drafts, part replacement/cropping and exported files. Catalog tests verify MySQL escaping, UTF-8, row counts, JSON fields, SQLite integrity, excluded private tables and every extracted PNG stream.
+Browser tests use an installed Google Chrome at `/usr/bin/google-chrome` and Playwright. They cover catalog loading, filtering, drafts, part replacement/cropping and exported files.
 
 ## Readable asset names
 
@@ -114,7 +112,7 @@ Browser verification exports and unzips the complete library, validates every fr
 
 ## PNG x4 in preview and library export
 
-Run `npm run prepare:game` after updating, then reload Studio. The character selectors and library ZIP use the same texture selection: **412 original PNG x4** sheets with validated crop bounds. Different x4 layouts (for example pants 45 and shirt 44) use their own packet crop and anchor metadata, rather than scaled x1 guesses.
+The character selectors and library ZIP use the same texture selection: **412 original PNG x4** sheets with validated crop bounds. Different x4 layouts (for example pants 45 and shirt 44) use their own packet crop and anchor metadata, rather than scaled x1 guesses.
 
 The character keeps its logical size, position, breath offset and gameplay collider. Preview canvases keep a 4× backing resolution; the Phaser library runtime uses `1 / density` when displaying each texture. The single-pose export also preserves x4 pixels and records the scale in its loader. PNG sheets in the part library are copied without modification.
 
@@ -174,15 +172,15 @@ Select an actual item in **Vũ khí thường HSO**. Class/level rules come from
 
 Select **Tấn công** and **skill #0** to see the original WPS attack sprites: client body frames4/5, WPS frames4–7, 40ms ticks / 25FPS. FPS and pose A/B editing are disabled in this verified basic mode. Skill #1 is also restored for all four classes, including the primary effect in a target preview. Skills #2 onward remain explicitly experimental and hide the weapon while unverified. Cosmetic weapon records still have no visual renderer.
 
-The official Java client was obtained via [Gomobi's JAVA link](https://gomobi.vn/home/game/Knight-Age-7.html). A pinned 4.0.3 reference validates 72 server PNGs and 72 metadata tails byte for byte. Four original WPS x1 sheets are included in `reference/hso403`; they are not presented as HD. Run `npm run prepare:game` after updating and reload Studio.
+The official Java client was obtained via [Gomobi's JAVA link](https://gomobi.vn/home/game/Knight-Age-7.html). A pinned 4.0.3 reference validates 72 server PNGs and 72 metadata tails byte for byte. Four original WPS x1 sheets are included in `reference/hso403`; they are not presented as HD.
 
 Single-pose export includes the weapon/WPS currently shown. The reusable part library retains body-only equipment support and records the omitted weapon layer; its selected #0/#1 body clip carries client provenance, hash and 25FPS. [Verification details and scope](docs/client403-verification.md).
 
 ## WPS image loading during development
 
-The `jar:x1/wps/...` string identifies the original JAR resource; the browser loads an extracted PNG such as `/game/client403/wps-0.png`. To refresh from the local original JAR, run `python3 scripts/import_client403.py KnightOnline_v403.jar` and `npm run prepare:game` from the app folder.
+The `jar:x1/wps/...` string identifies the original JAR resource; the browser loads the bundled PNG at `/game/client403/wps-0.png`.
 
-`public/game` remains excluded from file watchers to avoid watching 20k+ files. The Vite game-asset middleware reads the actual files rather than Vite's startup public-file snapshot, so newly extracted PNGs are immediately available. Missing game files return 404 instead of SPA HTML. After updating `vite.config.js`, restart the Studio server once; production/preview builds still need rebuilding to copy new public assets into dist.
+`public/game` remains excluded from file watchers to avoid watching 20k+ files. The Vite game-asset middleware reads the bundled files directly. Missing game files return 404 instead of SPA HTML. After updating `vite.config.js`, restart the Studio server once; production/preview builds copy the game assets into `dist`.
 
 ## Preview chiêu #1
 
@@ -197,4 +195,4 @@ Chọn **Phái nhân vật** và một **Vũ khí thường HSO** hợp lệ, ch
 
 PNG hiệu ứng lấy nguyên từ packet server `110_17/24/47/51/53/60`, dùng x4 sau kiểm tra kích thước. Không vẽ lại asset. Khung viền là mục tiêu kiểm tra cao 40, cách 40 hoặc 100 logical units; không phải quái gốc. Hạt/đạn ngẫu nhiên dùng seed cố định, không khẳng định trùng từng mẫu RNG Java. Một vòng xem dài 32 tick do Studio chọn để thấy hiệu ứng kết thúc; timeline thân gốc dài 11 tick (ba phái đầu) hoặc 15 tick (xạ thủ), sau đó giữ đứng yên. Đây không phải cooldown.
 
-Phạm vi hiện tại: thân, WPS, hiệu ứng chính và nổ đạn. Chưa có tia tụ lực trước đòn, bụi đá/rung màn hình, tương tác nước, sát thương và âm thanh. Hiệu ứng nằm trong khung preview riêng; xuất tư thế vẫn lấy nhân vật/vũ khí, thư viện part xuất timeline thân #1 nhưng không đóng gói hiệu ứng/weapon runtime. Chạy `npm run prepare:game` và tải lại trang sau cập nhật.
+Phạm vi hiện tại: thân, WPS, hiệu ứng chính và nổ đạn. Chưa có tia tụ lực trước đòn, bụi đá/rung màn hình, tương tác nước, sát thương và âm thanh. Hiệu ứng nằm trong khung preview riêng; xuất tư thế vẫn lấy nhân vật/vũ khí, thư viện part xuất timeline thân #1 nhưng không đóng gói hiệu ứng/weapon runtime. Tải lại trang sau khi thay đổi dữ liệu hoặc giao diện.

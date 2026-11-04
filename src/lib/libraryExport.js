@@ -26,7 +26,7 @@ export async function exportPartLibrary(requestedName, layers, drafts, progress 
     const definition = { version: 1, slot: row.slot, partId: row.part_id, label: row.label, source: row.source, provenance: row.provenance, density: row.density, resolution: row.zoom, qualityNote: row.quality_note, width: row.width, height: row.height, frames: JSON.parse(row.frames), offsets: JSON.parse(row.offsets) }
     const compiled = compilePart(definition, name)
     const response = await fetch(gameUrl(row.image))
-    if (!response.ok || response.headers.get('content-type')?.includes('text/html')) throw new Error(`Không tải được ảnh part: ${row.source}. Chạy npm run prepare:game rồi tải lại Studio.`)
+    if (!response.ok || response.headers.get('content-type')?.includes('text/html')) throw new Error(`Không tải được ảnh part trong bộ dữ liệu đóng gói: ${row.source}.`)
     files[compiled.paths.image] = new Uint8Array(await response.arrayBuffer())
     files[compiled.paths.data] = compiled.atlas
     files[compiled.paths.definition] = definition

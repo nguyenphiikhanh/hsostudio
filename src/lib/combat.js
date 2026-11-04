@@ -2,7 +2,7 @@ import { query } from './catalog'
 
 export function combatCatalog() {
   const tables = query("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('combat_classes','combat_skills')")
-  if (tables.length !== 2) throw new Error('Catalog chưa có dữ liệu kỹ năng server. Chạy npm run prepare:game rồi tải lại Studio.')
+  if (tables.length !== 2) throw new Error('Catalog đóng gói không có dữ liệu kỹ năng server. Kiểm tra public/game/catalog.sqlite.')
   const classes = query('SELECT * FROM combat_classes ORDER BY id')
   const skills = query('SELECT clazz,definition FROM combat_skills ORDER BY clazz,skill_id')
   return {

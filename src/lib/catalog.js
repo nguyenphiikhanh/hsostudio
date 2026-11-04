@@ -7,7 +7,7 @@ export async function loadCatalog() {
   const [SQL, response] = await Promise.all([
     initSqlJs({ locateFile: () => wasmUrl }), fetch(gameUrl('catalog.sqlite')),
   ])
-  if (!response.ok) throw new Error(`Không tải được catalog (${response.status}). Chạy npm run prepare:game.`)
+  if (!response.ok) throw new Error(`Không tải được catalog (${response.status}). Kiểm tra thư mục public/game và build lại ứng dụng.`)
   database = new SQL.Database(new Uint8Array(await response.arrayBuffer()))
 }
 export function query(sql, params = []) {

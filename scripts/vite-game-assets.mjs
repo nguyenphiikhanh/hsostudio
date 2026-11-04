@@ -30,7 +30,7 @@ function liveGameAssets(root, base) {
       createReadStream(file).on('error', error => response.destroy(error)).pipe(response)
     } catch {
       response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' })
-      response.end('Game asset not found. Run npm run prepare:game and rebuild if using preview.')
+      response.end('Game asset not found in the bundled public/game directory. Rebuild the app after restoring its game data.')
     }
   }
 }

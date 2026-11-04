@@ -26,13 +26,13 @@ export async function downloadZip(name, files) {
 }
 const imageCache = new Map()
 export function loadImage(asset) {
-  if (!asset?.image || asset.image.startsWith('jar:')) return Promise.reject(new Error('Thiếu đường dẫn PNG đã trích xuất. Chạy npm run prepare:game rồi tải lại Studio.'))
+  if (!asset?.image || asset.image.startsWith('jar:')) return Promise.reject(new Error('Thiếu đường dẫn PNG trong bộ dữ liệu đóng gói.'))
   const url = gameUrl(asset.image)
   if (imageCache.has(asset.image)) return imageCache.get(asset.image)
   const pending = new Promise((resolve, reject) => {
     const img = new Image()
     img.onload = () => resolve(img)
-    img.onerror = () => { imageCache.delete(asset.image); reject(new Error(`Không tải được PNG ${url} (nguồn: ${asset.source}). Chạy npm run prepare:game; nếu dùng bản build, hãy build lại.`)) }
+    img.onerror = () => { imageCache.delete(asset.image); reject(new Error(`Không tải được PNG ${url} (nguồn: ${asset.source}). Kiểm tra public/game hoặc build lại ứng dụng.`)) }
     img.src = url
   })
   imageCache.set(asset.image, pending)
