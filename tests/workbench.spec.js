@@ -1,0 +1,213 @@
+import { test, expect } from '@playwright/test'
+import fs from 'node:fs/promises'
+import { unzipSync, strFromU8 } from 'fflate'
+
+async function exportZip(page) {
+  const downloads = []
+  const track = download => downloads.push(download)
+  page.on('download', track)
+  const pending = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Xuất cho Phaser' }).click()
+  const download = await pending
+  const files = unzipSync(await fs.readFile(await download.path()))
+  page.off('download', track)
+  expect(downloads).toHaveLength(1)
+  const name = download.suggestedFilename().replace(/\.zip$/, '')
+  expect(Object.keys(files).sort()).toEqual([`${name}.png`, `${name}.json`, `${name}-composition.json`, `load-${name}.js`].sort())
+  return { name, files, json: path => JSON.parse(strFromU8(files[path])) }
+}
+
+
+test('catalog, record drafts, layer editing and Phaser exports', async ({ page }) => {
+  const errors = []
+  page.on('pageerror', e => errors.push(e.message))
+  await page.goto('/')
+  await expect(page.locator('.asset-card').first()).toBeVisible({ timeout: 30000 })
+  await page.getByRole('button', { name: 'Quái vật' }).click()
+  await page.getByRole('textbox', { name: 'Tìm theo tên hoặc ID' }).fill('Ốc sên')
+  await expect(page.locator('.asset-card')).toHaveCount(2)
+  await page.locator('.asset-card').filter({ has: page.getByText('Ốc sên', { exact: true }) }).click()
+  await page.getByLabel('hp', { exact: true }).fill('999')
+  await page.getByRole('button', { name: 'Áp dụng nháp' }).click()
+  await expect(page.getByRole('button', { name: 'Xuất nháp (1)' })).toBeVisible()
+  await page.getByRole('button', { name: 'Reset mục' }).click()
+  await expect(page.getByLabel('hp', { exact: true })).toHaveValue('600')
+  await page.getByLabel('hp', { exact: true }).fill('777')
+  await page.getByRole('button', { name: 'Áp dụng nháp' }).click()
+  await page.getByRole('button', { name: 'Tài nguyên' }).click()
+  await page.getByRole('button', { name: 'Xóa các lớp', exact: true }).click()
+  await page.locator('.asset-card').first().click()
+  await page.getByRole('button', { name: '+ Thêm lớp' }).click()
+  await page.getByLabel('Rộng', { exact: true }).fill('16')
+  await page.getByLabel('Cao', { exact: true }).fill('16')
+  await page.getByLabel('Vị trí X', { exact: true }).fill('-8')
+  await page.getByLabel('Tên lớp').fill('Đầu nháp')
+  await page.locator('.asset-card').nth(1).click()
+  await page.getByRole('button', { name: 'Thay lớp chọn' }).click()
+  await page.getByLabel('Rộng', { exact: true }).fill('16')
+  await page.getByLabel('Cao', { exact: true }).fill('16')
+  await page.getByRole('button', { name: '+ Thêm lớp' }).click()
+  await page.getByLabel('Rộng', { exact: true }).fill('16')
+  await page.getByLabel('Cao', { exact: true }).fill('16')
+  await page.getByLabel('Tên bản xuất', { exact: true }).fill('Hiệp sĩ Đất.zip')
+  const archive = await exportZip(page)
+  expect(archive.name).toBe('hiep-si-dat')
+  const atlas = archive.json('hiep-si-dat.json')
+  expect(Object.keys(atlas.frames)).toHaveLength(2)
+  expect(atlas.frames['part-0'].frame.w).toBe(16)
+  expect(atlas.meta.image).toBe('hiep-si-dat.png')
+  const config = archive.json('hiep-si-dat-composition.json')
+  expect(config.layers[0].name).toBe('Đầu nháp')
+  expect(config.layers[0].x).toBe(-8)
+  expect(config.drafts['mobs:1'].hp).toBe(777)
+  expect(config.texture).toBe('hiep-si-dat')
+  expect(Buffer.from(archive.files['hiep-si-dat.png']).subarray(1, 4).toString()).toBe('PNG')
+  expect(strFromU8(archive.files['load-hiep-si-dat.js'])).toContain("this.load.atlas('hiep-si-dat', 'hiep-si-dat.png', 'hiep-si-dat.json')")
+  await page.screenshot({ path: '/tmp/hso-studio-desktop.png', fullPage: true })
+  await page.reload()
+  await expect(page.getByRole('button', { name: 'Xuất nháp (0)' })).toBeVisible({ timeout: 30000 })
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.screenshot({ path: '/tmp/hso-studio-mobile.png', fullPage: true })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  expect(errors).toEqual([])
+})
+
+
+test('complete standing character starts ready and swaps parts using packet metadata', async ({ page }) => {
+  const errors = []
+  page.on('pageerror', error => errors.push(error.message))
+  await page.goto('/')
+  await expect(page.getByLabel('Bộ phận Quần', { exact: true })).toBeVisible({ timeout: 30000 })
+  await expect(page.locator('.layer-row')).toHaveCount(5)
+  for (const label of ['Quần', 'Áo', 'Đầu', 'Tóc', 'Mắt preview']) {
+    await expect(page.getByLabel(`Bộ phận ${label}`, { exact: true })).not.toHaveValue('')
+  }
+  await page.getByRole('button', { name: 'Tạm dừng', exact: true }).click()
+  await page.getByLabel('Bộ phận Tóc', { exact: true }).selectOption({ label: 'Tóc #1' })
+  await expect(page.locator('.layer-row').filter({ hasText: 'Tóc #1' })).toBeVisible()
+  const source = await page.locator('.inspector .path').last().textContent()
+  expect(source).toBe('part_char/imgver/x4/5_1')
+  const archive = await exportZip(page)
+  const composition = archive.json('character-composition.json')
+  expect(composition.layers.map(l => l.slot)).toEqual(['pants', 'shirt', 'head', 'eyes', 'hair'])
+  expect(composition.layers.find(l => l.slot === 'head')).toMatchObject({ x: -8, density: 4, provenance: 'packet-metadata' })
+  expect([-30, -30.5, -31]).toContain(composition.layers.find(l => l.slot === 'head').y)
+  expect(composition.layers.find(l => l.slot === 'eyes').provenance).toBe('editor-placeholder')
+  const frameData = archive.json('character.json')
+  expect(frameData.frames['part-0'].frame).toMatchObject({ w: 56, h: 52 })
+  expect(frameData.frames['part-1'].frame).toMatchObject({ w: 80, h: Math.ceil(40 * (6 - composition.preview.breath) / 6) })
+  await page.screenshot({ path: '/tmp/hso-complete-character.png', fullPage: true })
+  await page.getByRole('button', { name: 'Khôi phục nhân vật mẫu' }).click()
+  await expect(page.getByLabel('Bộ phận Tóc', { exact: true })).toHaveValue('part_char/imgver/x4/5_0')
+  expect(errors).toEqual([])
+})
+
+test('four directions animate, pause, step and export the selected mirrored pose', async ({ page }) => {
+  const errors = []
+  page.on('pageerror', error => errors.push(error.message))
+  await page.goto('/')
+  await expect(page.locator('.direction-views canvas')).toHaveCount(4, { timeout: 30000 })
+  await expect(page.getByRole('button', { name: 'Xem hướng Nhìn trước', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect.poll(async () => new Set(await page.locator('.direction-views canvas').evaluateAll(cs => cs.map(c => c.toDataURL()))).size).toBe(4)
+  await page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption('walk')
+  await expect(page.getByRole('button', { name: 'Tạm dừng', exact: true })).toBeVisible()
+  await expect.poll(async () => (await page.locator('.direction-views canvas').first().getAttribute('data-pose'))).not.toBe('0')
+  await page.getByRole('button', { name: 'Tạm dừng', exact: true }).click()
+  const paused = await page.locator('.frame-status').textContent()
+  await page.waitForTimeout(300)
+  await expect(page.locator('.frame-status')).toHaveText(paused)
+  await page.getByRole('button', { name: 'Frame tiếp →', exact: true }).click()
+  await expect(page.locator('.frame-status')).not.toHaveText(paused)
+  await page.getByRole('button', { name: 'Xem hướng Sang phải', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Xem hướng Sang phải', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  const archive = await exportZip(page)
+  const composition = archive.json('character-composition.json')
+  expect(composition.preview.direction).toBe('right')
+  expect(composition.preview.motion).toBe('walk')
+  expect(composition.layers.find(l => l.slot === 'head').flipX).toBe(true)
+  expect(composition.layers.find(l => l.slot === 'eyes').flipX).toBe(false)
+  await page.getByRole('button', { name: 'Xem hướng Nhìn sau', exact: true }).click()
+  await page.screenshot({ path: '/tmp/hso-character-directions.png', fullPage: true })
+  await page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption('idle')
+  await expect(page.getByRole('button', { name: 'Tạm dừng', exact: true })).toBeEnabled()
+  await expect(page.locator('.direction-views canvas').first()).toHaveAttribute('data-pose', '0')
+  expect(errors).toEqual([])
+})
+
+
+test('idle breathing animates pixels in every direction, pauses and steps without changing standing crops', async ({ page }) => {
+  await page.goto('/')
+  const canvases = page.locator('.direction-views canvas')
+  await expect(canvases).toHaveCount(4, { timeout: 30000 })
+  await page.getByRole('button', { name: 'Tạm dừng', exact: true }).click()
+  await page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption('walk')
+  await page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption('idle')
+  await page.getByRole('button', { name: 'Tạm dừng', exact: true }).click()
+  await expect(canvases.first()).toHaveAttribute('data-breath', '0')
+  const still = await canvases.evaluateAll(cs => cs.map(c => c.toDataURL()))
+  for (let i = 0; i < 2; i++) await page.getByRole('button', { name: 'Frame tiếp →', exact: true }).click()
+  await expect(canvases.first()).toHaveAttribute('data-breath', '-1')
+  await expect.poll(async () => canvases.evaluateAll(cs => cs.map(c => c.toDataURL()))).not.toEqual(still)
+  const raised = await canvases.evaluateAll(cs => cs.map(c => c.toDataURL()))
+  raised.forEach((image, i) => expect(image).not.toBe(still[i]))
+  await page.waitForTimeout(250)
+  expect(await canvases.evaluateAll(cs => cs.map(c => c.toDataURL()))).toEqual(raised)
+  await expect(canvases.first()).toHaveAttribute('data-pose', '0')
+  await page.getByRole('button', { name: 'Phát animation', exact: true }).click()
+  await expect.poll(async () => canvases.first().getAttribute('data-breath')).toBe('0')
+})
+
+
+test('draft ZIP shares the export name and blank names use the default', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: 'Xuất nháp (0)' })).toBeEnabled({ timeout: 30000 })
+  await page.getByLabel('Tên bản xuất', { exact: true }).fill('../Đồ thử: 01.zip')
+  const pending = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Xuất nháp (0)' }).click()
+  const download = await pending
+  expect(download.suggestedFilename()).toBe('do-thu-01-drafts.zip')
+  const entries = unzipSync(await fs.readFile(await download.path()))
+  expect(Object.keys(entries)).toEqual(['do-thu-01-drafts.json'])
+  expect(JSON.parse(strFromU8(entries['do-thu-01-drafts.json']))).toEqual({})
+  await page.getByLabel('Tên bản xuất', { exact: true }).fill('   ')
+  const archive = await exportZip(page)
+  expect(archive.name).toBe('character')
+})
+
+
+test('idle advances visually on each tick, exports half-pixel breathing and keeps chosen FPS across states', async ({ page }) => {
+  await page.goto('/')
+  const fps = page.getByLabel('Tốc độ animation', { exact: true })
+  await expect(fps).toHaveValue('8', { timeout: 30000 })
+  await page.getByRole('button', { name: 'Tạm dừng', exact: true }).click()
+  await fps.selectOption('4')
+  for (const state of ['walk', 'idle']) {
+    await page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption(state)
+    await expect(fps).toHaveValue('4')
+    await page.getByRole('button', { name: 'Tạm dừng', exact: true }).click()
+  }
+  const canvas = page.locator('.direction-views canvas').first()
+  const frames = []
+  for (const offset of ['0', '-0.5', '-1', '-0.5', '0']) {
+    await expect(canvas).toHaveAttribute('data-breath', offset)
+    const image = await canvas.evaluate(c => c.toDataURL())
+    const waistPixels = await canvas.evaluate(c => {
+      const alpha = c.getContext('2d').getImageData(306, 438, 12, 12).data
+      return Array.from(alpha).filter((_, index) => index % 4 === 3)
+    })
+    expect(waistPixels.every(alpha => alpha > 0)).toBe(true)
+    if (frames.length) expect(image).not.toBe(frames.at(-1))
+    frames.push(image)
+    await page.getByRole('button', { name: 'Frame tiếp →', exact: true }).click()
+  }
+  const archive = await exportZip(page)
+  const composition = archive.json('character-composition.json')
+  await page.screenshot({ path: '/tmp/hso-breath-waist.png', fullPage: true })
+  expect(composition.preview.breath).toBe(-0.5)
+  const atlas = archive.json('character.json')
+  expect(atlas.frames['part-1'].frame.h).toBe(44) // Physical atlas rounds up; scaleY retains the exact stretch.
+  const shirt = composition.layers.find(layer => layer.slot === 'shirt')
+  const height = atlas.frames['part-1'].frame.h * shirt.scaleY / shirt.density
+  expect(shirt.y + height * 0.6).toBeCloseTo(-8, 8) // Waist remains aligned with pants, despite arms below it.
+  expect(composition.layers.find(layer => layer.slot === 'head').y % 1).toBe(-0.5)
+})

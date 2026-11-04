@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Reproducible game catalog and PNG extraction
+public/game/
+__pycache__/
+playwright-report/
+test-results/
