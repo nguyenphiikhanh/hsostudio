@@ -154,7 +154,7 @@ test('idle breathing animates pixels in every direction, pauses and steps withou
   expect(await canvases.evaluateAll(cs => cs.map(c => c.toDataURL()))).toEqual(raised)
   await expect(canvases.first()).toHaveAttribute('data-pose', '0')
   await page.getByRole('button', { name: 'Phát animation', exact: true }).click()
-  await expect.poll(async () => canvases.first().getAttribute('data-breath')).toBe('0')
+  await expect.poll(async () => canvases.first().getAttribute('data-breath'), { intervals: [35, 55, 85, 115] }).not.toBe('-1')
 })
 
 

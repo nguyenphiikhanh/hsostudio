@@ -1,6 +1,6 @@
 // x1 sheets group 15 clothing rectangles as front/back/side × 5 poses.
 // The 24 anchor pairs group four directions × 6 poses. Walking uses poses 0–2;
-// poses 3–5 are intentionally excluded until the original client is available.
+// Crops 3–4 and anchors 3–5 are available only through explicitly experimental attack trials.
 export const DIRECTIONS = [
   { key: 'down', label: 'Nhìn trước', anchor: 0, group: 0, flipX: false },
   { key: 'up', label: 'Nhìn sau', anchor: 6, group: 1, flipX: false },
@@ -13,19 +13,20 @@ export const WALK_CYCLE = [0, 1, 0, 2]
 // Studio breathing: lift the head, stretch the shirt around the waist anchor, keep feet planted.
 export const IDLE_CYCLE = [0, -0.5, -1, -0.5]
 
-export function resolvePose(layers, directionKey = 'down', pose = 0, idleOffset = 0) {
+export function resolvePose(layers, directionKey = 'down', pose = 0, idleOffset = 0, options = {}) {
   const direction = DIRECTIONS.find(d => d.key === directionKey) || DIRECTIONS[0]
-  const step = Math.max(0, Math.min(2, pose))
+  const step = Math.max(0, Math.min(options.experimentalAttack ? 4 : 2, Math.trunc(pose)))
+  const anchorStep = options.experimentalAttack ? Math.max(0, Math.min(5, Math.trunc(options.anchorPose ?? step))) : step
   const resolved = layers.map(layer => {
     if (!layer.poseFrames?.length || !layer.poseOffsets?.length) return { ...layer }
     const index = layer.poseFrames.length === 15 ? direction.group * 5 + step : direction.group
     const frame = layer.poseFrames[index]
-    const offset = layer.poseOffsets[direction.anchor + step]
+    const offset = layer.poseOffsets[direction.anchor + anchorStep]
     if (!frame || !offset) return { ...layer }
     const [baseX, baseY] = layer.poseOffsets[0]
     return {
       ...layer,
-      ...(directionKey === 'down' && step === 0 ? {} : frame),
+      ...(directionKey === 'down' && step === 0 && !options.experimentalAttack ? {} : frame),
       x: offset[0] + layer.x - baseX,
       y: offset[1] + layer.y - baseY,
       flipX: direction.flipX,

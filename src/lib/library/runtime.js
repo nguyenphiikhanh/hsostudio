@@ -58,7 +58,7 @@ export class EquipmentCharacter {
   setState(state, direction = this.direction) {
     if (!this.animations[state]) throw new Error(`Unsupported state ${state}`)
     if (!this.manifest.directions.includes(direction)) throw new Error(`Unsupported direction ${direction}`)
-    if (state !== this.state) this.elapsed = 0
+    if (state !== this.state || this.animations[state].repeat === 0) this.elapsed = 0
     this.state = state
     this.direction = direction
     this.render()
@@ -87,7 +87,8 @@ export class EquipmentCharacter {
   }
   render() {
     const animation = this.animations[this.state]
-    const phase = animation.frames[Math.floor(this.elapsed * animation.fps / 1000) % animation.frames.length]
+    const tick = Math.floor(this.elapsed * animation.fps / 1000)
+    const phase = animation.frames[animation.repeat === 0 ? Math.min(tick, animation.frames.length - 1) : tick % animation.frames.length]
     const layers = this.manifest.slotOrder.filter(slot => this.outfit[slot]).map(slot => {
       const selection = this.outfit[slot], part = this.manifest.parts[selection.partKey]
       const [baseX, baseY] = part.offsets[0]
@@ -98,7 +99,7 @@ export class EquipmentCharacter {
         ...(part.offsets.length === 24 ? { poseFrames: part.frames.map(f => f.crop), poseOffsets: part.offsets } : {}),
       }
     })
-    const posed = resolvePose(layers, this.direction, phase.pose, phase.idleOffset)
+    const posed = resolvePose(layers, this.direction, phase.pose, phase.idleOffset, { experimentalAttack: animation.experimental === true, anchorPose: phase.anchorPose })
     for (const layer of posed) {
       const selection = this.outfit[layer.slot], part = this.manifest.parts[selection.partKey]
       const entry = layer.slot === 'eyes' && layer.w === 1 ? part.sideFrame

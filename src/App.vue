@@ -99,7 +99,7 @@ async function draw() {
   try {
     const images = await Promise.all(snapshot.map(l => loadImage(l.asset)))
     if (id !== renderId) return
-    paintLayers(ctx, resolvePose(snapshot, preview.value.direction, preview.value.pose, preview.value.breath ?? 0), images, 320, 240)
+    paintLayers(ctx, resolvePose(snapshot, preview.value.direction, preview.value.pose, preview.value.breath ?? 0, preview.value.attackOptions), images, 320, 240)
   } catch (e) { error.value = e.message }
 }
 async function exportDrafts() {
@@ -116,14 +116,14 @@ async function exportLibrary() {
   const snapshot = JSON.parse(JSON.stringify(layers.value))
   const draftSnapshot = JSON.parse(JSON.stringify(drafts.value))
   try {
-    const result = await exportPartLibrary(name, snapshot, draftSnapshot, message => { notice.value = message })
-    notice.value = `Đã tải ${exportFileName(name).slice(0, 72)}-library.zip: ${result.parts} thư mục part ưu tiên x4 (PNG + metadata + atlas riêng), ${result.items} trang bị có ánh xạ. Hỗ trợ đứng/đi 4 hướng; chưa có vũ khí, pet, thú cưỡi và tấn công.${result.omitted ? ' Xem character.omittedLayers cho các lớp/vùng cắt không được giữ lại.' : ''}`
+    const result = await exportPartLibrary(name, snapshot, draftSnapshot, message => { notice.value = message }, preview.value.attackTrial)
+    notice.value = `Đã tải ${exportFileName(name).slice(0, 72)}-library.zip: ${result.parts} thư mục part ưu tiên x4 (PNG + metadata + atlas riêng), ${result.items} trang bị có ánh xạ. Hỗ trợ đứng/đi 4 hướng; có chuỗi tấn công thử nghiệm từ pose gốc. Chưa gắn vũ khí, pet hoặc thú cưỡi.${result.omitted ? ' Xem character.omittedLayers cho các lớp/vùng cắt không được giữ lại.' : ''}`
   } catch (e) { error.value = e.message; notice.value = '' }
   finally { busy.value = false }
 }
 async function exportCharacter() {
   busy.value = true; error.value = ''
-  try { await exportAtlas(resolvePose(JSON.parse(JSON.stringify(layers.value)), preview.value.direction, preview.value.pose, preview.value.breath ?? 0), JSON.parse(JSON.stringify(drafts.value)), { ...preview.value }, exportName.value); notice.value = `Đã tải ${archiveName.value}.zip gồm PNG, atlas JSON, composition và mã mẫu Phaser. Bản xuất là tư thế đang xem.` }
+  try { await exportAtlas(resolvePose(JSON.parse(JSON.stringify(layers.value)), preview.value.direction, preview.value.pose, preview.value.breath ?? 0, preview.value.attackOptions), JSON.parse(JSON.stringify(drafts.value)), { ...preview.value }, exportName.value); notice.value = `Đã tải ${archiveName.value}.zip gồm PNG, atlas JSON, composition và mã mẫu Phaser. Bản xuất là tư thế đang xem.` }
   catch (e) { error.value = e.message }
   finally { busy.value = false }
 }

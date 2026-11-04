@@ -5,6 +5,7 @@ import sqlite3
 import struct
 import zlib
 from pathlib import Path
+from combat_catalog import prepare_combat
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'studio/public/game'
@@ -216,11 +217,12 @@ def main():
         if note:
             quality_notes.append({'slot': slot, 'partId': part_id, 'source': selected, 'density': density, 'reason': note})
     db.executemany('INSERT INTO character_textures VALUES (?,?,?,?,?,?)', textures)
+    combat_count = prepare_combat(db, ROOT / 'hso/data')
     db.execute('CREATE INDEX asset_source ON assets(source)')
     db.execute('CREATE INDEX asset_filter ON assets(category, zoom, status)')
     db.commit()
     assert db.execute('PRAGMA integrity_check').fetchone()[0] == 'ok'
-    report = {'tables': counts, 'assets': len(assets), 'decoded': sum(a[-1] == 'decoded' for a in assets), 'imageFiles': len(image_paths) + 1, 'characterParts': len(parts), 'characterX4': sum(t[4] == 4 for t in textures), 'qualityNotes': quality_notes}
+    report = {'tables': counts, 'assets': len(assets), 'decoded': sum(a[-1] == 'decoded' for a in assets), 'imageFiles': len(image_paths) + 1, 'characterParts': len(parts), 'characterX4': sum(t[4] == 4 for t in textures), 'qualityNotes': quality_notes, 'combatSkills': combat_count}
     (OUT / 'report.json').write_text(json.dumps(report, ensure_ascii=False, indent=2))
     db.close()
     print(json.dumps(report, ensure_ascii=False))

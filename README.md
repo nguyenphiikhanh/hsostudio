@@ -107,7 +107,7 @@ Package files:
 | `example.js` + `README.md` | Loader, Scene factory and usage instructions |
 | `drafts.json` | Current record drafts |
 
-This library supports head/hair/pants/shirt/helmet and the explicitly marked eye placeholder. Weapons, pets, mounts and attack animations are not included. Equipment mapping uses the same type/part convention as Studio; the consumer must enforce class and level restrictions. Raw atlas frames are retained, but only idle/walk animation sequences are defined. Custom crop edits are replaced by original frame crops, and manually assembled layers are omitted; inspect `character.omittedLayers`. Position adjustments on recognized parts are preserved. No MySQL/SQLite connection is needed in the consuming game.
+This library supports head/hair/pants/shirt/helmet and the explicitly marked eye placeholder. Weapons, pets and mounts are not equipped. An explicitly experimental body attack clip is included; its sequence, anchors and timing are not recovered client animation. Equipment mapping uses the same type/part convention as Studio; the consumer must enforce class and level restrictions. Raw atlas frames are retained, idle/walk are retained, with an opt-in experimental attack sequence. Custom crop edits are replaced by original frame crops, and manually assembled layers are omitted; inspect `character.omittedLayers`. Position adjustments on recognized parts are preserved. No MySQL/SQLite connection is needed in the consuming game.
 
 Browser verification exports and unzips the complete library, validates every frame reference, then uses the exported runtime and images in a real Phaser Scene to change parts/items, remove a helmet, mirror a side view, hide back-facing eyes and clean up listeners.
 
@@ -154,3 +154,16 @@ The included Node tool needs no installed packages. It checks slot/ID folder con
 Reload the consuming game, then use `character.equip('shirt', 9000)`. To expose it as an item, add an entry to `equipment.json` using `slot: 'shirt'` and `partKey: 'shirt-9000'`. The runtime uses the new part's frame/anchor tables even with `provenance: 'custom-design'`.
 
 The default example preloads all parts. For smaller load batches, `preloadLibrary(scene, baseUrl, manifest, ['shirt-0', 'pants-0', ...])` limits atlas requests to those keys. Preload a part before equipping it; the runtime rejects missing textures without changing the current outfit. All head/eye/hair dependencies needed by the outfit must also be loaded.
+
+## Attack investigation / thử nghiệm
+
+Select **Trạng thái → Tấn công · thử nghiệm**. Choose a class, server skill and skill level; inspect cooldown/range/typePaint/subEff/performDur and packet provenance. Pause/step the four directions and adjust pose A/B separately from anchor A/B. The default sequence `0 → 3 → 4 → 0` at 8 FPS is a trial built with original sprite crops; all classes share that trial until a class-specific mapping is verified. No generated weapon images, guessed effect mapping or hit events are added.
+
+`combat.json` in the library ZIP contains 84 server skill definitions from four original message-29 packets, with source/hash. `animations.json.states.attack` records the editable trial, class/skill context, `experimental: true` and `provenance: studio-trial`. Use the runtime bundled with the ZIP:
+
+```js
+character.setState('attack', 'left'); // one shot; call again to replay
+character.setState('idle', 'left');   // return to breathing
+```
+
+Cooldown data remains separate from animation timing. `performDur` is zero throughout the original packets; no original FPS is inferred from it. The H5 arena's sample combat is unchanged by this experiment. See [the evidence and binary format](docs/attack-investigation.md).

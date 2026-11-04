@@ -32,6 +32,10 @@ test('library ZIP contains all supported parts and runs equipment swapping in re
   expect(Object.keys(outfit.equipment)).toHaveLength(5)
   expect(Object.keys(equipment.items).length).toBeGreaterThan(100)
   expect(entries['runtime.js']).toBeTruthy()
+  const combat = json('combat.json')
+  expect(combat.classes).toHaveLength(4)
+  expect(combat.classes.map(profile => profile.skills[0].name)).toEqual(['Trọng kiếm', 'Đoản kiếm', 'Gậy tự vệ', 'Bắn thường'])
+  expect(json('animations.json').states.attack).toMatchObject({ experimental: true, provenance: 'studio-trial', repeat: 0 })
   expect(entries['example.js']).toBeTruthy()
   expect(Object.keys(entries).some(path => path.startsWith('original-assets/'))).toBe(false)
   const atlases = new Map()
@@ -126,10 +130,22 @@ test('library ZIP contains all supported parts and runs equipment swapping in re
     character.render()
     const breathingHem = top.y + top.displayHeight * waistFraction
     const breathingLift = top.scaleY > top.scaleX
+    character.setState('attack', 'left')
+    character.elapsed = 125
+    character.render()
+    const attackA = character.images.get('shirt').frame.name
+    character.elapsed = 250
+    character.render()
+    const attackB = character.images.get('shirt').frame.name
+    character.elapsed = 10000
+    character.render()
+    const attackEnd = character.images.get('shirt').frame.name
+    character.setState('attack', 'left')
+    const replayed = character.elapsed === 0
     const before = scene.events.listenerCount('update')
     character.destroy()
     const cleaned = scene.events.listenerCount('update') === before - 1
-    return { swapped, custom, itemKey, expectedItem: item.partKey, rejected, preserved, helmet, removed, hiddenEyes, cleaned, hem, breathingHem, breathingLift }
+    return { swapped, custom, itemKey, expectedItem: item.partKey, rejected, preserved, helmet, removed, hiddenEyes, cleaned, hem, breathingHem, breathingLift, attackA, attackB, attackEnd, replayed }
   })
   expect(result.swapped.name).toBe('shirt-1-frame-11')
   expect(result.swapped.flip).toBe(true)
@@ -139,6 +155,10 @@ test('library ZIP contains all supported parts and runs equipment swapping in re
   expect(result.itemKey).toBe(result.expectedItem)
   expect(result.breathingHem).toBeCloseTo(result.hem, 8)
   expect(result.breathingLift).toBe(true)
+  expect(result.attackA).toMatch(/frame-13$/)
+  expect(result.attackB).toMatch(/frame-14$/)
+  expect(result.attackEnd).toMatch(/frame-10$/)
+  expect(result.replayed).toBe(true)
   for (const key of ['rejected', 'preserved', 'helmet', 'removed', 'hiddenEyes', 'cleaned']) expect(result[key]).toBe(true)
   expect(await page.evaluate(() => window.libraryError)).toBeUndefined()
   expect(errors).toEqual([])

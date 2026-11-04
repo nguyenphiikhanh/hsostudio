@@ -34,3 +34,6 @@ The header offers a separate “Xuất thư viện part” action alongside the 
 
 ## Character texture quality
 Prefer original x4 PNGs for character previews and library export. Keep positions/crops in logical x1 units and convert crops to physical texture pixels using per-part density. Canvas backing resolution is four times its logical size. Display an explicit reason for each x1 fallback; never call a mislabeled or enlarged x1 sheet original x4 art. Retain the independent v1 part folders.
+
+## Attack investigation preview
+Use the existing animation state selector for “Tấn công · thử nghiệm”. An inline panel above the four direction canvases shows class/skill/level selectors and original server fields with packet provenance. Separate pose and anchor selectors expose the unverified crop-to-anchor binding. Keep the existing colors, spacing, labeled inputs and FPS/pause/step controls. Always distinguish original sprite crops from the trial sequence and timing; no generated weapon art or guessed effect binding. Changing class changes server evidence, not a claim of a recovered class-specific animation.

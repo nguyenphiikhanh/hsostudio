@@ -10,7 +10,8 @@
     "prepare:game": "python3 scripts/prepare_catalog.py",
     "test:e2e": "playwright test",
     "test:poses": "node --test tests/characterPose.test.js",
-    "test:x4": "node --test tests/x4.test.js"
+    "test:x4": "node --test tests/x4.test.js",
+    "test:attack": "node --test tests/attackTrial.test.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.4",
