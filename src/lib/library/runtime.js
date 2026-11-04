@@ -99,7 +99,7 @@ export class EquipmentCharacter {
         ...(part.offsets.length === 24 ? { poseFrames: part.frames.map(f => f.crop), poseOffsets: part.offsets } : {}),
       }
     })
-    const posed = resolvePose(layers, this.direction, phase.pose, phase.idleOffset, { experimentalAttack: animation.experimental === true, anchorPose: phase.anchorPose })
+    const posed = resolvePose(layers, this.direction, phase.pose, phase.idleOffset, { experimentalAttack: animation.experimental === true, anchorPose: phase.anchorPose, clientBodyFrame: phase.clientBodyFrame })
     for (const layer of posed) {
       const selection = this.outfit[layer.slot], part = this.manifest.parts[selection.partKey]
       const entry = layer.slot === 'eyes' && layer.w === 1 ? part.sideFrame

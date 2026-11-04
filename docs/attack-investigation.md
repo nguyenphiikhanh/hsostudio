@@ -50,7 +50,7 @@ Các packet ảnh x4 `50_*`, `51_*`, `52_*`, `53_*` có 25 PNG mỗi họ và 32
 - Tắt thở khi thử tấn công; không áp dụng hiệu ứng giãn áo của idle vào đòn đánh.
 - ZIP v1 có `animations.states.attack` với `experimental: true`, `provenance: studio-trial`, `repeat: 0`, clazz/skill ID và cấu hình crop/anchor. `combat.json` chứa dữ liệu server và nguồn/hash.
 - Phaser runtime chỉ bật crop mở rộng khi clip mang cờ experimental. `setState('attack', direction)` phát một lần, giữ pose cuối trung tính; gọi lại để phát lại, gọi `setState('idle')` để quay về thở.
-- Không gắn vũ khí, không dựng hiệu ứng, không có hit event, không dùng cooldown để đoán FPS. Bản H5 arena vẫn dùng cơ chế đánh mẫu trước đó; bản thử này dành cho kiểm tra Studio và runtime thư viện.
+- Panel bộ phận chỉ đối chiếu vật phẩm vũ khí thật theo phái/cấp/slot; không dựng sheet lên nhân vật khi ánh xạ texture hoặc điểm cầm chưa xác minh. Không dựng hiệu ứng, không có hit event, không dùng cooldown để đoán FPS. Bản H5 arena vẫn dùng cơ chế đánh mẫu trước đó; bản thử này dành cho kiểm tra Studio và runtime thư viện.
 
 ## 5. Cách thử
 

@@ -1,9 +1,11 @@
 <script setup>
 import { computed, onMounted } from 'vue'
+import WeaponControls from './WeaponControls.vue'
+import { query } from '../lib/catalog'
 import { characterParts } from '../lib/characterParts'
 
-const props = defineProps({ layers: { type: Array, required: true } })
-const emit = defineEmits(['update', 'focus'])
+const props = defineProps({ layers: { type: Array, required: true }, clazz: { type: Number, default: 0 } })
+const emit = defineEmits(['update', 'focus', 'update:clazz'])
 const slots = [
   { key: 'pants', label: 'Quần', required: true },
   { key: 'shirt', label: 'Áo', required: true },
@@ -13,6 +15,12 @@ const slots = [
   { key: 'helmet', label: 'Mũ', required: false },
 ]
 const parts = characterParts()
+const classes = query('SELECT * FROM combat_classes ORDER BY id')
+function updateWeapon(weapon) {
+  const next = props.layers.filter(layer => layer.slot !== 'weapon')
+  if (weapon) next.push(weapon)
+  emit('update', next)
+}
 const options = slot => parts.filter(p => p.slot === slot)
 const selected = slot => props.layers.find(l => l.slot === slot)?.asset.id || ''
 const complete = computed(() => slots.filter(s => s.required).every(s => props.layers.some(l => l.slot === s.key)))
@@ -46,7 +54,9 @@ onMounted(() => { if (!props.layers.length) reset() })
 <template>
   <div class="preset-panel">
     <div class="section-heading"><div><p class="eyebrow">NHÂN VẬT MẪU · BỘ PHẬN</p><h2>{{ complete ? 'Thay bộ phận trực tiếp trên nhân vật' : 'Chọn đủ đầu, áo và quần để ghép nhân vật' }}</h2></div><button @click="reset">Khôi phục nhân vật mẫu</button></div>
+    <label class="field">Phái nhân vật<select :value="clazz" aria-label="Phái nhân vật" @change="emit('update:clazz', Number($event.target.value))"><option v-for="profile in classes" :key="profile.id" :value="profile.id">{{ profile.label }} · {{ profile.weapon_label }} (type {{ profile.weapon_type }})</option></select></label>
     <div class="part-selectors"><label v-for="slot in slots" :key="slot.key" class="field">{{ slot.label }}<select :value="selected(slot.key)" :aria-label="`Bộ phận ${slot.label}`" @change="change(slot.key, $event.target.value)"><option value="">{{ slot.required ? 'Chưa chọn' : 'Không dùng' }}</option><option v-for="part in options(slot.key)" :key="part.id" :value="part.id">{{ part.label }}</option></select></label></div>
+    <WeaponControls :clazz="clazz" @weapon="updateWeapon"/>
     <p v-for="l in layers.filter(l => l.qualityNote)" :key="l.slot" class="muted">{{ l.name }}: {{ l.qualityNote }}</p>
     <p class="muted">Ưu tiên PNG x4 và metadata riêng của x4; tọa độ chỉnh sửa dùng đơn vị x1. Chọn hướng và trạng thái ở bên dưới. Mắt gốc type 4 bị trống trong bộ dữ liệu; mắt preview là hình thay thế của Studio.</p>
   </div>

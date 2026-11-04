@@ -37,3 +37,9 @@ Prefer original x4 PNGs for character previews and library export. Keep position
 
 ## Attack investigation preview
 Use the existing animation state selector for “Tấn công · thử nghiệm”. An inline panel above the four direction canvases shows class/skill/level selectors and original server fields with packet provenance. Separate pose and anchor selectors expose the unverified crop-to-anchor binding. Keep the existing colors, spacing, labeled inputs and FPS/pause/step controls. Always distinguish original sprite crops from the trial sequence and timing; no generated weapon art or guessed effect binding. Changing class changes server evidence, not a claim of a recovered class-specific animation.
+
+## Verified weapon equipment records
+Keep the class selector synchronized with the attack lab. Show actual item3 weapon templates filtered by class, with a character-level check. Separate ordinary weapons (types 8–11, wear[0]) from cosmetic weapons (type 24, wear[17]). Show original item IDs, part IDs and verified cosmetic appearance ID (part+41). Do not offer sheet families as equippable items, editable hand offsets or guessed direction groups. Explicitly state that rendering remains unavailable until the item-to-texture and binding mappings are verified. Selecting a record adds no rendered layer or exported sprite.
+
+## Client-verified ordinary weapon rendering
+Actual item selection drives a verified 4.0.3 renderer, not editable arbitrary sheet bindings. Basic attack with a selected ordinary weapon has a visible client/version badge, fixed 25FPS and original WPS frames; hide manual pose controls in that mode. Other skills remain marked trial and do not draw unverified weapons. Display WPS x1 quality explicitly. Cosmetic weapon selection remains metadata-only. Keep provenance/version and export limitations visible.

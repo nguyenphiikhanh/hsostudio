@@ -1,6 +1,6 @@
 import { gameUrl, query } from './catalog'
 import { downloadZip, exportFileName } from './export'
-import { DIRECTIONS, IDLE_CYCLE, WALK_CYCLE, IDLE_FPS, WALK_FPS } from './characterPose'
+import { DIRECTIONS, IDLE_CYCLE, WALK_CYCLE, IDLE_FPS, WALK_FPS, clientBasicClip } from './characterPose'
 import poseSource from './characterPose.js?raw'
 import runtimeSource from './library/runtime.js?raw'
 import schemaSource from './library/partSchema.js?raw'
@@ -17,7 +17,7 @@ export async function exportPartLibrary(requestedName, layers, drafts, progress 
   const name = `${exportFileName(requestedName).slice(0, 72)}-library`
   const rows = characterParts()
   const combat = combatCatalog()
-  const trial = createAttackTrial(requestedTrial)
+  const trial = requestedTrial.clientBasic ? clientBasicClip(requestedTrial.clazz) : createAttackTrial(requestedTrial)
   if (!combat.classes.some(profile => profile.id === trial.clazz && profile.skills.some(skill => skill.id === trial.skillId))) throw new Error('Attack trial references an unknown server skill')
   if (!rows.length) throw new Error('Catalog chưa có part đã giải mã.')
   const manifest = { version: 1, name, resolution: 'x4', coordinateUnits: 'x1', qualityNotes: rows.filter(row => row.quality_note).map(row => ({ slot: row.slot, partId: row.part_id, source: row.source, density: row.density, reason: row.quality_note })), layout: 'per-part-folders', slotOrder: SLOT_ORDER, directions: DIRECTIONS.map(d => d.key), atlases: [], parts: {}, limitations: ['Đứng yên là hiệu ứng thở của Studio.', 'Di chuyển suy ra từ sprite, chưa đối chiếu client gốc.', 'Chưa gắn vũ khí, pet hoặc thú cưỡi; tấn công là chuỗi thử nghiệm, không phải animation gốc đã xác minh.', 'Mắt preview thay thế dữ liệu mắt gốc bị rỗng.', 'Ưu tiên PNG/metadata x4; vị trí và frame trong part.json dùng đơn vị x1; không xuất vùng cắt thủ công.'] }

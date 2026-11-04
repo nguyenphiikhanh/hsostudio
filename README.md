@@ -167,3 +167,19 @@ character.setState('idle', 'left');   // return to breathing
 ```
 
 Cooldown data remains separate from animation timing. `performDur` is zero throughout the original packets; no original FPS is inferred from it. The H5 arena's sample combat is unchanged by this experiment. See [the evidence and binary format](docs/attack-investigation.md).
+
+## HSO weapon preview: verified against client 4.0.3
+
+Select an actual item in **Vũ khí thường HSO**. Class/level rules come from the server, and texture selection now follows the verified client chain `wear[0].part → type=50+clazz, id=part`. There are 96 mapped (class,part) appearances corresponding to real item templates; the raw 100 sheets are not a universal equipment list.
+
+Select **Tấn công** and **skill #0** to see the original WPS attack sprites: client body frames4/5, WPS frames4–7, 40ms ticks / 25FPS. FPS and pose A/B editing are disabled in this verified basic mode. Other skills remain explicitly experimental and hide the weapon while unverified. Cosmetic weapon records still have no visual renderer.
+
+The official Java client was obtained via [Gomobi's JAVA link](https://gomobi.vn/home/game/Knight-Age-7.html). A pinned 4.0.3 reference validates 72 server PNGs and 72 metadata tails byte for byte. Four original WPS x1 sheets are included in `reference/hso403`; they are not presented as HD. Run `npm run prepare:game` after updating and reload Studio.
+
+Single-pose export includes the weapon/WPS currently shown. The reusable part library retains body-only equipment support and records the omitted weapon layer; its selected basic body clip carries client provenance, hash and 25FPS. [Verification details and scope](docs/client403-verification.md).
+
+## WPS image loading during development
+
+The `jar:x1/wps/...` string identifies the original JAR resource; the browser loads an extracted PNG such as `/game/client403/wps-0.png`. To refresh from the local original JAR, run `python3 scripts/import_client403.py KnightOnline_v403.jar` and `npm run prepare:game` from the app folder.
+
+`public/game` remains excluded from file watchers to avoid watching 20k+ files. The Vite game-asset middleware reads the actual files rather than Vite's startup public-file snapshot, so newly extracted PNGs are immediately available. Missing game files return 404 instead of SPA HTML. After updating `vite.config.js`, restart the Studio server once; production/preview builds still need rebuilding to copy new public assets into dist.

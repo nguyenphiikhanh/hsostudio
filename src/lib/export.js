@@ -26,12 +26,14 @@ export async function downloadZip(name, files) {
 }
 const imageCache = new Map()
 export function loadImage(asset) {
+  if (!asset?.image || asset.image.startsWith('jar:')) return Promise.reject(new Error('Thiếu đường dẫn PNG đã trích xuất. Chạy npm run prepare:game rồi tải lại Studio.'))
+  const url = gameUrl(asset.image)
   if (imageCache.has(asset.image)) return imageCache.get(asset.image)
   const pending = new Promise((resolve, reject) => {
     const img = new Image()
     img.onload = () => resolve(img)
-    img.onerror = () => { imageCache.delete(asset.image); reject(new Error(`Không tải được ảnh ${asset.source}`)) }
-    img.src = gameUrl(asset.image)
+    img.onerror = () => { imageCache.delete(asset.image); reject(new Error(`Không tải được PNG ${url} (nguồn: ${asset.source}). Chạy npm run prepare:game; nếu dùng bản build, hãy build lại.`)) }
+    img.src = url
   })
   imageCache.set(asset.image, pending)
   return pending
@@ -65,7 +67,7 @@ export async function exportAtlas(layers, drafts, preview = null, requestedName 
     ctx.drawImage(images[i], layer.sx * sourceDensity, layer.sy * sourceDensity, layer.w * sourceDensity, layer.h * sourceDensity, 2, top, layer.w * density, packedHeight)
     frames[key] = { frame: { x: 2, y: top, w: layer.w * density, h: packedHeight }, rotated: false, trimmed: false,
       spriteSourceSize: { x: 0, y: 0, w: layer.w * density, h: packedHeight }, sourceSize: { w: layer.w * density, h: packedHeight } }
-    composition.push({ frame: key, density, scaleY: displayHeight * density / packedHeight, name: layer.name, source: layer.asset.source, slot: layer.slot ?? null, partId: layer.partId ?? null, provenance: layer.provenance ?? 'manual-crop', x: layer.x, y: layer.y, depth: i, visible: layer.visible, flipX: Boolean(layer.flipX) })
+    composition.push({ frame: key, density, scaleY: displayHeight * density / packedHeight, name: layer.name, source: layer.asset.source, slot: layer.slot ?? null, partId: layer.partId ?? null, provenance: layer.provenance ?? 'manual-crop', x: layer.x, y: layer.y, depth: layer.slot === 'weapon' && layer.clientWeapon ? (layer.renderFront ? layers.length : -1) : i, visible: layer.visible, flipX: Boolean(layer.flipX) })
     top += packedHeight + 4
   })
   const png = await new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Không tạo được PNG.'))))
@@ -75,7 +77,7 @@ export async function exportAtlas(layers, drafts, preview = null, requestedName 
   await downloadZip(name, {
     [`${name}.png`]: png,
     [`${name}.json`]: { frames, meta: { app: 'HSO Studio', image: `${name}.png`, format: 'RGBA8888', size: { w: width, h: height }, scale: '1' } },
-    [`${compositionName}.json`]: { version: 1, name, texture: name, origin: [0, 0], layers: composition, drafts, preview, animations: [], animationStatus: 'Xuất tư thế đang xem, chưa xuất toàn bộ chu kỳ animation. Part mẫu dùng metadata; chu kỳ preview suy ra từ hình ảnh. Mắt preview là ảnh thay thế của Studio.' },
+    [`${compositionName}.json`]: { version: 1, name, texture: name, origin: [0, 0], layers: composition.sort((a, b) => a.depth - b.depth), drafts, preview, animations: [], animationStatus: 'Xuất tư thế đang xem, chưa xuất toàn bộ chu kỳ animation. Part mẫu dùng metadata; chu kỳ preview suy ra từ hình ảnh. Mắt preview là ảnh thay thế của Studio.' },
     [`load-${name}.js`]: snippet,
   })
 }

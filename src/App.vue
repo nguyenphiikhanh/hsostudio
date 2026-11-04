@@ -14,6 +14,7 @@ function openGame() { gameLayers.value = JSON.parse(JSON.stringify(layers.value)
 const tables = [ ['assets', 'Tài nguyên'], ['mobs', 'Quái vật'], ['item3', 'Trang bị'], ['item4', 'Vật phẩm 4'], ['item5', 'Vật phẩm 5'], ['item7', 'Vật phẩm 7'], ['fashiontemplate', 'Thời trang'], ['skills', 'Kỹ năng'], ['maps', 'Bản đồ'], ['pet', 'Thú cưng'] ]
 const ready = ref(false), error = ref(''), busy = ref(false), table = ref('assets'), search = ref(''), category = ref('part_char'), zoom = ref('x1'), decoded = ref(true), page = ref(0)
 const rows = ref([]), total = ref(0), selected = ref(null), draft = ref({}), drafts = ref({}), asset = ref(null), report = ref(null)
+const characterClass = ref(0)
 const layers = ref([]), activeLayer = ref(-1), canvas = ref(null), stage = ref(null), scale = ref(6), notice = ref(''), categories = ref([])
 const preview = ref({ direction: 'down', motion: 'idle', pose: 0 })
 const exportName = ref('character')
@@ -97,9 +98,10 @@ async function draw() {
   ctx.stroke()
   const snapshot = layers.value.map(l => ({ ...l, asset: { ...l.asset } }))
   try {
-    const images = await Promise.all(snapshot.map(l => loadImage(l.asset)))
+    const posed = resolvePose(snapshot, preview.value.direction, preview.value.pose, preview.value.breath ?? 0, preview.value.attackOptions)
+    const images = await Promise.all(posed.map(l => loadImage(l.asset)))
     if (id !== renderId) return
-    paintLayers(ctx, resolvePose(snapshot, preview.value.direction, preview.value.pose, preview.value.breath ?? 0, preview.value.attackOptions), images, 320, 240)
+    paintLayers(ctx, posed, images, 320, 240)
   } catch (e) { error.value = e.message }
 }
 async function exportDrafts() {
@@ -117,7 +119,7 @@ async function exportLibrary() {
   const draftSnapshot = JSON.parse(JSON.stringify(drafts.value))
   try {
     const result = await exportPartLibrary(name, snapshot, draftSnapshot, message => { notice.value = message }, preview.value.attackTrial)
-    notice.value = `Đã tải ${exportFileName(name).slice(0, 72)}-library.zip: ${result.parts} thư mục part ưu tiên x4 (PNG + metadata + atlas riêng), ${result.items} trang bị có ánh xạ. Hỗ trợ đứng/đi 4 hướng; có chuỗi tấn công thử nghiệm từ pose gốc. Chưa gắn vũ khí, pet hoặc thú cưỡi.${result.omitted ? ' Xem character.omittedLayers cho các lớp/vùng cắt không được giữ lại.' : ''}`
+    notice.value = `Đã tải ${exportFileName(name).slice(0, 72)}-library.zip: ${result.parts} thư mục part ưu tiên x4 (PNG + metadata + atlas riêng), ${result.items} trang bị có ánh xạ. Hỗ trợ đứng/đi 4 hướng; có clip tấn công kèm provenance trong animations.json. Runtime thư viện chỉ equip part cơ thể; vũ khí preview, pet và thú cưỡi chưa được equip trong gói này.${result.omitted ? ' Xem character.omittedLayers cho các lớp/vùng cắt không được giữ lại.' : ''}`
   } catch (e) { error.value = e.message; notice.value = '' }
   finally { busy.value = false }
 }
@@ -155,7 +157,7 @@ onMounted(async () => {
         <aside class="sidebar"><p class="eyebrow">DỮ LIỆU GAME</p><nav aria-label="Danh mục"><button v-for="[key, label] in tables" :key="key" :class="{ active: table === key }" @click="changeTable(key)">{{ label }}<small>{{ key === 'assets' ? report.assets : report.tables[key] }}</small></button></nav><div class="source-info"><span class="dot"></span> SQLite · chỉ đọc<p>{{ report.decoded.toLocaleString() }} ảnh giải mã</p><p>{{ report.assets - report.decoded }} mục chưa giải mã</p><a :href="gameUrl('catalog.sqlite')" download>Tải catalog.sqlite ↓</a></div></aside>
         <main>
           <div class="section-heading"><div><p class="eyebrow">THƯ VIỆN / {{ table }}</p><h1>{{ title }}</h1></div><span>{{ total.toLocaleString() }} kết quả</span></div>
-          <section class="composer"><div class="section-heading"><div><p class="eyebrow">CHARACTER LAB</p><h2>Nhân vật hoàn chỉnh</h2></div><label>Zoom <select v-model="scale"><option :value="1">1×</option><option :value="2">2×</option><option :value="3">3×</option><option :value="4">4×</option><option :value="6">6×</option><option :value="8">8×</option></select></label></div><div class="character-workspace"><CharacterPreset :layers="layers" @update="updateCharacter" @focus="activeLayer = $event"/><div class="character-preview"><div class="composer-actions"><span class="muted">Gốc tọa độ tại bàn chân. Có thể tinh chỉnh từng lớp trong Inspector.</span><button @click="clearCharacter">Xóa các lớp</button></div><div ref="stage" class="stage checker"><canvas ref="canvas" width="2560" height="1920" :style="{ width: `${640 * scale}px`, height: `${480 * scale}px` }" aria-label="Bản xem trước các lớp nhân vật"></canvas><span v-if="!layers.length" class="stage-empty">Thêm part từ thư viện để bắt đầu</span></div></div></div><CharacterAnimation :layers="layers" @update="preview = $event" @error="error = $event"/></section>
+          <section class="composer"><div class="section-heading"><div><p class="eyebrow">CHARACTER LAB</p><h2>Nhân vật hoàn chỉnh</h2></div><label>Zoom <select v-model="scale"><option :value="1">1×</option><option :value="2">2×</option><option :value="3">3×</option><option :value="4">4×</option><option :value="6">6×</option><option :value="8">8×</option></select></label></div><div class="character-workspace"><CharacterPreset :layers="layers" v-model:clazz="characterClass" @update="updateCharacter" @focus="activeLayer = $event"/><div class="character-preview"><div class="composer-actions"><span class="muted">Gốc tọa độ tại bàn chân. Có thể tinh chỉnh từng lớp trong Inspector.</span><button @click="clearCharacter">Xóa các lớp</button></div><div ref="stage" class="stage checker"><canvas ref="canvas" width="2560" height="1920" :style="{ width: `${640 * scale}px`, height: `${480 * scale}px` }" aria-label="Bản xem trước các lớp nhân vật"></canvas><span v-if="!layers.length" class="stage-empty">Thêm part từ thư viện để bắt đầu</span></div></div></div><CharacterAnimation :layers="layers" v-model:clazz="characterClass" @update="preview = $event" @error="error = $event"/></section>
           <div class="filters"><input v-model="search" aria-label="Tìm theo tên hoặc ID" placeholder="Tìm tên, đường dẫn hoặc ID…"><template v-if="table === 'assets'"><select v-model="category" aria-label="Loại asset"><option value="">Mọi loại</option><option v-for="c in categories" :key="c">{{ c }}</option></select><select v-model="zoom" aria-label="Độ phân giải"><option value="">Mọi độ phân giải</option><option v-for="z in ['x1','x2','x3','x4']" :key="z">{{ z }}</option></select><label class="inline"><input v-model="decoded" type="checkbox"> Có ảnh</label></template></div>
           <div class="gallery"><button v-for="row in rows" :key="row.id" class="asset-card" :class="{ chosen: selected?.id === row.id }" @click="select(row)"><div class="thumbnail checker"><img v-if="imageAsset(row, table)?.image" :src="gameUrl(imageAsset(row, table).image)" alt="" loading="lazy"><span v-else>{{ table === 'mobs' ? 'MOB' : 'DATA' }}</span></div><strong :title="row.name || row.source">{{ row.name || row.source }}</strong><small>{{ table === 'assets' ? `${row.width} × ${row.height} · ${row.status}` : `#${row.id}${row.level != null ? ' · Lv.' + row.level : ''}` }}</small></button></div>
           <p v-if="!rows.length" class="empty">Không có kết quả phù hợp bộ lọc.</p>

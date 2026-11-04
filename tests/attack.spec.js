@@ -10,6 +10,9 @@ test('trial attack uses original extra poses in four directions and shows actual
   await expect(motion).toBeVisible({ timeout: 30000 })
   await motion.selectOption('attack')
   await page.getByRole('button', { name: 'Tạm dừng', exact: true }).click()
+  // Reset the paused trial explicitly; autoplay may already have advanced under load.
+  await page.getByLabel('Pose tấn công A', { exact: true }).selectOption('4')
+  await page.getByLabel('Pose tấn công A', { exact: true }).selectOption('3')
   await expect(page.getByLabel('Đối chiếu tấn công')).toBeVisible()
   const canvases = page.locator('.direction-views canvas')
   await expect(canvases.first()).toHaveAttribute('data-pose', '0')
