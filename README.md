@@ -170,11 +170,11 @@ Cooldown data remains separate from animation timing. `performDur` is zero throu
 
 Select an actual item in **Vũ khí thường HSO**. Class/level rules come from the server, and texture selection now follows the verified client chain `wear[0].part → type=50+clazz, id=part`. There are 96 mapped (class,part) appearances corresponding to real item templates; the raw 100 sheets are not a universal equipment list.
 
-Select **Tấn công** and **skill #0** to see the original WPS attack sprites: client body frames4/5, WPS frames4–7, 40ms ticks / 25FPS. FPS and pose A/B editing are disabled in this verified basic mode. Skill #1 is also restored for all four classes, including the primary effect in a target preview. Skills #2 onward remain explicitly experimental and hide the weapon while unverified. Cosmetic weapon records still have no visual renderer.
+Select **Tấn công** and **skill #0** to see the original WPS attack sprites: client body frames4/5, WPS frames4–7, 40ms ticks / 25FPS. FPS and pose A/B editing are disabled in this verified basic mode. Skills #1 and #2 are restored for all four classes, including their class-specific effects in a target preview. Skills #3 onward remain experimental and hide the weapon while unverified. Cosmetic weapon records still have no visual renderer.
 
 The official Java client was obtained via [Gomobi's JAVA link](https://gomobi.vn/home/game/Knight-Age-7.html). A pinned 4.0.3 reference validates 72 server PNGs and 72 metadata tails byte for byte. Four original WPS x1 sheets are included in `reference/hso403`; they are not presented as HD.
 
-Single-pose export includes the weapon/WPS currently shown. The reusable part library retains body-only equipment support and records the omitted weapon layer; its selected #0/#1 body clip carries client provenance, hash and 25FPS. [Verification details and scope](docs/client403-verification.md).
+Single-pose export includes the weapon/WPS currently shown. The reusable part library retains body-only equipment support and records the omitted weapon layer; selected #0/#1/#2 body clips carry client provenance, hash and 25FPS. [Verification details and scope](docs/client403-verification.md).
 
 ## WPS image loading during development
 
@@ -194,5 +194,18 @@ Chọn **Phái nhân vật** và một **Vũ khí thường HSO** hợp lệ, ch
 | Xạ thủ | Phát súng công phá | 19 | 23 | 4 |
 
 PNG hiệu ứng lấy nguyên từ packet server `110_17/24/47/51/53/60`, dùng x4 sau kiểm tra kích thước. Không vẽ lại asset. Khung viền là mục tiêu kiểm tra cao 40, cách 40 hoặc 100 logical units; không phải quái gốc. Hạt/đạn ngẫu nhiên dùng seed cố định, không khẳng định trùng từng mẫu RNG Java. Một vòng xem dài 32 tick do Studio chọn để thấy hiệu ứng kết thúc; timeline thân gốc dài 11 tick (ba phái đầu) hoặc 15 tick (xạ thủ), sau đó giữ đứng yên. Đây không phải cooldown.
+
+## Preview chiêu #2
+
+Chọn **Kỹ năng server → #2** cùng vũ khí thường để xem chiêu theo phái: Hỏa kiếm, Độc kiếm, Đá tuyết hoặc Phóng điện. Body/WPS timeline và thời điểm hiệu ứng lấy từ client 4.0.3; sprite sheet x4 được kiểm tra hash và frame geometry trong `reference/hso403/client.json`.
+
+| Phái | Chiêu #2 | Internal skill | Effect | Tick phát hiệu ứng | Sprite client |
+|---|---|---:|---:|---:|---|
+| Chiến binh | Hỏa kiếm | 41 | 52 | 9 | `110_83`, `110_68` |
+| Sát thủ | Độc kiếm | 36 | 46 | 9 | `110_70`, `110_72` |
+| Pháp sư | Đá tuyết | 20 | 25 | 9 | `110_57`, `110_3` |
+| Xạ thủ | Phóng điện | 18 | 22 | 4 | `110_74` |
+
+Preview phát lại một mục tiêu đứng yên qua bốn hướng. Hạt ngẫu nhiên, sát thương, âm thanh, cooldown và mục tiêu di chuyển chưa được mô phỏng; clip thư viện part chỉ giữ timeline cơ thể.
 
 Phạm vi hiện tại: thân, WPS, hiệu ứng chính và nổ đạn. Chưa có tia tụ lực trước đòn, bụi đá/rung màn hình, tương tác nước, sát thương và âm thanh. Hiệu ứng nằm trong khung preview riêng; xuất tư thế vẫn lấy nhân vật/vũ khí, thư viện part xuất timeline thân #1 nhưng không đóng gói hiệu ứng/weapon runtime. Tải lại trang sau khi thay đổi dữ liệu hoặc giao diện.

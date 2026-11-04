@@ -1743,5 +1743,151 @@
       "ImageEffect.getEffectImgFromRMS",
       "FrameImage.drawFrameEffectSkill"
     ]
+  },
+  "skillTwo": {
+    "internalIds": [
+      41,
+      36,
+      20,
+      18
+    ],
+    "rawPlashTypes": [
+      1,
+      1,
+      1,
+      16
+    ],
+    "plashTypes": [
+      1,
+      1,
+      1,
+      8
+    ],
+    "frameCounts": [
+      9,
+      9,
+      9,
+      4
+    ],
+    "effectTicks": [
+      9,
+      9,
+      9,
+      4
+    ],
+    "effectIds": [
+      52,
+      46,
+      25,
+      22
+    ],
+    "effectTextures": {
+      "0": [
+        83,
+        68
+      ],
+      "1": [
+        70,
+        72
+      ],
+      "2": [
+        57,
+        3
+      ],
+      "3": [
+        74
+      ]
+    },
+    "textures": {
+      "3": {
+        "source": "part_char/imgver/x4/110_3",
+        "image": "fx-3.png",
+        "width": 80,
+        "height": 320,
+        "density": 4,
+        "frameWidth": 20,
+        "frameHeight": 20,
+        "nFrame": 4,
+        "sha256": "4462c0c7ea9266f53fce578acd0d2c43da2ef51b4acc90e4a7a6630d735962f8"
+      },
+      "57": {
+        "source": "part_char/imgver/x4/110_57",
+        "image": "fx-57.png",
+        "width": 100,
+        "height": 300,
+        "density": 4,
+        "frameWidth": 25,
+        "frameHeight": 25,
+        "nFrame": 3,
+        "sha256": "e19bfc7c352a3f05a1a3a2fa5c58163e8e22463fb3d9095e2d3e1f8ebd7ac37f"
+      },
+      "68": {
+        "source": "part_char/imgver/x4/110_68",
+        "image": "fx-68.png",
+        "width": 68,
+        "height": 368,
+        "density": 4,
+        "frameWidth": 17,
+        "frameHeight": 23,
+        "nFrame": 4,
+        "sha256": "634be0332b5b12506937e529e689aa2329ff9718cca1259136c11de8c843d7f5"
+      },
+      "70": {
+        "source": "part_char/imgver/x4/110_70",
+        "image": "fx-70.png",
+        "width": 200,
+        "height": 800,
+        "density": 4,
+        "frameWidth": 50,
+        "frameHeight": 50,
+        "nFrame": 4,
+        "sha256": "8f0a3a45550816f06f90413f57e310e88905556f6df00b826eed3f64f21dd0dc"
+      },
+      "72": {
+        "source": "part_char/imgver/x4/110_72",
+        "image": "fx-72.png",
+        "width": 136,
+        "height": 456,
+        "density": 4,
+        "frameWidth": 34,
+        "frameHeight": 38,
+        "nFrame": 3,
+        "sha256": "e063de3b97e63b4835fae1687f8ed50c5f237c37cb68b43a278acd442fa945c1"
+      },
+      "74": {
+        "source": "part_char/imgver/x4/110_74",
+        "image": "fx-74.png",
+        "width": 84,
+        "height": 612,
+        "density": 4,
+        "frameWidth": 21,
+        "frameHeight": 17,
+        "nFrame": 9,
+        "sha256": "6c8b7bf1905039e746273d1bcc25bed6c65f476bf309f66616361508c2873d0b"
+      },
+      "83": {
+        "source": "part_char/imgver/x4/110_83",
+        "image": "fx-83.png",
+        "width": 108,
+        "height": 384,
+        "density": 4,
+        "frameWidth": 27,
+        "frameHeight": 32,
+        "nFrame": 3,
+        "sha256": "692279549d09797d253e44493def01a354f72fd73109560fd9c339b24f8336ad"
+      }
+    },
+    "verifiedMethods": [
+      "MainListSkill.mSkillAllClasses",
+      "MainListSkill.mEffectKill",
+      "MainListSkill.mPlash",
+      "MainListSkill.mFramePlash",
+      "ListSkill.setFireSkill",
+      "EffectSkill.set_New_Effect",
+      "EffectSkill.update",
+      "EffectSkill.paint",
+      "SplashSkill.setPlash",
+      "FrameImage.drawFrameEffectSkill"
+    ]
   }
 }

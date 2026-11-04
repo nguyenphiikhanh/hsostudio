@@ -41,7 +41,7 @@ watch([clazz, skillId, preparePose, strikePose, prepareAnchor, strikeAnchor], ()
       <label class="field">Anchor B<select v-model.number="strikeAnchor" aria-label="Anchor tấn công B"><option v-for="i in 6" :key="i" :value="i - 1">{{ i - 1 }}</option></select></label>
       <span class="badge">0 → {{ preparePose }} → {{ strikePose }} → 0</span>
     </div>
-    <p v-if="clientVerified" class="muted">Kỹ năng #{{ skillId }} dùng timeline cơ thể/WPS đối chiếu client 4.0.3. Chiêu #1 có hiệu ứng chính trong khung mục tiêu mẫu bên dưới. Các chiêu #2 trở lên và vũ khí thời trang chưa được khôi phục.</p>
-    <p v-else class="muted">Tên kỹ năng, type vũ khí và cooldown lấy từ server. Chuỗi pose, anchor và FPS đang thử nghiệm; cooldown không phải thời lượng animation. Các phái dùng chung chuỗi thử, chưa xác nhận động tác riêng theo phái. Vũ khí được ẩn ở chiêu chưa đối chiếu; chọn kỹ năng #0 hoặc #1 cùng vũ khí thường để xem đòn cơ bản theo client.</p>
+    <p v-if="clientVerified" class="muted">Kỹ năng #{{ skillId }} dùng timeline cơ thể/WPS đối chiếu client 4.0.3. Chiêu #1 và #2 có hiệu ứng chính trong khung mục tiêu mẫu bên dưới. Các chiêu #3 trở lên và vũ khí thời trang chưa được khôi phục.</p>
+    <p v-else class="muted">Tên kỹ năng, type vũ khí và cooldown lấy từ server. Chuỗi pose, anchor và FPS đang thử nghiệm; cooldown không phải thời lượng animation. Các phái dùng chung chuỗi thử, chưa xác nhận động tác riêng theo phái. Vũ khí được ẩn ở chiêu chưa đối chiếu; chọn kỹ năng #0, #1 hoặc #2 cùng vũ khí thường để xem animation theo client.</p>
   </div>
 </template>

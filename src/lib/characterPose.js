@@ -1,6 +1,6 @@
 // x1 sheets group 15 clothing rectangles as front/back/side × 5 poses.
 // The 24 anchor pairs group four directions × 6 poses. Walking uses poses 0–2;
-// Attacks #0/#1 use the verified client frame mapping below; other skills remain trials.
+// Attacks #0–#2 use the verified client frame mapping below; other skills remain trials.
 export const DIRECTIONS = [
   { key: 'down', label: 'Nhìn trước', anchor: 0, group: 0, flipX: false },
   { key: 'up', label: 'Nhìn sau', anchor: 6, group: 1, flipX: false },
@@ -32,10 +32,16 @@ export function clientBasicClip(clazz) {
   }
 }
 
-// Skill #1: MainListSkill IDs 23/44/46/19. ListSkill halves gunner plash 16 -> 8.
+const VERIFIED_SKILLS = {
+  1: { internalIds: [23, 44, 46, 19], effectIds: [28, 55, 59, 23], plashTypes: [1, 1, 1, 8], effectTicks: [9, 9, 9, 4] },
+  2: { internalIds: [41, 36, 20, 18], effectIds: [52, 46, 25, 22], plashTypes: [1, 1, 1, 8], effectTicks: [9, 9, 9, 4] },
+}
+
+// Skills #1/#2 use the same SplashSkill type/frame timing in client 4.0.3.
+// ListSkill halves the gunner values (plash 16 -> 8, frame 9 -> 4).
 export function clientSkillPhase(clazz, skillId, tick) {
   if (skillId === 0) return clientBasicPhase(tick)
-  if (skillId !== 1 || !Number.isInteger(clazz) || clazz < 0 || clazz > 3) throw new Error('Unverified HSO skill')
+  if (!VERIFIED_SKILLS[skillId] || !Number.isInteger(clazz) || clazz < 0 || clazz > 3) throw new Error('Unverified HSO skill')
   const windup = clazz === 3 ? 10 : 6
   const step = Math.max(0, Math.trunc(tick))
   return { bodyFrame: step < windup ? 4 : step < windup + 4 ? 5 : 0,
@@ -45,16 +51,17 @@ export function clientSkillPhase(clazz, skillId, tick) {
 export function clientSkillClip(clazz, skillId) {
   if (skillId === 0) return clientBasicClip(clazz)
   clientSkillPhase(clazz, skillId, 0)
+  const verified = VERIFIED_SKILLS[skillId]
   return {
     ...clientBasicClip(clazz), clientBasic: false, clientSkill: true, skillId,
-    internalSkillId: [23, 44, 46, 19][clazz], plashType: clazz === 3 ? 8 : 1,
-    effectId: [28, 55, 59, 23][clazz], effectTick: clazz === 3 ? 4 : 9,
+    internalSkillId: verified.internalIds[clazz], plashType: verified.plashTypes[clazz],
+    effectId: verified.effectIds[clazz], effectTick: verified.effectTicks[clazz],
     frames: Array.from({ length: clazz === 3 ? 15 : 11 }, (_, tick) => {
       const phase = clientSkillPhase(clazz, skillId, tick)
       return { pose: [0, 0, 1, 2, 3, 4][phase.bodyFrame], anchorPose: phase.bodyFrame,
         clientBodyFrame: phase.bodyFrame, clientWeaponFrame: phase.weaponFrame, idleOffset: 0 }
     }),
-    limitations: ['Skill #1 body/WPS and effect trigger traced against official Java client 4.0.3.',
+    limitations: [`Skill #${skillId} body/WPS and effect trigger traced against official Java client 4.0.3.`,
       'Part library exports body timeline only. Weapon, target and skill effects are preview-only.'],
   }
 }

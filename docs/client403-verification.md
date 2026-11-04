@@ -51,7 +51,7 @@ Thứ tự trước/sau cơ thể theo `MainObject.paint`: Direction up luôn v�
 
 ## Chưa triển khai
 
-Vũ khí thời trang wear17 dùng renderer hiệu ứng riêng; các chiêu skill2–20, các hiệu ứng ngoài phạm vi chiêu #1 bên dưới và thời điểm sát thương chưa được port. Dữ liệu/mapping vừa tìm thấy không nâng các đường đó thành “đã xác minh”.
+Vũ khí thời trang wear17 dùng renderer hiệu ứng riêng; các chiêu skill3–20, các hiệu ứng ngoài phạm vi chiêu #1/#2 bên dưới và thời điểm sát thương chưa được port. Dữ liệu/mapping vừa tìm thấy không nâng các đường đó thành “đã xác minh”.
 
 
 ## Chiêu #1: đối chiếu và bản khôi phục
@@ -79,3 +79,16 @@ Các nhánh được port cho mục tiêu tĩnh cao40 (Player.hOne):
 Preview có seed cố định để kiểm thử và xem từng frame; dùng quy tắc ngẫu nhiên cùng khoảng giá trị, không tái lập RNG Java từng lần chạy. Mục tiêu là fixture tĩnh, không khôi phục AI/collider/quái. Vòng32tick là thời gian xem của Studio, không phải clip/cooldown client. Thư viện chỉ xuất timeline thân với provenance, internalSkillId, plashType và effectTick; FX/weapon runtime không nằm trong ZIP part.
 
 Chưa port: Effect29 tụ lực, EffectEnd9 bụi đá, rung màn hình, tương tác nước, âm thanh, sát thương và mục tiêu di chuyển. UI ghi rõ phạm vi này.
+
+## Chiêu #2: Hỏa kiếm, Độc kiếm, Đá tuyết, Phóng điện
+
+`MainListSkill.mSkillAllClasses[clazz][2]` xác định internal skill ID **41/36/20/18**. `mEffectKill` ánh xạ lần lượt sang effect **52/46/25/22**. Ba phái đầu dùng plash 1 và trigger frame 9; Xạ thủ dùng plash 16, frame 9, sau `ListSkill.setFireSkill` chia đôi thành plash 8 và trigger tick 4. Vì các giá trị body/WPS plash trùng chiêu #1, preview dùng cùng chu kỳ client 4.0.3: body frame 4 trước windup, body 5 cùng WPS 4–7 ở nhịp đánh, rồi body/WPS 0.
+
+| clazz | Server skill | Internal ID | Plash sau xử lý | Effect ID | Tick hiệu ứng | FrameImage |
+|---:|---|---:|---:|---:|---:|---|
+| 0 | Hỏa kiếm | 41 | 1 | 52 | 9 | 83, 68 |
+| 1 | Độc kiếm | 36 | 1 | 46 | 9 | 70, 72 |
+| 2 | Đá tuyết | 20 | 1 | 25 | 9 | 57, 3 |
+| 3 | Phóng điện | 18 | 8 | 22 | 4 | 74 |
+
+Các ảnh `110_83/68/70/72/57/3/74` lấy nguyên từ packet server x4. `arrInfoEff` trong client 4.0.3 xác nhận kích thước frame và số frame; SHA-256 đã lưu trong `reference/hso403/client.json`. Preview tái hiện sprite/đường bay chính cho mục tiêu tĩnh, còn chuyển động hạt ngẫu nhiên, tương tác nước, âm thanh, sát thương và cooldown chưa mô phỏng.
