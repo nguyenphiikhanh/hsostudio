@@ -4,7 +4,7 @@ import { combatCatalog } from '../lib/combat'
 import { SKILL_CATEGORIES } from '../lib/clientSkillCatalog'
 import { createAttackTrial } from '../lib/attackTrial'
 
-const props = defineProps({ trial: { type: Object, required: true }, clientVerified: { type: Boolean, default: false } })
+const props = defineProps({ trial: { type: Object, required: true }, clientVerified: { type: Boolean, default: false }, mountedSkillIds: {type:Array,default:null} })
 const emit = defineEmits(['update'])
 const catalog = combatCatalog()
 const clazz = ref(props.trial.clazz), skillId = ref(props.trial.skillId), level = ref(0)
@@ -30,7 +30,7 @@ watch([clazz, skillId, preparePose, strikePose, prepareAnchor, strikeAnchor], ()
     <p class="eyebrow">{{ clientVerified ? 'TẤN CÔNG · CLIENT HSO 4.0.3' : 'TẤN CÔNG · BẢN THỬ TỪ POSE GỐC' }}</p>
     <div class="motion-controls">
       <label class="field">Phái<select v-model.number="clazz" aria-label="Phái tấn công"><option v-for="profile in catalog.classes" :key="profile.id" :value="profile.id">{{ profile.label }}</option></select></label>
-      <label class="field">Kỹ năng server<select v-model.number="skillId" aria-label="Kỹ năng tấn công"><option v-for="skill in profile.skills" :key="skill.id" :value="skill.id">#{{ skill.id }} · {{ skill.name }}</option></select></label>
+      <label class="field">Kỹ năng server<select v-model.number="skillId" aria-label="Kỹ năng tấn công"><option v-for="skill in profile.skills" :key="skill.id" :value="skill.id" :disabled="mountedSkillIds !== null && !mountedSkillIds.includes(skill.id)">#{{ skill.id }} · {{ skill.name }}</option></select></label>
       <label class="field">Cấp kỹ năng<select v-model.number="level" aria-label="Cấp kỹ năng tấn công"><option v-for="(_, i) in skill.levels" :key="i" :value="i">{{ i + 1 }}</option></select></label>
     </div>
     <p class="muted" data-testid="attack-evidence">{{ profile.label }} · {{ profile.weapon_label }} (item type {{ profile.weapon_type }}) · {{ skill.name }} · cooldown {{ detail.delay }} ms · range {{ skill.range }} · typePaint {{ skill.typePaint }} · subEff {{ skill.subEff }} · performDur {{ skill.performDur }}</p>

@@ -2,6 +2,7 @@ import fs from 'node:fs';import crypto from 'node:crypto';import initSqlJs from 
 import {unzipSync} from 'fflate';
 import {fileURLToPath} from 'node:url';
 import {resolve,dirname} from 'node:path';
+import {validateCompanion} from '../src/lib/companionPose.js';
 // Optional offline reference import. Never invoked by dev/build/runtime.
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const [serverRoot,clientSource]=process.argv.slice(2).map(p=>resolve(p));
@@ -40,7 +41,13 @@ for(const m of serverPet.split('public static Pet get_pet')[1].matchAll(/((?:cas
  for(const v of m[1].matchAll(/case (\d+):/g))inventory.push({id:+v[1],kind:'pet',table:'item3',typeId:type,imageId:icon,name:names[type],status,...(status==='ready'?{}:{reason:'PetTool/rig chưa được port.'})});
  if(status==='ready'&&!pets.some(p=>p.id===String(icon)))pets.push({id:String(icon),slot:'pet',label:names[type],typeId:type,imageId:icon,status,asset:a,movement:mode,frames:anims[mode],itemIds:[...m[1].matchAll(/case (\d+):/g)].map(v=>+v[1])});
 }
+for(const d of mounts) {
+ validateCompanion(d,'mount')
+ d.mountedAttack=d.typeId===0?{status:'forbidden',reason:'Client Player kiểm tra typeMount == 0 và từ chối đánh trên Ngựa nâu.'}
+ :d.typeId>0 && d.typeId<=13?{status:'ready',skillIds:[0,1,2,3,4,5,6,7,8,17,19,20],entryPose:'hold-at-attack-entry',reason:'Rig sheet thường đã kiểm tra: MainObject.updateMount giữ frame/seat khi Action == 2; thân và WPS theo SplashSkill. Player.setDelaySkill chỉ chặn typeMount 0.'}
+ :{status:'unverified',reason:'Chưa mở đánh khi cưỡi cho rig này trong bản thử.'}
+}
 const bytecode=unzipSync(jar);
-const clientClasses=Object.fromEntries(['GameObjects/MainObject','GameObjects/Pet','GameObjects/PetFly','GameObjects/PetWalk','GameObjects/ObjectData','Model/FrameImage','netcommand/global/ReadMessenge'].map(c=>[c,hash(bytecode[c+'.class'])]));
-const result={clientClasses,version:1,provenance:'official-client-4.0.3+server',jarSha256:hash(jar),packet:{source:'hso/data/msg/msg_26',sha256:hash(packet)},methods:['ReadMessenge.catalogyMonster','ObjectData.getImageMount/getImagePet','MainObject.updateMount/paintMount_Sau/paintMount_Truoc','FrameImage.drawFrameNew','Pet.setAnim','PetFly.update/paint','PetWalk.paint','UseItem.use_item_mount','Pet.get_pet'],mounts,pets,inventory};
+const clientClasses=Object.fromEntries(['GameObjects/MainObject','GameObjects/Player','GameObjects/Pet','GameObjects/PetFly','GameObjects/PetWalk','GameObjects/ObjectData','Model/FrameImage','netcommand/global/ReadMessenge'].map(c=>[c,hash(bytecode[c+'.class'])]));
+const result={clientClasses,version:1,provenance:'official-client-4.0.3+server',jarSha256:hash(jar),packet:{source:'hso/data/msg/msg_26',sha256:hash(packet)},methods:['Player.setDelaySkill','MainObject.updateAction/paintWeapon','ReadMessenge.catalogyMonster','ObjectData.getImageMount/getImagePet','MainObject.updateMount/paintMount_Sau/paintMount_Truoc','FrameImage.drawFrameNew','Pet.setAnim','PetFly.update/paint','PetWalk.paint','UseItem.use_item_mount','Pet.get_pet'],mounts,pets,inventory};
 fs.writeFileSync(root+'/src/data/companions.json',JSON.stringify(result,null,2)+'\n');console.log({mounts:mounts.length,pets:pets.length,inventory:inventory.length,owl:pets.find(p=>p.id==='3')?.label});

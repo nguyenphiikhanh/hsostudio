@@ -25,7 +25,16 @@ const clientSkill = computed(() => motion.value === 'attack' && isClientAttackSk
 const clientNonAttackSkill = computed(() => motion.value === 'attack' && trial.value.skillId > 0 && !isClientAttackSkill(props.clazz, trial.value.skillId) && Boolean(clientSkillData(props.clazz, trial.value.skillId)))
 const clientVerified = computed(() => clientBasic.value || clientSkill.value)
 const hasCompanion = computed(()=>props.layers.some(l=>l.companion && l.visible))
-const hasMount = computed(()=>props.layers.some(l=>l.slot==='mount' && l.visible))
+const activeMount = computed(()=>props.layers.find(l=>l.slot==='mount' && l.visible)?.companion)
+const hasMount = computed(()=>Boolean(activeMount.value))
+const mountedCombat = computed(()=>activeMount.value?.mountedAttack?.status==='ready')
+const mountEntry = ref({motion:'idle',tick:0})
+watch(motion,(value,old)=>{
+  if(value==='attack' && hasMount.value){
+    mountEntry.value={motion:old==='walk'?'walk':'idle',tick:tick.value}
+    if(!activeMount.value.mountedAttack?.skillIds?.includes(trial.value.skillId))updateTrial(createAttackTrial({clazz:props.clazz,skillId:0}))
+  }
+},{flush:'sync'})
 const effectiveFps = computed(() => clientVerified.value || hasCompanion.value ? 25 : fps.value)
 const companionCycle = computed(()=>{
   const lengths=props.layers.filter(l=>l.companion && l.visible).flatMap(l=>l.slot==='mount'?[motion.value==='walk'?9:12]:l.companion.frames[motion.value==='walk'?1:0].map(c=>c.length))
@@ -33,11 +42,12 @@ const companionCycle = computed(()=>{
   if(!hasMount.value)lengths.push(100/gcd(fps.value,100))
   return lengths.reduce((a,b)=>a*b/gcd(a,b),1)
 })
-watch(hasMount,value=>{if(value && motion.value==='attack')motion.value='idle'})
+watch(activeMount,()=>{if(hasMount.value && motion.value==='attack')motion.value='idle'})
+watch(hasClientWeapon,value=>{if(hasMount.value && !value && motion.value==='attack')motion.value='idle'})
 const nativePhase = computed(() => clientSkillPhase(props.clazz, clientSkill.value ? trial.value.skillId : 0, tick.value))
 const attackPhase = computed(() => trial.value.frames[tick.value % trial.value.frames.length])
 const baseAttackOptions = computed(() => clientVerified.value ? { clientAttack: true, clientBodyFrame: nativePhase.value.bodyFrame, clientWeaponFrame: nativePhase.value.weaponFrame } : motion.value === 'attack' ? { experimentalAttack: true, anchorPose: attackPhase.value.anchorPose } : {})
-const attackOptions = computed(()=>hasCompanion.value ? {...baseAttackOptions.value,motion:motion.value,tick:tick.value} : baseAttackOptions.value)
+const attackOptions = computed(()=>hasCompanion.value ? {...baseAttackOptions.value,motion:motion.value,tick:tick.value,...(hasMount.value && motion.value==='attack'?{mountEntry:mountEntry.value,clientSkillId:trial.value.skillId}:{})} : baseAttackOptions.value)
 const views = new Map()
 const cycleLength = computed(() => hasCompanion.value && motion.value!=='attack' ? companionCycle.value : clientSkill.value ? Math.max(32, clientSkillClip(props.clazz, trial.value.skillId).frames.length) : clientBasic.value ? 9 : motion.value === 'attack' ? trial.value.frames.length : motion.value === 'walk' ? WALK_CYCLE.length : IDLE_CYCLE.length)
 const bodyTick = computed(()=>hasCompanion.value && !hasMount.value ? Math.floor(tick.value*fps.value/25) : tick.value)
@@ -72,6 +82,7 @@ async function drawViews() {
       ctx.scale(hasCompanion.value ? 6 : 12, hasCompanion.value ? 6 : 12)
       ctx.imageSmoothingEnabled = false
       paintLayers(ctx, posed, images, hasCompanion.value ? 42 : 26, hasCompanion.value ? 92 : 45)
+      canvas.dataset.renderedMount=posed.find(l=>l.slot==='mount' && l.visible)?.companion.id ?? ''
       ctx.restore()
     }))
   } catch (error) { emit('error', error.message) }
@@ -88,21 +99,23 @@ onUnmounted(() => { stopTimer(); renderVersion++ })
 <template>
   <section class="animation-panel" aria-label="Hướng và trạng thái nhân vật">
     <div class="motion-controls">
-      <label class="field">Trạng thái<select v-model="motion" aria-label="Trạng thái nhân vật" @change="changeMotion"><option value="idle">Đứng yên</option><option value="walk">Di chuyển</option><option value="attack" :disabled="hasMount">Tấn công · thử nghiệm</option></select></label>
+      <label class="field">Trạng thái<select v-model="motion" aria-label="Trạng thái nhân vật" @change="changeMotion"><option value="idle">Đứng yên</option><option value="walk">Di chuyển</option><option value="attack" :disabled="hasMount && (!mountedCombat || !hasClientWeapon)">Tấn công · thử nghiệm</option></select></label>
       <button @click="playing = !playing">{{ playing ? 'Tạm dừng' : 'Phát animation' }}</button>
       <button @click="nextFrame">Frame tiếp →</button>
       <label class="field">Tốc độ<select :value="effectiveFps" :disabled="clientVerified || hasCompanion" aria-label="Tốc độ animation" @change="fps = Number($event.target.value)"><option v-for="value in [4,6,8,10,12,25]" :key="value" :value="value">{{ value }} fps</option></select></label>
-      <span class="frame-status" role="status">{{ hasCompanion ? `Client tick ${tick + 1}/${cycleLength} · ${motion} · 25 FPS` : clientVerified ? `Client tick ${tick + 1}/${cycleLength} · body ${nativePhase.bodyFrame} · WPS ${nativePhase.weaponFrame}` : motion === 'attack' ? `Đòn ${tick + 1}/${cycleLength} · pose ${pose} · anchor ${attackPhase.anchorPose}` : motion === 'walk' ? `Bước ${tick + 1}/4 · pose ${pose}` : `Thở ${tick + 1}/${cycleLength} · lệch ${breath}px` }}</span>
+      <span class="frame-status" role="status">{{ clientVerified ? `Client tick ${tick + 1}/${cycleLength} · body ${nativePhase.bodyFrame} · WPS ${nativePhase.weaponFrame}` : hasCompanion ? `Client tick ${tick + 1}/${cycleLength} · ${motion} · 25 FPS` : motion === 'attack' ? `Đòn ${tick + 1}/${cycleLength} · pose ${pose} · anchor ${attackPhase.anchorPose}` : motion === 'walk' ? `Bước ${tick + 1}/4 · pose ${pose}` : `Thở ${tick + 1}/${cycleLength} · lệch ${breath}px` }}</span>
     </div>
-    <AttackControls v-if="motion === 'attack'" :trial="trial" :client-verified="clientVerified" @update="updateTrial"/>
+    <p v-if="hasMount" class="muted" data-testid="mounted-attack-status">{{mountedCombat ? activeMount.label + ': hỗ trợ chiêu đánh #0–#8, #17, #19, #20 của bốn phái. Chọn vũ khí thường, chuyển Tấn công; thú giữ frame/điểm ngồi tại lúc bắt đầu đòn, thân và WPS dùng frame client.' : activeMount.mountedAttack?.reason ?? 'Rig chưa hỗ trợ đánh khi cưỡi.'}}</p>
+    <AttackControls v-if="motion === 'attack'" :trial="trial" :client-verified="clientVerified" :mounted-skill-ids="hasMount ? activeMount.mountedAttack?.skillIds ?? [] : null" @update="updateTrial"/>
     <p v-if="clientVerified" class="muted" data-testid="client-weapon-animation">Client HSO 4.0.3 · kỹ năng #{{ trial.skillId }} · 25 FPS (40 ms/tick). Body/WPS đổi theo plash của kỹ năng; preview lặp để xem, không mô phỏng cooldown.</p>
     <p v-if="clientNonAttackSkill" class="muted">Kỹ năng #{{ trial.skillId }} thuộc nhóm nội tại/buff; không có chuỗi đánh vũ khí hoặc preview va chạm mục tiêu.</p>
-    <p v-else-if="motion === 'attack' && hasClientWeapon" class="muted">Chiêu chưa thuộc nhóm đánh hoặc chưa có mapping animation client; vũ khí được ẩn trong chuỗi thử nghiệm.</p>
+    <p v-else-if="motion === 'attack' && hasClientWeapon && !clientVerified" class="muted">Chiêu chưa thuộc nhóm đánh hoặc chưa có mapping animation client; vũ khí được ẩn trong chuỗi thử nghiệm.</p>
     <SkillOnePreview v-if="clientSkillOne" :layers="layers" :clazz="clazz" :direction="direction" :tick="tick" :options="attackOptions" @error="emit('error', $event)"/>
     <SkillTwoPreview v-if="clientSkillTwo" :layers="layers" :clazz="clazz" :direction="direction" :tick="tick" :options="attackOptions" @error="emit('error', $event)"/>
     <SkillThreePreview v-if="clientSkillThree" :layers="layers" :clazz="clazz" :direction="direction" :tick="tick" :options="attackOptions" @error="emit('error', $event)"/>
     <SkillFourPreview v-if="clientSkillFour" :layers="layers" :clazz="clazz" :direction="direction" :tick="tick" :options="attackOptions" @error="emit('error', $event)"/>
-    <ClientSkillEffectPreview v-if="clientSkill && trial.skillId > 4" :layers="layers" :clazz="clazz" :skill-id="trial.skillId" :direction="direction" :tick="tick" :options="attackOptions" @error="emit('error', $event)"/>
+    <ClientSkillEffectPreview v-if="clientSkill && trial.skillId > 4 && !hasMount" :layers="layers" :clazz="clazz" :skill-id="trial.skillId" :direction="direction" :tick="tick" :options="attackOptions" @error="emit('error', $event)"/>
+    <p v-if="hasMount && clientSkill && trial.skillId > 4" class="muted" data-testid="mounted-body-only">Chiêu này khi cưỡi hiển thị timeline thân/WPS đã đối chiếu. Hiệu ứng đầy đủ chưa được khôi phục; không dùng vị trí/hạt minh họa làm hiệu ứng gốc. Nội tại và buff không nằm trong nhóm đòn đánh này.</p>
     <div class="direction-views">
       <button v-for="view in DIRECTIONS" :key="view.key" :class="{ active: direction === view.key }" :aria-pressed="direction === view.key" :aria-label="`Xem hướng ${view.label}`" @click="direction = view.key">
         <canvas :ref="el => el ? views.set(view.key, el) : views.delete(view.key)" class="checker" width="624" height="624" :data-direction="view.key" :data-pose="pose" :data-breath="breath" :data-motion="motion" :data-anchor="attackOptions.anchorPose" :aria-label="`${motion === 'attack' ? 'Tấn công' : motion === 'walk' ? 'Di chuyển' : 'Đứng yên'} ${view.label}`"></canvas>

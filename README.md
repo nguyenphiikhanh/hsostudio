@@ -240,4 +240,8 @@ Khung xem dùng sprite chính của effect client và mục tiêu tĩnh. Hạt p
 
 Đã có hai bộ chọn riêng trong phần thay bộ phận: 14 ngoại hình thú cưỡi sheet thường và 6 pet cơ bản, gồm **Ngựa nâu + Cú**, ưu tiên PNG x4 gốc. Có đứng/đi bốn hướng, frame/điểm ngồi/layer đối chiếu client4.0.3. Xuất thư viện part bổ sung folder `mounts/<id>/`, `pets/<id>/` và API `character.mount(id)` / `character.setPet(id)`; vẫn giữ cấu trúc v1.
 
-Pet đang dùng đội hình xem trước, chưa có AI đi theo/chiến đấu. Mount chưa hỗ trợ attack; demo arena H5 chưa dùng rig thú. Các rig chưa xác minh nằm trong báo cáo, không tạo asset thay thế. Xem [nguồn đối chiếu, cách dùng và thay PNG HD](docs/companions-v1.md).
+Pet đang dùng đội hình xem trước, chưa có AI đi theo/chiến đấu. 13 rig sheet thường đã hỗ trợ các chiêu đánh #0–#8, #17, #19, #20 của bốn phái khi chọn vũ khí thường; Ngựa nâu bị client cấm đánh, rig hiệu ứng đặc biệt chưa hỗ trợ. Demo arena H5 chưa dùng rig thú. Các rig chưa xác minh nằm trong báo cáo, không tạo asset thay thế. Xem [nguồn đối chiếu, cách dùng và thay PNG HD](docs/companions-v1.md).
+
+Để thử đánh khi cưỡi: **chọn một trong 13 rig được phép (ví dụ Ngựa trắng, Ngựa chiến giáp, Tuần lộc, Sói xám, Sư tử, Heo rừng, Con lân) + vũ khí thường → Tấn công → chọn chiêu đánh**. Thú giữ frame/điểm ngồi từ lúc bắt đầu đòn, thân và WPS chạy theo client4.0.3. Xuất thư viện ở trạng thái này để có clip thân của chiêu đang chọn khi cưỡi; thư viện vẫn chưa equip texture vũ khí.
+
+Khi cưỡi, chiêu #1–#4 có khung hiệu ứng chính đã khôi phục; #5–#8/#17/#19/#20 hiện hiển thị timeline thân/WPS, chưa khẳng định hiệu ứng đầy đủ nguyên bản. Các ô nội tại/buff không nằm trong danh sách đòn đánh.

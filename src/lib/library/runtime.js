@@ -1,4 +1,4 @@
-import { validateCompanion } from './companionPose.js'
+import { validateCompanion, mountedAttackAllowed } from './companionPose.js'
 import { resolvePose } from './characterPose.js'
 
 // Call from Scene.preload(). baseUrl points to the extracted ZIP directory.
@@ -79,7 +79,11 @@ export class EquipmentCharacter {
     return this.setCompanion(kind,kind==='mount'?item.typeId:item.imageId)
   }
   setState(state, direction = this.direction) {
-    if (this.companions.mount && state==='attack')throw new Error('Mounted attack is not supported by this rig')
+    if(this.companions.mount && state==='attack') {
+      const mount=this.manifest.companions.mount[this.companions.mount]
+      if(!mountedAttackAllowed(mount,this.animations[state]))throw new Error(mount.mountedAttack?.reason || 'Mounted attack is not verified for this mount/clip')
+      if(this.state!=='attack')this.mountEntry={motion:this.state==='walk'?'walk':'idle',tick:Math.floor(this.elapsed*25/1000)}
+    }
     if (!this.animations[state]) throw new Error(`Unsupported state ${state}`)
     if (!this.manifest.directions.includes(direction)) throw new Error(`Unsupported direction ${direction}`)
     if (state !== this.state || this.animations[state].repeat === 0) this.elapsed = 0
@@ -132,7 +136,7 @@ export class EquipmentCharacter {
       const d=this.manifest.companions[slot][id]
       layers.push({slot,companion:d,asset:d.asset,...d.frameEntries[0].crop,x:0,y:0,visible:true})
     }
-    const posed = resolvePose(layers, this.direction, phase.pose, phase.idleOffset, { experimentalAttack: animation.experimental === true, anchorPose: phase.anchorPose, clientBodyFrame: phase.clientBodyFrame, motion:this.state,tick:Math.floor(this.elapsed*25/1000) })
+    const posed = resolvePose(layers, this.direction, phase.pose, phase.idleOffset, { experimentalAttack: animation.experimental === true, anchorPose: phase.anchorPose, clientBodyFrame: phase.clientBodyFrame, motion:this.state,tick:Math.floor(this.elapsed*25/1000),clientAttack:this.state==='attack' && (animation.clientBasic===true || animation.clientSkill===true),clientWeaponFrame:phase.clientWeaponFrame,mountEntry:this.mountEntry,clientSkillId:animation.skillId })
     for (const layer of posed) {
       const selection = this.outfit[layer.slot], part = layer.companion ? this.manifest.companions[layer.slot][this.companions[layer.slot]] : this.manifest.parts[selection.partKey]
       const entries=layer.companion?part.frameEntries:part.frames

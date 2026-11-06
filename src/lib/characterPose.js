@@ -49,10 +49,10 @@ export function clientSkillPhase(clazz, skillId, tick) {
     if (step < 6) return { bodyFrame: 4, weaponFrame: step + 2 }
     return { bodyFrame: 0, weaponFrame: 0 }
   }
-  if (data.category === 'passive' || data.category === 'party-buff' || data.plashType === 0) return { bodyFrame: 0, weaponFrame: 0 }
+  if (data.category === 'passive' || data.category === 'party-buff' || (data.plashType === 0 && !['attack','control','area'].includes(data.category))) return { bodyFrame: 0, weaponFrame: 0 }
   if (data.plashType === 4) {
     if (step < 4) return { bodyFrame: 4, weaponFrame: 4 }
-    if (step < 10) return { bodyFrame: 5, weaponFrame: Math.min(7, step) }
+    if (step < 10) return { bodyFrame: 5, weaponFrame: step }
     return { bodyFrame: 0, weaponFrame: 0 }
   }
   if (data.plashType === 9) {
@@ -71,7 +71,7 @@ export function clientSkillClip(clazz, skillId) {
   if (skillId === 0) return clientBasicClip(clazz)
   clientSkillPhase(clazz, skillId, 0)
   const verified = clientSkillData(clazz, skillId)
-  const frameCount = verified.category === 'passive' || verified.category === 'party-buff' || verified.plashType === 0 ? 1
+  const frameCount = verified.category === 'passive' || verified.category === 'party-buff' || (verified.plashType === 0 && !['attack','control','area'].includes(verified.category)) ? 1
     : skillId === 4 && clazz === 3 ? 7
       : verified.plashType === 4 ? 11 : verified.plashType === 9 ? 31
         : (plashWindup[verified.plashType] ?? 1) + 5
@@ -92,8 +92,9 @@ export function clientSkillClip(clazz, skillId) {
 export function resolvePose(layers, directionKey = 'down', pose = 0, idleOffset = 0, options = {}) {
   const direction = DIRECTIONS.find(d => d.key === directionKey) || DIRECTIONS[0]
   const mount = layers.find(l=>l.slot==='mount' && l.companion && l.visible)
-  const mounted = mount ? companionFrame(mount.companion,directionKey,options.motion,options.tick) : null
-  if (mounted) { options={...options,clientBodyFrame:mounted.bodyFrame,experimentalAttack:false}; idleOffset=0 }
+  const mountedAttack = Boolean(mount && options.motion==='attack' && options.clientAttack && mount.companion.mountedAttack?.status==='ready' && mount.companion.mountedAttack.skillIds.includes(options.clientSkillId ?? 0))
+  const mounted = mount ? companionFrame(mount.companion,directionKey,mountedAttack ? options.mountEntry?.motion ?? 'idle' : options.motion,mountedAttack ? options.mountEntry?.tick ?? 0 : options.tick) : null
+  if (mounted) { options={...options,clientBodyFrame:mountedAttack ? options.clientBodyFrame : mounted.bodyFrame,experimentalAttack:false}; idleOffset=0 }
   const hasClientWeapon = layers.some(layer => layer.slot === 'weapon' && layer.clientWeapon)
   const clientFrame = options.clientBodyFrame ?? (hasClientWeapon && !options.experimentalAttack ? [0, 2, 3][Math.max(0, Math.min(2, Math.trunc(pose)))] : undefined)
   const step = clientFrame !== undefined ? [0, 0, 1, 2, 3, 4][clientFrame] : Math.max(0, Math.min(options.experimentalAttack ? 4 : 2, Math.trunc(pose)))
@@ -150,6 +151,7 @@ export function resolvePose(layers, directionKey = 'down', pose = 0, idleOffset 
     const behind = dir !== 1 && (layer.clazz === 3 ? bodyFrame !== 4 : bodyFrame !== 5)
     if (options.clientAttack && weaponFrame >= 4) {
       const frame = weapon.splash.frames[dir][weaponFrame]
+      if(!frame)return {...layer,visible:false}
       return { ...layer, asset: { ...weapon.splash, id: weapon.splash.source }, sx: frame.sx, sy: frame.sy, w: frame.w, h: frame.h,
         x: frame.x, y: frame.y, flipX: false, renderFront: !behind }
     }
@@ -157,7 +159,7 @@ export function resolvePose(layers, directionKey = 'down', pose = 0, idleOffset 
     return { ...layer, ...frame, x: offset[0], y: offset[1], flipX: false, renderFront: !behind }
   }).map(layer => {
     if (layer.companion) {
-      const frame=companionFrame(layer.companion,directionKey,options.motion,options.tick)
+      const frame=layer.slot==='mount' && mountedAttack ? mounted : companionFrame(layer.companion,directionKey,options.motion,options.tick)
       return {...layer,...frame,renderDepth:layer.slot==='mount'?(frame.front?layers.length+1:-1):layers.length+3}
     }
     return mounted ? {...layer,y:layer.y-mounted.seat,visible:layer.slot==='pants'?false:layer.visible} : layer

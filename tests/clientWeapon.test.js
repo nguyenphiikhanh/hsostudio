@@ -56,3 +56,12 @@ test('native body frame 4/5 uses client crop mapping and mirrored side anchor', 
   assert.equal(right.y, left.y)
   assert.equal(right.flipX, true)
 })
+
+test('rogue multi-swing WPS indices 8/9 hide the weapon as the client does, instead of holding frame7',()=>{
+ const record=rows.find(r=>r.clazz===1 && r.part===0),splash=ref.classes[1].splash
+ const weapon={slot:'weapon',clazz:1,asset:record,visible:true,clientWeapon:{...record,splash}}
+ for(const direction of ['down','up','left','right'])for(const weaponFrame of [8,9]){
+  const [posed]=resolvePose([weapon],direction,0,0,{clientAttack:true,clientBodyFrame:5,clientWeaponFrame:weaponFrame})
+  assert.equal(posed.visible,false)
+ }
+})

@@ -6,7 +6,7 @@
 
 Trong **Thay bộ phận trực tiếp trên nhân vật**, chọn **Thú cưỡi → Ngựa nâu** và **Thú cưng → Cú**. Chuyển Đứng yên/Di chuyển; chọn một trong bốn hướng, tạm dừng hoặc xem từng frame. Chọn Không dùng để bỏ từng thú. Nhân vật mẫu ban đầu không tự chọn thú.
 
-Khi có thú, đồng hồ renderer chạy 25 FPS. Nhịp thân không cưỡi vẫn giữ tốc độ preview đã chọn. Người cưỡi dùng nhịp/body frame và điểm ngồi gốc; quần bị ẩn theo nhánh mounted của client. Chưa hỗ trợ mounted attack, do đó lựa chọn Tấn công bị khóa khi đang cưỡi. Pet thuộc kiểu vừa bay vừa đi (Cú) có idle đã hạ cánh; khi di chuyển dùng pose bay cao50 theo client. Pet bay hẳn (Dơi/Rồng lửa) giữ độ cao50.
+Khi có thú, đồng hồ renderer chạy 25 FPS. Nhịp thân không cưỡi vẫn giữ tốc độ preview đã chọn. Người cưỡi dùng nhịp/body frame và điểm ngồi gốc; quần bị ẩn theo nhánh mounted của client. 13 rig sheet thường (type1–13) hỗ trợ chiêu đánh #0–#8, #17, #19, #20 khi đã chọn vũ khí thường; các chiêu khác bị khóa. Ngựa nâu type0 bị client cấm đánh; rig id_horse/DataSkillEff chưa được mở. Pet thuộc kiểu vừa bay vừa đi (Cú) có idle đã hạ cánh; khi di chuyển dùng pose bay cao50 theo client. Pet bay hẳn (Dơi/Rồng lửa) giữ độ cao50.
 
 Vị trí pet +40 units bên cạnh nhân vật là **bố trí để xem**; hướng lấy từ nút preview. Chưa port state machine đi theo, lượn ngẫu nhiên, tìm đường, chiến đấu và tương tác nước. Không gọi vị trí này là offset theo chủ gốc. Demo arena “Chơi thử H5” hiện chưa dùng rig mount/pet và bị khóa khi chúng được chọn; preview Studio và runtime Phaser trong ZIP hỗ trợ hai rig này.
 
@@ -48,7 +48,7 @@ character.mount(null);
 character.setPet(null);
 ```
 
-ID không tồn tại/chưa ready sẽ bị từ chối trước khi thay lựa chọn. Quần hiện lại khi bỏ thú cưỡi. State attack khi cưỡi sẽ báo không hỗ trợ. Runtime này không bao gồm logic cưỡi/chiến đấu/collider của game HSO.
+ID không tồn tại/chưa ready sẽ bị từ chối trước khi thay lựa chọn. Quần hiện lại khi bỏ thú cưỡi. State attack khi cưỡi chỉ được nhận nếu rig có mountedAttack.status=ready đã xác minh và animations.states.attack là clientBasic/clientSkill đã xác minh và skillId thuộc danh sách được phép; còn lại bị từ chối. Runtime này không bao gồm logic cưỡi/chiến đấu/collider của game HSO.
 
 ## Thay PNG HD hoặc thêm thiết kế
 
@@ -65,3 +65,38 @@ node scripts/import-companions.mjs /path/to/hso /path/to/decompiled-client403
 ```
 
 Nguồn mới được nhập vào metadata trong repo, dùng ảnh đã đóng gói. Không cần giữ các nguồn bên ngoài để chạy Studio. Rig effect id_horse (Cân đẩu vân, xe/phượng hoàng/rồng...) và PetTool được ghi trong inventory, chưa có renderer. Không coi `id_horse` là tiền tố file ảnh.
+
+
+## Các chiêu đánh trên thú dạng sheet thường
+
+Chọn **thú cưỡi được phép → vũ khí thường đúng phái → Tấn công → chọn chiêu đánh**. Các rig hỗ trợ: Ngựa trắng, Ngựa chiến giáp, Ngựa xích thố, Ngựa đen, Tuần lộc, Sói xám, Sói gió tuyết, Sói bão lửa, Sói bóng ma, Sư tử, Heo rừng, Con lân, Ngựa Skeleton. Có đủ bốn phái và bốn hướng, play/pause/step. Khi vào trạng thái đánh, Studio chụp phase thú ở idle hoặc walk; mỗi hướng dùng cùng phase đó để so sánh. Trong cả đòn, frame, offsets và dyMount giữ nguyên. Thân và WPS vẫn chạy timeline client của chiêu được chọn (25FPS); không bị ép trở lại thân ngồi body0/3.
+
+Bằng chứng:
+
+- Client `Player.setDelaySkill` kiểm tra typeMount==0 và trả false; đây là vị trí xác nhận chặn Ngựa nâu. Mô tả item4 cũng ghi cấm đánh. Chưa thấy điều kiện tương ứng trong hàm đánh server nên không khẳng định server đã enforce hạn chế này.
+- Client `MainObject.updateMount` chỉ cập nhật thú khi Action0/1; Action2 giữ frameMount, xMount, yMount, dyMount từ trạng thái trước.
+- `MainObject` nhánh Action2 gọi SplashSkill.update, thân4/5 và weapon_frame4–7. `paintWeapon` trừ dyMount cho cả vũ khí thường và WPS.
+- Quần tiếp tục ẩn khi cưỡi; mount trước/sau người phụ thuộc FRAME_VE_TRUOC của frame được giữ.
+
+Xuất thư viện **trong lúc đang xem chiêu đánh đã xác minh** để animations.json mang đúng clip clientBasic hoặc clientSkill. Sau khi preload:
+
+```js
+character.mount('1');
+character.setState('idle', 'right');
+character.setState('attack', 'right');
+// Gọi lại attack để phát lại; idle/walk để rời tư thế kết thúc.
+```
+
+Runtime giữ phase thú tại lúc chuyển idle/walk sang attack và hỗ trợ manifest v1 mới này. Như trước, thư viện part chỉ xuất **thân + thú**, chưa export/equip texture vũ khí hoặc hiệu ứng kỹ năng: WPS được xem đầy đủ trong Studio và bản xuất tư thế tĩnh. Không mô phỏng sát thương, cooldown, AI pet; Các chiêu đánh #1–#8/#17/#19/#20 đã mở; nội tại/buff chưa nằm trong nhóm preview đòn đánh. Gói xuất khi đang ở chuỗi thử nghiệm không đủ điều kiện đánh khi cưỡi và sẽ bị từ chối rõ ràng.
+
+Mở rộng type1–13 dùng cùng nhánh updateMount/paintWeapon của client, không gán animation mới. Kiểm thử đối chiếu từng rig ở cả bốn hướng, bốn phái, entry idle/walk và các phase 0/4/8/11; giữ nguyên frame/seat/layer thú trong cả đòn. Chrome kiểm tra 13 rig, ZIP Phaser kiểm tra 52 trường hợp rig × hướng. Không mở rộng chính sách này sang id_horse/rig hiệu ứng.
+
+### Mở chiêu #1 trở lên
+
+Các rig type1–13 cho phép #0–#8, #17, #19, #20; policy này có trong metadata và runtime. Không chỉ bỏ khóa giao diện: clip export phải mang clientBasic/clientSkill, experimental=false và skillId được phép. Client body/WPS theo SplashSkill của từng phái; giữ nguyên rig/frame/seat lúc bắt đầu chiêu.
+
+Khung hiệu ứng #1–#4 dùng các bộ dựng chính đã khôi phục. EffectSkill.set_New_Effect khởi tạo caster ở x/y thế giới, y-hOne/2, không trừ dyMount như paintWeapon; vì vậy không tự dịch toàn bộ FX theo người cưỡi. Mục tiêu vẫn là fixture cao40. Các phần hạt/tụ lực/nước/âm thanh còn thiếu như phạm vi đã ghi cho từng chiêu.
+
+Nhóm #5–#8/#17/#19/#20 khi cưỡi chỉ hiển thị thân/WPS; ẩn bộ preview hiệu ứng tổng quát do layout/đường bay/hạt hiện chưa được đối chiếu đầy đủ. Không gọi layout minh họa là nguyên bản. Thư viện part tiếp tục chỉ xuất thân/thú, không equip vũ khí hoặc phát FX.
+
+Đã sửa hai trường hợp trong mapping cũ: plash0 của các chiêu tấn công cấp cao vẫn phát chuỗi min4, không phải một frame đứng; plash4 của Sát thủ dùng weapon_frame8/9 ở cuối đòn, vượt số frame WPS nên client không vẽ vũ khí tại hai tick này. Renderer ẩn vũ khí thay vì giữ giả frame7 hoặc truy cập frame không tồn tại.

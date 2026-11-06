@@ -14,7 +14,7 @@ function change(slot,id){const next=props.layers.filter(l=>l.slot!==slot);if(id!
         </select>
       </label>
     </div>
-    <p class="muted">Đã đối chiếu {{companionCatalog.mounts.length}} ngoại hình thú cưỡi và {{companionCatalog.pets.length}} pet. Vật phẩm x99/vĩnh viễn dùng chung ngoại hình. Khi cưỡi, dùng nhịp client 25 FPS, ẩn quần theo renderer gốc; preview hiện hỗ trợ đứng/đi.</p>
+    <p class="muted">Đã đối chiếu {{companionCatalog.mounts.length}} ngoại hình thú cưỡi và {{companionCatalog.pets.length}} pet. Vật phẩm x99/vĩnh viễn dùng chung ngoại hình. Khi cưỡi, dùng nhịp client 25 FPS, ẩn quần theo renderer gốc; {{companionCatalog.mounts.filter(d=>d.mountedAttack?.status==='ready').length}} rig hỗ trợ chiêu đánh #0–#8, #17, #19, #20 khi đã chọn vũ khí; Ngựa nâu bị client cấm đánh.</p>
     <p v-if="layers.some(l=>l.slot==='pet')" class="muted">Pet dùng frame gốc. Đặt cạnh nhân vật 40 đơn vị để xem rõ; đây là bố trí preview, chưa mô phỏng đường đi theo, AI và hành động ngẫu nhiên của pet.</p>
     <details><summary>Các vật phẩm chưa hỗ trợ ({{companionCatalog.inventory.filter(i=>i.status!=='ready').length}})</summary><p v-for="i in companionCatalog.inventory.filter(i=>i.status!=='ready')" :key="`${i.kind}-${i.id}`" class="muted">{{i.name}} · item #{{i.id}}: {{i.reason}}</p></details>
   </section>

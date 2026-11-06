@@ -53,3 +53,9 @@ export function compileCompanion(d, libraryName) {
   return {definition:d,part:{...d,frameEntries},paths:{image:`${folder}/sheet.png`,data:`${folder}/atlas.json`,definition:`${folder}/companion.json`},
     atlas:{frames:atlasFrames,meta:{image:'sheet.png',scale:'1',size:{w:a.width,h:a.height}}},atlasEntry:{key,image:`${folder}/sheet.png`,data:`${folder}/atlas.json`,companionId:d.id,slot:d.slot}}
 }
+
+export function mountedAttackAllowed(definition, animation) {
+  return definition?.slot==='mount' && definition.mountedAttack?.status==='ready'
+    && (animation?.clientBasic===true || animation?.clientSkill===true) && animation.experimental===false
+    && definition.mountedAttack.skillIds.includes(animation.skillId)
+}

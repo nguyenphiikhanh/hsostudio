@@ -1,6 +1,7 @@
 {
   "clientClasses": {
     "GameObjects/MainObject": "ad7b8c9bec4e9d72dc63c7842b4d9c4e7d09151144dca9399dd9c30b51071628",
+    "GameObjects/Player": "088af8515fb3bbfabe4dba52e852fc13b830fabb46133114c1607c5bde6c8330",
     "GameObjects/Pet": "b6c0850843deee9a62612b24a2351c30cb587622111c9fe237c2ef7e6f762217",
     "GameObjects/PetFly": "ba254cba2606fa7b37f35a3b1b3878e965a944080149e396cac1411143993bc8",
     "GameObjects/PetWalk": "8a0901c1164efac4b178273453779f079a2f83382993892e796086104be89465",
@@ -16,6 +17,8 @@
     "sha256": "e6279d0ad07743281a9899d601faa4ab2c8b3a7a858dc23a06e7a799aa4de86c"
   },
   "methods": [
+    "Player.setDelaySkill",
+    "MainObject.updateAction/paintWeapon",
     "ReadMessenge.catalogyMonster",
     "ObjectData.getImageMount/getImagePet",
     "MainObject.updateMount/paintMount_Sau/paintMount_Truoc",
@@ -134,7 +137,11 @@
       "itemIds": [
         62,
         70
-      ]
+      ],
+      "mountedAttack": {
+        "status": "forbidden",
+        "reason": "Client Player kiểm tra typeMount == 0 và từ chối đánh trên Ngựa nâu."
+      }
     },
     {
       "id": "1",
@@ -243,7 +250,26 @@
       "itemIds": [
         63,
         71
-      ]
+      ],
+      "mountedAttack": {
+        "status": "ready",
+        "skillIds": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          17,
+          19,
+          20
+        ],
+        "entryPose": "hold-at-attack-entry",
+        "reason": "Rig sheet thường đã kiểm tra: MainObject.updateMount giữ frame/seat khi Action == 2; thân và WPS theo SplashSkill. Player.setDelaySkill chỉ chặn typeMount 0."
+      }
     },
     {
       "id": "2",
@@ -352,7 +378,26 @@
       "itemIds": [
         64,
         72
-      ]
+      ],
+      "mountedAttack": {
+        "status": "ready",
+        "skillIds": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          17,
+          19,
+          20
+        ],
+        "entryPose": "hold-at-attack-entry",
+        "reason": "Rig sheet thường đã kiểm tra: MainObject.updateMount giữ frame/seat khi Action == 2; thân và WPS theo SplashSkill. Player.setDelaySkill chỉ chặn typeMount 0."
+      }
     },
     {
       "id": "3",
@@ -461,7 +506,26 @@
       "itemIds": [
         65,
         73
-      ]
+      ],
+      "mountedAttack": {
+        "status": "ready",
+        "skillIds": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          17,
+          19,
+          20
+        ],
+        "entryPose": "hold-at-attack-entry",
+        "reason": "Rig sheet thường đã kiểm tra: MainObject.updateMount giữ frame/seat khi Action == 2; thân và WPS theo SplashSkill. Player.setDelaySkill chỉ chặn typeMount 0."
+      }
     },
     {
       "id": "4",
@@ -570,7 +634,26 @@
       "itemIds": [
         66,
         74
-      ]
+      ],
+      "mountedAttack": {
+        "status": "ready",
+        "skillIds": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          17,
+          19,
+          20
+        ],
+        "entryPose": "hold-at-attack-entry",
+        "reason": "Rig sheet thường đã kiểm tra: MainObject.updateMount giữ frame/seat khi Action == 2; thân và WPS theo SplashSkill. Player.setDelaySkill chỉ chặn typeMount 0."
+      }
     },
     {
       "id": "5",
@@ -678,7 +761,26 @@
       },
       "itemIds": [
         124
-      ]
+      ],
+      "mountedAttack": {
+        "status": "ready",
+        "skillIds": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          17,
+          19,
+          20
+        ],
+        "entryPose": "hold-at-attack-entry",
+        "reason": "Rig sheet thường đã kiểm tra: MainObject.updateMount giữ frame/seat khi Action == 2; thân và WPS theo SplashSkill. Player.setDelaySkill chỉ chặn typeMount 0."
+      }
     },
     {
       "id": "6",
@@ -786,7 +888,26 @@
       },
       "itemIds": [
         146
-      ]
+      ],
+      "mountedAttack": {
+        "status": "ready",
+        "skillIds": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          17,
+          19,
+          20
+        ],
+        "entryPose": "hold-at-attack-entry",
+        "reason": "Rig sheet thường đã kiểm tra: MainObject.updateMount giữ frame/seat khi Action == 2; thân và WPS theo SplashSkill. Player.setDelaySkill chỉ chặn typeMount 0."
+      }
     },
     {
       "id": "7",
@@ -894,7 +1015,26 @@
       },
       "itemIds": [
         159
-      ]
+      ],
+      "mountedAttack": {
+        "status": "ready",
+        "skillIds": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          17,
+          19,
+          20
+        ],
+        "entryPose": "hold-at-attack-entry",
+        "reason": "Rig sheet thường đã kiểm tra: MainObject.updateMount giữ frame/seat khi Action == 2; thân và WPS theo SplashSkill. Player.setDelaySkill chỉ chặn typeMount 0."
+      }
     },
     {
       "id": "8",
@@ -1002,7 +1142,26 @@
       },
       "itemIds": [
         160
-      ]
+      ],
+      "mountedAttack": {
+        "status": "ready",
+        "skillIds": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          17,
+          19,
+          20
+        ],
+        "entryPose": "hold-at-attack-entry",
+        "reason": "Rig sheet thường đã kiểm tra: MainObject.updateMount giữ frame/seat khi Action == 2; thân và WPS theo SplashSkill. Player.setDelaySkill chỉ chặn typeMount 0."
+      }
     },
     {
       "id": "9",
@@ -1110,7 +1269,26 @@
       },
       "itemIds": [
         161
-      ]
+      ],
+      "mountedAttack": {
+        "status": "ready",
+        "skillIds": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          17,
+          19,
+          20
+        ],
+        "entryPose": "hold-at-attack-entry",
+        "reason": "Rig sheet thường đã kiểm tra: MainObject.updateMount giữ frame/seat khi Action == 2; thân và WPS theo SplashSkill. Player.setDelaySkill chỉ chặn typeMount 0."
+      }
     },
     {
       "id": "10",
@@ -1218,7 +1396,26 @@
       },
       "itemIds": [
         163
-      ]
+      ],
+      "mountedAttack": {
+        "status": "ready",
+        "skillIds": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          17,
+          19,
+          20
+        ],
+        "entryPose": "hold-at-attack-entry",
+        "reason": "Rig sheet thường đã kiểm tra: MainObject.updateMount giữ frame/seat khi Action == 2; thân và WPS theo SplashSkill. Player.setDelaySkill chỉ chặn typeMount 0."
+      }
     },
     {
       "id": "11",
@@ -1326,7 +1523,26 @@
       },
       "itemIds": [
         222
-      ]
+      ],
+      "mountedAttack": {
+        "status": "ready",
+        "skillIds": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          17,
+          19,
+          20
+        ],
+        "entryPose": "hold-at-attack-entry",
+        "reason": "Rig sheet thường đã kiểm tra: MainObject.updateMount giữ frame/seat khi Action == 2; thân và WPS theo SplashSkill. Player.setDelaySkill chỉ chặn typeMount 0."
+      }
     },
     {
       "id": "12",
@@ -1435,7 +1651,26 @@
       "itemIds": [
         246,
         248
-      ]
+      ],
+      "mountedAttack": {
+        "status": "ready",
+        "skillIds": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          17,
+          19,
+          20
+        ],
+        "entryPose": "hold-at-attack-entry",
+        "reason": "Rig sheet thường đã kiểm tra: MainObject.updateMount giữ frame/seat khi Action == 2; thân và WPS theo SplashSkill. Player.setDelaySkill chỉ chặn typeMount 0."
+      }
     },
     {
       "id": "13",
@@ -1543,7 +1778,26 @@
       },
       "itemIds": [
         250
-      ]
+      ],
+      "mountedAttack": {
+        "status": "ready",
+        "skillIds": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          17,
+          19,
+          20
+        ],
+        "entryPose": "hold-at-attack-entry",
+        "reason": "Rig sheet thường đã kiểm tra: MainObject.updateMount giữ frame/seat khi Action == 2; thân và WPS theo SplashSkill. Player.setDelaySkill chỉ chặn typeMount 0."
+      }
     }
   ],
   "pets": [
