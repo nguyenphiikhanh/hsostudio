@@ -52,3 +52,13 @@ The eye selector uses original Java4.0.3 eye resource IDs0–15, default8, with 
 
 ## Composite companions
 Reuse the mount/pet selectors. Only show three still-unmapped items in the unsupported list, with source warnings on the selected pet when applicable. New DataSkillEff/PetTool rigs expose idle/walk; explain why mounted attack remains disabled for these rigs. Expand direction thumbnail logical bounds to include all component pieces without animation-dependent zoom changes.
+
+Danh hiệu có bộ chọn độc lập trong trang bị, dùng cùng native select và nhãn hiện tại. Hiển thị ID vật phẩm, số frame và chất lượng x4; có “Không dùng”. Chú thích rõ đây là danh hiệu cá nhân trong bộ server, không phải bang/tổ đội. Giữ điểm đặt nguồn; các khung hướng tự thu vừa cả danh hiệu để không cắt ảnh. Demo arena chưa hỗ trợ danh hiệu; xem bằng preview hoặc ZIP Phaser.
+
+## Navigation and routed workspaces
+
+The left sidebar has two native links with visible active and keyboard focus states: Character Lab (`/character-lab`) and Thư viện dữ liệu (`/catalog`). Root opens Character Lab. Character Lab contains equipment, composition, four-direction animation and skill previews. The catalog page contains category navigation, filters, gallery and pagination. Both pages share the existing header/export controls and layer inspector; record details appear on the catalog page. KeepAlive retains each view and in-memory workbench state across navigation; animation timers pause while the lab is inactive. Refresh intentionally clears drafts as before. On mobile, workspace links form a horizontal row using existing tokens.
+
+## Map viewer
+
+Add Map at `/maps` beside Character Lab and the catalog. The Map page uses its own controls and inspector; character export buttons and layer inspector are hidden on this route. A searchable native select distinguishes ready layouts from disabled name-only entries. The map canvas takes remaining width beside a260px read-only inspector; stack the inspector below at1100px. Layer checkboxes, camera controls, coordinate readout and limitations use existing typography/surface/border tokens. Read-only PNG/JSON/Phaser ZIP exports live in the map toolbar. Red/blue overlays identify blocked/slow cells; green/orange markers identify warps/mob spawns, explicitly not original actor sprites. Support pointer pan, wheel/button/keyboard zoom, fit-to-view, touch pan and visible focus. No fake maps for missing layouts and no editor save action.

@@ -22,6 +22,7 @@ test('catalog, record drafts, layer editing and Phaser exports', async ({ page }
   const errors = []
   page.on('pageerror', e => errors.push(e.message))
   await page.goto('/')
+  await page.getByRole('link', { name: 'Thư viện dữ liệu', exact: true }).click()
   await expect(page.locator('.asset-card').first()).toBeVisible({ timeout: 30000 })
   await page.getByRole('button', { name: 'Quái vật' }).click()
   await page.getByRole('textbox', { name: 'Tìm theo tên hoặc ID' }).fill('Ốc sên')
@@ -35,7 +36,9 @@ test('catalog, record drafts, layer editing and Phaser exports', async ({ page }
   await page.getByLabel('hp', { exact: true }).fill('777')
   await page.getByRole('button', { name: 'Áp dụng nháp' }).click()
   await page.getByRole('button', { name: 'Tài nguyên' }).click()
+  await page.getByRole('link', { name: 'Character Lab', exact: true }).click()
   await page.getByRole('button', { name: 'Xóa các lớp', exact: true }).click()
+  await page.getByRole('link', { name: 'Thư viện dữ liệu', exact: true }).click()
   await page.locator('.asset-card').first().click()
   await page.getByRole('button', { name: '+ Thêm lớp' }).click()
   await page.getByLabel('Rộng', { exact: true }).fill('16')

@@ -9,8 +9,11 @@ test('real HSO weapons render from verified class/part and animate with the offi
   const ordinary = page.getByLabel('Vũ khí thường HSO', { exact: true })
   const cosmetic = page.getByLabel('Vũ khí thời trang HSO', { exact: true })
   await expect(ordinary).toBeEnabled({ timeout: 30000 })
-  await expect(ordinary.locator('option')).toHaveCount(142)
+  await expect(ordinary.locator('option')).toHaveCount(25)
+  await expect(cosmetic.locator('option[value="4691"]')).toHaveJSProperty('disabled', false)
+  await page.getByLabel('Áp dụng điều kiện trang bị', { exact: true }).check()
   await expect(cosmetic.locator('option[value="4691"]')).toHaveJSProperty('disabled', true)
+  await page.getByLabel('Áp dụng điều kiện trang bị', { exact: true }).uncheck()
   await ordinary.selectOption('0')
   await expect(page.locator('.layer-row')).toHaveCount(6)
   await expect(page.getByTestId('weapon-visual-status')).toContainText('Đang vẽ vũ khí thường')
@@ -64,6 +67,41 @@ test('real HSO weapons render from verified class/part and animate with the offi
   await page.evaluate(async () => { const { query } = await import('/src/lib/catalog.js'); query('DROP TABLE hso_weapon_sheets') })
   await ordinary.selectOption('15')
   await expect(page.getByTestId('weapon-visual-status')).toContainText('bộ dữ liệu đóng gói')
+  await expect(page.locator('.layer-row')).toHaveCount(5)
+  expect(errors).toEqual([])
+})
+
+
+test('all 96 ordinary appearances can preview at level 1, variants remain selectable and cosmetics declare their limit', async ({ page }) => {
+  const errors=[];page.on('pageerror',error=>errors.push(error.message))
+  await page.goto('/')
+  const ordinary=page.getByLabel('Vũ khí thường HSO',{exact:true})
+  await expect(ordinary).toBeEnabled({timeout:30000})
+  for(const clazz of [0,1,2,3]) {
+    await page.getByLabel('Phái nhân vật',{exact:true}).selectOption(String(clazz))
+    await expect(ordinary.locator('option')).toHaveCount(25)
+    const options=await ordinary.locator('option').evaluateAll(os=>os.filter(o=>o.value).map(o=>({id:o.value,disabled:o.disabled})))
+    expect(options.every(o=>!o.disabled)).toBe(true)
+    for(const option of options) {
+      await ordinary.selectOption(option.id)
+      await expect(page.getByTestId('weapon-visual-status')).toContainText('Đang vẽ vũ khí thường')
+      await expect(page.locator('.layer-row')).toHaveCount(6)
+    }
+    const variants=page.getByLabel('Biến thể vũ khí HSO',{exact:true})
+    const ids=await variants.locator('option').evaluateAll(os=>os.map(o=>o.value))
+    for(const id of ids)await variants.selectOption(id)
+    await expect(variants).toHaveValue(ids.at(-1))
+  }
+  const cosmetic=page.getByLabel('Vũ khí thời trang HSO',{exact:true})
+  for(const id of await cosmetic.locator('option').evaluateAll(os=>os.filter(o=>o.value).map(o=>o.value))) {
+    await cosmetic.selectOption(id)
+    await expect(page.getByTestId('cosmetic-visual-status')).toContainText('chưa thay đổi ảnh')
+  }
+  await page.getByLabel('Cấp nhân vật để đối chiếu',{exact:true}).fill('')
+  await expect(page.locator('.layer-row')).toHaveCount(6)
+  await page.getByLabel('Cấp nhân vật để đối chiếu',{exact:true}).fill('1')
+  await page.getByLabel('Áp dụng điều kiện trang bị',{exact:true}).check()
+  await expect(ordinary).toHaveValue('')
   await expect(page.locator('.layer-row')).toHaveCount(5)
   expect(errors).toEqual([])
 })

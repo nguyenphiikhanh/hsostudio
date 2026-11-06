@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
+import { computed, onMounted, onUnmounted, onActivated, onDeactivated, ref, watch, nextTick } from 'vue'
 import AttackControls from './AttackControls.vue'
 import SkillOnePreview from './SkillOnePreview.vue'
 import SkillTwoPreview from './SkillTwoPreview.vue'
@@ -7,6 +7,7 @@ import SkillThreePreview from './SkillThreePreview.vue'
 import SkillFourPreview from './SkillFourPreview.vue'
 import ClientSkillEffectPreview from './ClientSkillEffectPreview.vue'
 import { createAttackTrial } from '../lib/attackTrial'
+import { titleCycleLength } from '../lib/titlePose.js'
 import { companionCycleLength, companionViewport } from '../lib/companionPose.js'
 import { loadImage } from '../lib/export'
 import { DIRECTIONS, WALK_CYCLE, IDLE_CYCLE, IDLE_FPS, paintLayers, resolvePose, clientSkillPhase, clientSkillClip } from '../lib/characterPose'
@@ -14,7 +15,7 @@ import { clientSkillData, isClientAttackSkill } from '../lib/clientSkillCatalog'
 
 const props = defineProps({ layers: { type: Array, required: true }, clazz: { type: Number, default: 0 } })
 const emit = defineEmits(['update', 'error', 'update:clazz'])
-const direction = ref('down'), motion = ref('idle'), playing = ref(true), fps = ref(IDLE_FPS), tick = ref(0)
+const direction = ref('down'), motion = ref('idle'), playing = ref(true), fps = ref(IDLE_FPS), tick = ref(0), titleTick = ref(0)
 const trial = ref(createAttackTrial({ clazz: props.clazz }))
 const hasClientWeapon = computed(() => props.layers.some(layer => layer.slot === 'weapon' && layer.clientWeapon && layer.clazz === props.clazz))
 const clientBasic = computed(() => motion.value === 'attack' && trial.value.skillId === 0 && hasClientWeapon.value)
@@ -25,7 +26,7 @@ const clientSkillFour = computed(() => motion.value === 'attack' && trial.value.
 const clientSkill = computed(() => motion.value === 'attack' && isClientAttackSkill(props.clazz, trial.value.skillId) && hasClientWeapon.value)
 const clientNonAttackSkill = computed(() => motion.value === 'attack' && trial.value.skillId > 0 && !isClientAttackSkill(props.clazz, trial.value.skillId) && Boolean(clientSkillData(props.clazz, trial.value.skillId)))
 const clientVerified = computed(() => clientBasic.value || clientSkill.value)
-const hasCompanion = computed(()=>props.layers.some(l=>l.companion && l.visible))
+const hasCompanion = computed(()=>props.layers.some(l=>(l.companion || l.title) && l.visible))
 const activeMount = computed(()=>props.layers.find(l=>l.slot==='mount' && l.visible)?.companion)
 const hasMount = computed(()=>Boolean(activeMount.value))
 const mountedCombat = computed(()=>activeMount.value?.mountedAttack?.status==='ready')
@@ -38,7 +39,7 @@ watch(motion,(value,old)=>{
 },{flush:'sync'})
 const effectiveFps = computed(() => clientVerified.value || hasCompanion.value ? 25 : fps.value)
 const companionCycle = computed(()=>{
-  const lengths=props.layers.filter(l=>l.companion && l.visible).map(l=>companionCycleLength(l.companion,motion.value))
+  const lengths=props.layers.filter(l=>(l.companion || l.title) && l.visible).map(l=>l.title ? titleCycleLength(l.title) : companionCycleLength(l.companion,motion.value))
   const gcd=(a,b)=>b?gcd(b,a%b):a
   if(!hasMount.value)lengths.push(100/gcd(fps.value,100))
   return lengths.reduce((a,b)=>a*b/gcd(a,b),1)
@@ -46,27 +47,30 @@ const companionCycle = computed(()=>{
 watch(activeMount,()=>{if(hasMount.value && motion.value==='attack')motion.value='idle'})
 watch(hasClientWeapon,value=>{if(hasMount.value && !value && motion.value==='attack')motion.value='idle'})
 const nativePhase = computed(() => clientSkillPhase(props.clazz, clientSkill.value ? trial.value.skillId : 0, tick.value))
-const attackPhase = computed(() => trial.value.frames[tick.value % trial.value.frames.length])
+const attackPhase = computed(() => trial.value.frames[(hasCompanion.value && !hasMount.value && !clientVerified.value ? bodyTick.value : tick.value) % trial.value.frames.length])
 const baseAttackOptions = computed(() => clientVerified.value ? { clientAttack: true, clientBodyFrame: nativePhase.value.bodyFrame, clientWeaponFrame: nativePhase.value.weaponFrame } : motion.value === 'attack' ? { experimentalAttack: true, anchorPose: attackPhase.value.anchorPose } : {})
-const attackOptions = computed(()=>hasCompanion.value ? {...baseAttackOptions.value,motion:motion.value,tick:tick.value,...(hasMount.value && motion.value==='attack'?{mountEntry:mountEntry.value,clientSkillId:trial.value.skillId}:{})} : baseAttackOptions.value)
+const attackOptions = computed(()=>hasCompanion.value ? {...baseAttackOptions.value,motion:motion.value,tick:tick.value,titleTick:titleTick.value,...(hasMount.value && motion.value==='attack'?{mountEntry:mountEntry.value,clientSkillId:trial.value.skillId}:{})} : baseAttackOptions.value)
 const views = new Map()
 const viewport=computed(()=>companionViewport(props.layers))
-const cycleLength = computed(() => hasCompanion.value && motion.value!=='attack' ? companionCycle.value : clientSkill.value ? Math.max(32, clientSkillClip(props.clazz, trial.value.skillId).frames.length) : clientBasic.value ? 9 : motion.value === 'attack' ? trial.value.frames.length : motion.value === 'walk' ? WALK_CYCLE.length : IDLE_CYCLE.length)
+const gcdClock = (a,b) => b ? gcdClock(b,a%b) : a
+const cycleLength = computed(() => hasCompanion.value && motion.value!=='attack' ? companionCycle.value : clientSkill.value ? Math.max(32, clientSkillClip(props.clazz, trial.value.skillId).frames.length) : clientBasic.value ? 9 : motion.value === 'attack' ? (hasCompanion.value && !hasMount.value ? trial.value.frames.length * 25 / gcdClock(fps.value, trial.value.frames.length * 25) : trial.value.frames.length) : motion.value === 'walk' ? WALK_CYCLE.length : IDLE_CYCLE.length)
 const bodyTick = computed(()=>hasCompanion.value && !hasMount.value ? Math.floor(tick.value*fps.value/25) : tick.value)
 const breath = computed(() => motion.value === 'idle' && !hasMount.value ? IDLE_CYCLE[bodyTick.value % IDLE_CYCLE.length] : 0)
 const pose = computed(() => clientVerified.value ? [0, 0, 1, 2, 3, 4][nativePhase.value.bodyFrame] : motion.value === 'attack' ? attackPhase.value.pose : motion.value === 'walk' ? WALK_CYCLE[bodyTick.value % WALK_CYCLE.length] : 0)
-let timer, renderVersion = 0
+const titleClockCycle = computed(() => props.layers.find(l=>l.title && l.visible)?.title ? titleCycleLength(props.layers.find(l=>l.title && l.visible).title) : 1)
+let timer, renderVersion = 0, active = true
 function stopTimer() { clearInterval(timer); timer = undefined }
 function restartTimer() {
   stopTimer()
-  if (playing.value) timer = setInterval(() => { tick.value = (tick.value + 1) % cycleLength.value }, 1000 / effectiveFps.value)
+  if (playing.value && active) timer = setInterval(() => { titleTick.value = (titleTick.value + 1) % titleClockCycle.value; tick.value = (tick.value + 1) % cycleLength.value }, 1000 / effectiveFps.value)
 }
-function nextFrame() { playing.value = false; tick.value = (tick.value + 1) % cycleLength.value }
+function nextFrame() { playing.value = false; titleTick.value = (titleTick.value + 1) % titleClockCycle.value; tick.value = (tick.value + 1) % cycleLength.value }
 function updateTrial(value) { trial.value = value; tick.value = 0; emit('update:clazz', value.clazz) }
 watch(() => props.clazz, clazz => { if (clazz !== trial.value.clazz) updateTrial({ ...trial.value, clazz, skillId: 0 }) })
 watch([clientVerified, clientSkill, hasCompanion, hasMount], () => { tick.value = 0 })
 function changeMotion() { tick.value = 0; playing.value = true; restartTimer() }
 async function drawViews() {
+  if (!active) return
   const version = ++renderVersion
   const snapshot = props.layers.map(l => ({ ...l, asset: { ...l.asset } }))
   try {
@@ -84,6 +88,8 @@ async function drawViews() {
       ctx.scale(hasCompanion.value ? viewport.value.scale : 12, hasCompanion.value ? viewport.value.scale : 12)
       ctx.imageSmoothingEnabled = false
       paintLayers(ctx, posed, images, hasCompanion.value ? viewport.value.x : 26, hasCompanion.value ? viewport.value.y : 45)
+      canvas.dataset.renderedTitle=posed.find(l=>l.title && l.visible)?.title.id ?? ''
+      canvas.dataset.titleFrame=String(posed.find(l=>l.title && l.visible)?.frame ?? '')
       canvas.dataset.renderedMount=posed.find(l=>l.slot==='mount' && l.visible)?.companion.id ?? ''
       ctx.restore()
     }))
@@ -95,6 +101,8 @@ watch([direction, motion, pose, breath, tick, fps, playing, trial, clientVerifie
 }, { immediate: true })
 watch([() => props.layers, pose, breath, attackOptions], drawViews, { deep: true })
 onMounted(() => { drawViews(); restartTimer() })
+onActivated(() => { active = true; drawViews(); restartTimer() })
+onDeactivated(() => { active = false; stopTimer(); renderVersion++ })
 onUnmounted(() => { stopTimer(); renderVersion++ })
 </script>
 

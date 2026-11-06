@@ -14,3 +14,15 @@ export function weaponEquipmentFacts(item, clazz, level) {
     visualReason: 'Vũ khí thường dùng ánh xạ client 4.0.3 qua hso_weapon_sheets; thời trang chưa có renderer được đối chiếu.',
   }
 }
+
+// Distinct item IDs are retained as variants; only the visual list is grouped.
+export function groupWeaponAppearances(items, clazz) {
+  const groups = new Map()
+  for (const item of items) {
+    if (!NORMAL_WEAPON_TYPES.includes(item.type) || (item.clazz !== clazz && item.clazz !== 4)) continue
+    const key = `${clazz}:${item.part}`
+    if (!groups.has(key)) groups.set(key, { key, part: item.part, representative: item, items: [] })
+    groups.get(key).items.push(item)
+  }
+  return [...groups.values()].sort((a, b) => a.part - b.part)
+}

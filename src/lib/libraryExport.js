@@ -14,6 +14,9 @@ import { createAttackTrial } from './attackTrial'
 import { companionCatalog } from './companions'
 import { compileCompanion } from './companionPose.js'
 import companionSource from './companionPose.js?raw'
+import { titleCatalog } from './titles'
+import { compileTitle } from './titlePose.js'
+import titlePoseSource from './titlePose.js?raw'
 const SLOT_ORDER = ['pants', 'shirt', 'head', 'hair', 'eyes', 'helmet']
 const cropKeys = ['sx', 'sy', 'w', 'h']
 
@@ -64,10 +67,25 @@ export async function exportPartLibrary(requestedName, layers, drafts, progress 
     manifest.companions[d.slot][d.id]=compiled.part
     manifest.companionAtlases.push(compiled.atlasEntry)
   }
+  manifest.titles = {}; manifest.titleAtlases = []
+  for (const d of titleCatalog.titles) {
+    const compiled = compileTitle(d,name)
+    const response = await fetch(gameUrl(d.asset.image))
+    if(!response.ok || response.headers.get('content-type')?.includes('text/html')) throw new Error('Không tải được PNG danh hiệu: '+d.label)
+    files[compiled.paths.image] = new Uint8Array(await response.arrayBuffer())
+    files[compiled.paths.data] = compiled.atlas
+    files[compiled.paths.definition] = d
+    manifest.titles[d.id] = compiled.part
+    manifest.titleAtlases.push(compiled.atlasEntry)
+    equipment.items[String(d.itemId)] = {id:d.itemId,name:d.label,slot:'title',titleId:d.id}
+    equipment.unsupportedCount--
+  }
+  files['titlePose.js'] = titlePoseSource
   files['companions.inventory.json']=companionCatalog.inventory
   files['companionPose.js']=companionSource
   const character = { version: 1, equipment: {}, companions: {}, omittedLayers: [] }
   for (const layer of layers) {
+    if(layer.title){character.title={id:layer.title.id,x:layer.x,y:layer.y,visible:layer.visible};continue}
     if(layer.companion){if(layer.visible!==false)character.companions[layer.slot]=layer.companion.id;continue}
     const key = assetKeys.get(layer.asset.id)
     if (!key || manifest.parts[key].slot !== layer.slot) { character.omittedLayers.push({ name: layer.name, reason: 'Lớp không thuộc thư viện part đã giải mã.' }); continue }
@@ -121,8 +139,9 @@ export async function createLibraryScene(Phaser, baseUrl = '.') {
 `
   files['README.md'] = `# ${name}\n\nGiải nén toàn bộ ZIP vào cùng một thư mục được phục vụ qua HTTP(S).\n\n- library.json: danh mục part ưu tiên x4, có density và báo cáo qualityNotes, mỗi part có thư mục và atlas riêng.\n- equipment.json: các item áo/quần/mũ có part tương ứng trong Studio; không phải danh sách mọi loại vật phẩm. Kiểm tra clazz/level trong game trước khi mặc.\n- animations.json: đứng yên, di chuyển và tấn công thử nghiệm, đủ 4 hướng. Attack có provenance studio-trial; không có hit event.\n- combat.json: 84 kỹ năng từ 4 packet server, kèm nguồn và SHA-256; typePaint/subEff chưa map sang sprite.\n- character.json: bộ part đang chọn, độ lệch vị trí và trạng thái hiển thị.\n- runtime.js + characterPose.js: ghép lớp, thay part/item và đồng bộ nhịp animation.\n- example.js: hàm tạo Phaser Scene.\n- parts/<slot>/<id>/sheet.png: ảnh riêng của part.\n- parts/<slot>/<id>/part.json: file nguồn để chỉnh ID, frame và điểm neo.\n- parts/<slot>/<id>/atlas.json: file atlas tự sinh từ part.json.\n- reindex-library.mjs: cập nhật atlas và danh mục sau khi thêm/sửa part.\n\nDùng:\n\n\`\`\`js\nimport Phaser from 'phaser';\nimport { createLibraryScene } from './example.js';\nconst Scene = await createLibraryScene(Phaser, '/assets/${name}');\nnew Phaser.Game({ type: Phaser.AUTO, width: 800, height: 600, pixelArt: true, scene: Scene });\n\`\`\`\n\nThêm thiết kế mới:\n\n1. Copy thư mục parts/shirt/0 thành parts/shirt/9000.\n2. Sửa partId thành 9000, label và provenance thành custom-design trong part.json.\n3. Thay sheet.png. width/height là pixel PNG; frames và offsets dùng đơn vị x1; density=4 chuyển crop sang pixel x4 khi tạo atlas. Nếu đổi bố cục, cập nhật các trường tương ứng. ZIP cũ thiếu density được hiểu là 1.\n4. Chạy \`node reindex-library.mjs\` trong thư mục giải nén (cần Node.js). Script kiểm tra tất cả part trước khi ghi atlas.json và library.json.\n5. Tải lại game rồi gọi character.equip('shirt', 9000). Nếu cần ID vật phẩm, thêm entry vào equipment.json tham chiếu shirt-9000.\n\nKhông cần sửa atlas chung hoặc chạy lại Studio. Chỉ sửa part.json; atlas.json và library.json là file sinh tự động. Ví dụ mẫu nạp toàn bộ part; preloadLibrary nhận danh sách partKey tùy chọn nếu cần nạp một tập nhỏ.\n\nAttack: character.setState('attack', 'left') phát một lần rồi giữ pose cuối; gọi lại để phát lại. Gọi setState('idle') để trở về thở. Với chuỗi thử nghiệm, đổi preparePose/strikePose/anchor trong Studio. Với chiêu #0–#20 có mapping body/WPS, timeline dùng client 4.0.3; kiểm tra category và limitations trong animations.json. Hiệu ứng chiêu #1–#4 chỉ có trong preview Studio. Cooldown server không được dùng làm FPS hoặc thời điểm hit.\n\nThay part: character.equip('shirt', 1). Thay bằng item: character.equipItem(80). Đổi hướng/trạng thái: character.setState('walk', 'left'). Runtime tự cập nhật theo Scene; gọi character.destroy() khi bỏ nhân vật.\n\nLưu ý:\n${manifest.limitations.map(line => '- ' + line).join('\n')}\n- Thứ tự lớp dùng slot chuẩn; lớp ghép tay không nằm trong thư viện. Xem character.omittedLayers.\n- Dữ liệu trang bị map theo type/part trong Studio, không xác nhận tương thích client HSO gốc.\n`
   files['README.md'] += '\n\nMount/pet: character.mount(\"0\"); character.setPet(\"3\"); character.mount(null); character.setPet(null). Rig hỗ trợ idle/walk; 13 rig sheet thường (trừ Ngựa nâu) hỗ trợ attack khi animations.states.attack là clip client đã xác minh cho #0–#8/#17/#19/#20. Vũ khí vẫn chỉ có trong preview Studio và bản xuất tư thế. PNG và metadata ở mounts/<id>/ và pets/<id>/; sửa companion.json rồi chạy node reindex-library.mjs để build lại. Asset chưa hỗ trợ được liệt kê trong companions.inventory.json. Pet theo đội hình xem trước 40 units, không có AI đi theo.\n'
+  files['README.md'] += '\nDanh hiệu: character.setTitle(4720), character.setTitle(null), hoặc character.equipItem(4720). PNG x4 + title.json + atlas.json trong titles/<itemId>/. FrameName đổi mỗi5 tick client; tọa độ giữ nguyên, không lật theo hướng. Đây là nội dung bộ server, không xác nhận tên danh hiệu chính thức.\n'
   files['README.md'] += '\nComposite mount/pet: các rig mới chỉ hỗ trợ idle/walk, dùng rig.rects và rig.frames để dựng nhiều mảnh với layer trước/sau. Tổng22 mount +12 pet. Dùng companionId trong inventory để phân biệt nhiều ngoại hình cùng typeMount; không dùng typeId làm ID texture cho DataSkillEff. PetTool không có AI/attack; cảnh báo dữ liệu gốc giữ trong companion.json.\n'
   progress(`Nén ${rows.length} thư mục part…`)
   await downloadZip(name, files)
-  return { companions: manifest.companionAtlases.length, parts: rows.length, atlases: manifest.atlases.length, items: Object.keys(equipment.items).length, omitted: character.omittedLayers.length }
+  return { titles: manifest.titleAtlases.length, companions: manifest.companionAtlases.length, parts: rows.length, atlases: manifest.atlases.length, items: Object.keys(equipment.items).length, omitted: character.omittedLayers.length }
 }

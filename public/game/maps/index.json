@@ -1,0 +1,1127 @@
+{
+  "version": 1,
+  "tileSize": 24,
+  "readyCount": 91,
+  "templateCount": 307,
+  "source": {
+    "jarSha256": "f023b34e0ba0a3dcf44249ed5f90b78f0427deee4668562b8e3a0e9e349b18c6",
+    "classes": {
+      "Thread_More/LoadMap": "1a22aa5bde55f4a4d10a41073d71060c76edff7c5c1f137b4470fdb6ce77365b",
+      "Map/ItemMap": "00584bbd355c7c5791913c960f5e661de4864f494679436873fa9f264498836d",
+      "Model/CRes": "d0a30ca994ec62c6631698ae939eba36448aab3dc9030ddbed29643268b121c5",
+      "netcommand/global/ReadMessenge": "52c673a0c4326dae10065ce187cbe8f15c199a8cd9baa636df9aedcdb45dcb28"
+    },
+    "objectTable": "maps/objects.json",
+    "objectTableSha256": "2e133d9039c019aad9cffdd6c811d64071ee4009d36933fe45968328ca470247"
+  },
+  "maps": [
+    {
+      "id": 0,
+      "name": "Ngôi Làng Nhỏ",
+      "status": "ready",
+      "width": 58,
+      "height": 30,
+      "tileId": 0,
+      "objectCount": 77,
+      "path": "maps/0.json"
+    },
+    {
+      "id": 1,
+      "name": "Làng Sói Trắng",
+      "status": "ready",
+      "width": 44,
+      "height": 30,
+      "tileId": 0,
+      "objectCount": 58,
+      "path": "maps/1.json"
+    },
+    {
+      "id": 2,
+      "name": "Khu mỏ",
+      "status": "ready",
+      "width": 42,
+      "height": 30,
+      "tileId": 2,
+      "objectCount": 39,
+      "path": "maps/2.json"
+    },
+    {
+      "id": 3,
+      "name": "Bìa Rừng",
+      "status": "ready",
+      "width": 40,
+      "height": 44,
+      "tileId": 0,
+      "objectCount": 151,
+      "path": "maps/3.json"
+    },
+    {
+      "id": 4,
+      "name": "Hang Lửa",
+      "status": "ready",
+      "width": 44,
+      "height": 37,
+      "tileId": 2,
+      "objectCount": 36,
+      "path": "maps/4.json"
+    },
+    {
+      "id": 5,
+      "name": "Rừng Ảo Giác",
+      "status": "ready",
+      "width": 52,
+      "height": 45,
+      "tileId": 0,
+      "objectCount": 200,
+      "path": "maps/5.json"
+    },
+    {
+      "id": 6,
+      "name": "Khe Vực",
+      "status": "ready",
+      "width": 35,
+      "height": 31,
+      "tileId": 0,
+      "objectCount": 46,
+      "path": "maps/6.json"
+    },
+    {
+      "id": 7,
+      "name": "Cánh Đồng Sói",
+      "status": "ready",
+      "width": 40,
+      "height": 36,
+      "tileId": 0,
+      "objectCount": 62,
+      "path": "maps/7.json"
+    },
+    {
+      "id": 8,
+      "name": "Thung Lũng Kỳ Bí",
+      "status": "ready",
+      "width": 46,
+      "height": 46,
+      "tileId": 0,
+      "objectCount": 62,
+      "path": "maps/8.json"
+    },
+    {
+      "id": 9,
+      "name": "Hồ Ký Ức",
+      "status": "ready",
+      "width": 62,
+      "height": 46,
+      "tileId": 0,
+      "objectCount": 84,
+      "path": "maps/9.json"
+    },
+    {
+      "id": 10,
+      "name": "Bãi Đất Trống",
+      "status": "ready",
+      "width": 40,
+      "height": 30,
+      "tileId": 0,
+      "objectCount": 71,
+      "path": "maps/10.json"
+    },
+    {
+      "id": 11,
+      "name": "Bờ Biển",
+      "status": "ready",
+      "width": 53,
+      "height": 42,
+      "tileId": 0,
+      "objectCount": 34,
+      "path": "maps/11.json"
+    },
+    {
+      "id": 12,
+      "name": "Vực Đá",
+      "status": "ready",
+      "width": 58,
+      "height": 43,
+      "tileId": 0,
+      "objectCount": 40,
+      "path": "maps/12.json"
+    },
+    {
+      "id": 13,
+      "name": "Rặng Đá Ngầm",
+      "status": "ready",
+      "width": 35,
+      "height": 47,
+      "tileId": 0,
+      "objectCount": 20,
+      "path": "maps/13.json"
+    },
+    {
+      "id": 14,
+      "name": "Nghĩa Địa Tàu Đắm",
+      "status": "ready",
+      "width": 37,
+      "height": 33,
+      "tileId": 0,
+      "objectCount": 11,
+      "path": "maps/14.json"
+    },
+    {
+      "id": 15,
+      "name": "Đầm Lầy",
+      "status": "ready",
+      "width": 40,
+      "height": 54,
+      "tileId": 1,
+      "objectCount": 41,
+      "path": "maps/15.json"
+    },
+    {
+      "id": 16,
+      "name": "Đền Cổ",
+      "status": "ready",
+      "width": 50,
+      "height": 52,
+      "tileId": 1,
+      "objectCount": 32,
+      "path": "maps/16.json"
+    },
+    {
+      "id": 17,
+      "name": "Hang Dơi",
+      "status": "ready",
+      "width": 45,
+      "height": 35,
+      "tileId": 2,
+      "objectCount": 32,
+      "path": "maps/17.json"
+    },
+    {
+      "id": 18,
+      "name": "Hang Sói Quỷ",
+      "status": "ready",
+      "width": 42,
+      "height": 30,
+      "tileId": 2,
+      "objectCount": 26,
+      "path": "maps/18.json"
+    },
+    {
+      "id": 19,
+      "name": "Cửa Biển",
+      "status": "ready",
+      "width": 60,
+      "height": 35,
+      "tileId": 3,
+      "objectCount": 162,
+      "path": "maps/19.json"
+    },
+    {
+      "id": 20,
+      "name": "Sa Mạc",
+      "status": "ready",
+      "width": 40,
+      "height": 50,
+      "tileId": 3,
+      "objectCount": 62,
+      "path": "maps/20.json"
+    },
+    {
+      "id": 21,
+      "name": "Đồi Cát",
+      "status": "ready",
+      "width": 40,
+      "height": 40,
+      "tileId": 3,
+      "objectCount": 150,
+      "path": "maps/21.json"
+    },
+    {
+      "id": 22,
+      "name": "Vực Lún",
+      "status": "ready",
+      "width": 60,
+      "height": 35,
+      "tileId": 3,
+      "objectCount": 80,
+      "path": "maps/22.json"
+    },
+    {
+      "id": 23,
+      "name": "Hố Tử Thần",
+      "status": "ready",
+      "width": 35,
+      "height": 60,
+      "tileId": 3,
+      "objectCount": 181,
+      "path": "maps/23.json"
+    },
+    {
+      "id": 24,
+      "name": "Nghĩa địa cát",
+      "status": "ready",
+      "width": 50,
+      "height": 50,
+      "tileId": 3,
+      "objectCount": 218,
+      "path": "maps/24.json"
+    },
+    {
+      "id": 25,
+      "name": "Rừng Chết",
+      "status": "ready",
+      "width": 50,
+      "height": 42,
+      "tileId": 4,
+      "objectCount": 81,
+      "path": "maps/25.json"
+    },
+    {
+      "id": 26,
+      "name": "Suối Ma",
+      "status": "ready",
+      "width": 57,
+      "height": 30,
+      "tileId": 4,
+      "objectCount": 75,
+      "path": "maps/26.json"
+    },
+    {
+      "id": 27,
+      "name": "Thung Lũng Đá",
+      "status": "ready",
+      "width": 50,
+      "height": 33,
+      "tileId": 4,
+      "objectCount": 113,
+      "path": "maps/27.json"
+    },
+    {
+      "id": 28,
+      "name": "Boss Guardian",
+      "status": "ready",
+      "width": 35,
+      "height": 29,
+      "tileId": 4,
+      "objectCount": 93,
+      "path": "maps/28.json"
+    },
+    {
+      "id": 29,
+      "name": "Hầm Mộ Tầng 1",
+      "status": "ready",
+      "width": 35,
+      "height": 31,
+      "tileId": 5,
+      "objectCount": 13,
+      "path": "maps/29.json"
+    },
+    {
+      "id": 30,
+      "name": "Hầm Mộ Tầng 2",
+      "status": "ready",
+      "width": 35,
+      "height": 30,
+      "tileId": 5,
+      "objectCount": 19,
+      "path": "maps/30.json"
+    },
+    {
+      "id": 31,
+      "name": "Hầm Mộ Tầng 3",
+      "status": "ready",
+      "width": 31,
+      "height": 30,
+      "tileId": 5,
+      "objectCount": 18,
+      "path": "maps/31.json"
+    },
+    {
+      "id": 32,
+      "name": "Hầm mộ quái vật",
+      "status": "ready",
+      "width": 32,
+      "height": 30,
+      "tileId": 5,
+      "objectCount": 22,
+      "path": "maps/32.json"
+    },
+    {
+      "id": 33,
+      "name": "Thành Phố Kho Báu",
+      "status": "ready",
+      "width": 40,
+      "height": 32,
+      "tileId": 6,
+      "objectCount": 59,
+      "path": "maps/33.json"
+    },
+    {
+      "id": 34,
+      "name": "Khu phía Tây",
+      "status": "ready",
+      "width": 30,
+      "height": 32,
+      "tileId": 6,
+      "objectCount": 41,
+      "path": "maps/34.json"
+    },
+    {
+      "id": 35,
+      "name": "Khu phía Đông",
+      "status": "ready",
+      "width": 30,
+      "height": 32,
+      "tileId": 6,
+      "objectCount": 38,
+      "path": "maps/35.json"
+    },
+    {
+      "id": 36,
+      "name": "Đấu Trường",
+      "status": "ready",
+      "width": 43,
+      "height": 30,
+      "tileId": 6,
+      "objectCount": 29,
+      "path": "maps/36.json"
+    },
+    {
+      "id": 37,
+      "name": "Rừng cao nguyên",
+      "status": "ready",
+      "width": 50,
+      "height": 38,
+      "tileId": 7,
+      "objectCount": 21,
+      "path": "maps/37.json"
+    },
+    {
+      "id": 38,
+      "name": "Con đường hiểm trở",
+      "status": "ready",
+      "width": 36,
+      "height": 54,
+      "tileId": 7,
+      "objectCount": 26,
+      "path": "maps/38.json"
+    },
+    {
+      "id": 39,
+      "name": "Vách đá cheo leo",
+      "status": "ready",
+      "width": 40,
+      "height": 48,
+      "tileId": 7,
+      "objectCount": 36,
+      "path": "maps/39.json"
+    },
+    {
+      "id": 40,
+      "name": "Núi Cầu Vòng",
+      "status": "ready",
+      "width": 56,
+      "height": 32,
+      "tileId": 7,
+      "objectCount": 36,
+      "path": "maps/40.json"
+    },
+    {
+      "id": 41,
+      "name": "Lối lên Thượng giới",
+      "status": "ready",
+      "width": 70,
+      "height": 30,
+      "tileId": 7,
+      "objectCount": 33,
+      "path": "maps/41.json"
+    },
+    {
+      "id": 42,
+      "name": "Đèo hoang sơ",
+      "status": "ready",
+      "width": 40,
+      "height": 40,
+      "tileId": 8,
+      "objectCount": 1,
+      "path": "maps/42.json"
+    },
+    {
+      "id": 43,
+      "name": "Đường xuống lòng đất",
+      "status": "ready",
+      "width": 25,
+      "height": 52,
+      "tileId": 8,
+      "objectCount": 0,
+      "path": "maps/43.json"
+    },
+    {
+      "id": 44,
+      "name": "Cây cầu ma ám",
+      "status": "ready",
+      "width": 30,
+      "height": 50,
+      "tileId": 8,
+      "objectCount": 1,
+      "path": "maps/44.json"
+    },
+    {
+      "id": 45,
+      "name": "Cổng vào Hạ giới",
+      "status": "ready",
+      "width": 50,
+      "height": 51,
+      "tileId": 8,
+      "objectCount": 0,
+      "path": "maps/45.json"
+    },
+    {
+      "id": 46,
+      "name": "Đấu Trường",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 47,
+      "name": "Đồi xác chết",
+      "status": "ready",
+      "width": 35,
+      "height": 27,
+      "tileId": 3,
+      "objectCount": 99,
+      "path": "maps/47.json"
+    },
+    {
+      "id": 48,
+      "name": "Ngã tư tử thần",
+      "status": "ready",
+      "width": 56,
+      "height": 56,
+      "tileId": 1,
+      "objectCount": 41,
+      "path": "maps/48.json"
+    },
+    {
+      "id": 49,
+      "name": "Phó bản mới",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 50,
+      "name": "Khu vườn",
+      "status": "ready",
+      "width": 30,
+      "height": 30,
+      "tileId": 0,
+      "objectCount": 32,
+      "path": "maps/50.json"
+    },
+    {
+      "id": 51,
+      "name": "Cổng thiên đàng",
+      "status": "ready",
+      "width": 50,
+      "height": 70,
+      "tileId": 9,
+      "objectCount": 183,
+      "path": "maps/51.json"
+    },
+    {
+      "id": 52,
+      "name": "Cổng địa ngục",
+      "status": "ready",
+      "width": 47,
+      "height": 57,
+      "tileId": 10,
+      "objectCount": 111,
+      "path": "maps/52.json"
+    },
+    {
+      "id": 53,
+      "name": "Chuẩn bị",
+      "status": "ready",
+      "width": 20,
+      "height": 20,
+      "tileId": 0,
+      "objectCount": 24,
+      "path": "maps/53.json"
+    },
+    {
+      "id": 54,
+      "name": "Làng ánh sáng",
+      "status": "ready",
+      "width": 30,
+      "height": 30,
+      "tileId": 0,
+      "objectCount": 73,
+      "path": "maps/54.json"
+    },
+    {
+      "id": 55,
+      "name": "Chuẩn bị",
+      "status": "ready",
+      "width": 20,
+      "height": 20,
+      "tileId": 1,
+      "objectCount": 24,
+      "path": "maps/55.json"
+    },
+    {
+      "id": 56,
+      "name": "Làng gió",
+      "status": "ready",
+      "width": 30,
+      "height": 30,
+      "tileId": 1,
+      "objectCount": 52,
+      "path": "maps/56.json"
+    },
+    {
+      "id": 57,
+      "name": "Chuẩn bị",
+      "status": "ready",
+      "width": 20,
+      "height": 20,
+      "tileId": 2,
+      "objectCount": 13,
+      "path": "maps/57.json"
+    },
+    {
+      "id": 58,
+      "name": "Làng sét",
+      "status": "ready",
+      "width": 30,
+      "height": 30,
+      "tileId": 2,
+      "objectCount": 27,
+      "path": "maps/58.json"
+    },
+    {
+      "id": 59,
+      "name": "Chuẩn bị",
+      "status": "ready",
+      "width": 20,
+      "height": 20,
+      "tileId": 6,
+      "objectCount": 17,
+      "path": "maps/59.json"
+    },
+    {
+      "id": 60,
+      "name": "Làng lửa",
+      "status": "ready",
+      "width": 30,
+      "height": 30,
+      "tileId": 6,
+      "objectCount": 45,
+      "path": "maps/60.json"
+    },
+    {
+      "id": 61,
+      "name": "Chiến trường",
+      "status": "ready",
+      "width": 47,
+      "height": 44,
+      "tileId": 4,
+      "objectCount": 116,
+      "path": "maps/61.json"
+    },
+    {
+      "id": 62,
+      "name": "Địa ngục tầng 1",
+      "status": "ready",
+      "width": 40,
+      "height": 40,
+      "tileId": 10,
+      "objectCount": 80,
+      "path": "maps/62.json"
+    },
+    {
+      "id": 63,
+      "name": "Rừng medusa",
+      "status": "ready",
+      "width": 30,
+      "height": 32,
+      "tileId": 11,
+      "objectCount": 79,
+      "path": "maps/63.json"
+    },
+    {
+      "id": 64,
+      "name": "Rừng Chimera",
+      "status": "ready",
+      "width": 30,
+      "height": 23,
+      "tileId": 11,
+      "objectCount": 45,
+      "path": "maps/64.json"
+    },
+    {
+      "id": 65,
+      "name": "Rừng quái vật",
+      "status": "ready",
+      "width": 30,
+      "height": 30,
+      "tileId": 11,
+      "objectCount": 46,
+      "path": "maps/65.json"
+    },
+    {
+      "id": 66,
+      "name": "Thác reo",
+      "status": "ready",
+      "width": 30,
+      "height": 25,
+      "tileId": 11,
+      "objectCount": 52,
+      "path": "maps/66.json"
+    },
+    {
+      "id": 67,
+      "name": "Thành phố cảng",
+      "status": "ready",
+      "width": 33,
+      "height": 32,
+      "tileId": 12,
+      "objectCount": 47,
+      "path": "maps/67.json"
+    },
+    {
+      "id": 68,
+      "name": "Khu bờ nam",
+      "status": "ready",
+      "width": 30,
+      "height": 20,
+      "tileId": 12,
+      "objectCount": 45,
+      "path": "maps/68.json"
+    },
+    {
+      "id": 69,
+      "name": "Khu bờ bắc",
+      "status": "ready",
+      "width": 30,
+      "height": 20,
+      "tileId": 12,
+      "objectCount": 54,
+      "path": "maps/69.json"
+    },
+    {
+      "id": 70,
+      "name": "Khu bờ tây",
+      "status": "ready",
+      "width": 30,
+      "height": 30,
+      "tileId": 12,
+      "objectCount": 60,
+      "path": "maps/70.json"
+    },
+    {
+      "id": 71,
+      "name": "Rừng chuột",
+      "status": "ready",
+      "width": 25,
+      "height": 30,
+      "tileId": 11,
+      "objectCount": 42,
+      "path": "maps/71.json"
+    },
+    {
+      "id": 72,
+      "name": "Rừng hoa đỏ",
+      "status": "ready",
+      "width": 25,
+      "height": 25,
+      "tileId": 11,
+      "objectCount": 35,
+      "path": "maps/72.json"
+    },
+    {
+      "id": 73,
+      "name": "Vịnh Caribe",
+      "status": "ready",
+      "width": 22,
+      "height": 42,
+      "tileId": 11,
+      "objectCount": 9,
+      "path": "maps/73.json"
+    },
+    {
+      "id": 74,
+      "name": "Mê cung",
+      "status": "ready",
+      "width": 30,
+      "height": 30,
+      "tileId": 5,
+      "objectCount": 22,
+      "path": "maps/74.json"
+    },
+    {
+      "id": 75,
+      "name": "Mê cung tầng 1",
+      "status": "ready",
+      "width": 40,
+      "height": 25,
+      "tileId": 5,
+      "objectCount": 26,
+      "path": "maps/75.json"
+    },
+    {
+      "id": 76,
+      "name": "Mê cung tầng 2",
+      "status": "ready",
+      "width": 23,
+      "height": 35,
+      "tileId": 5,
+      "objectCount": 30,
+      "path": "maps/76.json"
+    },
+    {
+      "id": 77,
+      "name": "Mê cung tầng 3",
+      "status": "ready",
+      "width": 35,
+      "height": 25,
+      "tileId": 5,
+      "objectCount": 39,
+      "path": "maps/77.json"
+    },
+    {
+      "id": 78,
+      "name": "Mê cung tầng 4",
+      "status": "ready",
+      "width": 43,
+      "height": 24,
+      "tileId": 5,
+      "objectCount": 42,
+      "path": "maps/78.json"
+    },
+    {
+      "id": 79,
+      "name": "Mê cung tầng cuối",
+      "status": "ready",
+      "width": 35,
+      "height": 35,
+      "tileId": 5,
+      "objectCount": 38,
+      "path": "maps/79.json"
+    },
+    {
+      "id": 80,
+      "name": "Thi đấu",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 81,
+      "name": "",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 82,
+      "name": "Khu mua bán",
+      "status": "ready",
+      "width": 40,
+      "height": 27,
+      "tileId": 6,
+      "objectCount": 70,
+      "path": "maps/82.json"
+    },
+    {
+      "id": 83,
+      "name": "Cửa đông",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 84,
+      "name": "Cửa tây",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 85,
+      "name": "Cửa nam",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 86,
+      "name": "Cửa bắc",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 87,
+      "name": "Đấu trường",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 88,
+      "name": "Khu hang động ",
+      "status": "ready",
+      "width": 40,
+      "height": 30,
+      "tileId": 10,
+      "objectCount": 37,
+      "path": "maps/88.json"
+    },
+    {
+      "id": 89,
+      "name": "Khu đồi cát",
+      "status": "ready",
+      "width": 40,
+      "height": 30,
+      "tileId": 3,
+      "objectCount": 84,
+      "path": "maps/89.json"
+    },
+    {
+      "id": 90,
+      "name": "Khu thảo nguyên",
+      "status": "ready",
+      "width": 40,
+      "height": 30,
+      "tileId": 7,
+      "objectCount": 26,
+      "path": "maps/90.json"
+    },
+    {
+      "id": 91,
+      "name": "Khu đồi cỏ",
+      "status": "ready",
+      "width": 41,
+      "height": 31,
+      "tileId": 9,
+      "objectCount": 62,
+      "path": "maps/91.json"
+    },
+    {
+      "id": 92,
+      "name": "Cổng trắng",
+      "status": "ready",
+      "width": 20,
+      "height": 20,
+      "tileId": 14,
+      "objectCount": 50,
+      "path": "maps/92.json"
+    },
+    {
+      "id": 93,
+      "name": "Thị trấn mùa đông",
+      "status": "ready",
+      "width": 40,
+      "height": 31,
+      "tileId": 14,
+      "objectCount": 80,
+      "path": "maps/93.json"
+    },
+    {
+      "id": 94,
+      "name": "Thung lũng băng giá",
+      "status": "ready",
+      "width": 29,
+      "height": 28,
+      "tileId": 14,
+      "objectCount": 58,
+      "path": "maps/94.json"
+    },
+    {
+      "id": 95,
+      "name": "Chân núi tuyết",
+      "status": "ready",
+      "width": 30,
+      "height": 29,
+      "tileId": 14,
+      "objectCount": 54,
+      "path": "maps/95.json"
+    },
+    {
+      "id": 96,
+      "name": "Đèo băng giá",
+      "status": "ready",
+      "width": 30,
+      "height": 30,
+      "tileId": 14,
+      "objectCount": 57,
+      "path": "maps/96.json"
+    },
+    {
+      "id": 97,
+      "name": "Vực thẳm sương mù",
+      "status": "ready",
+      "width": 33,
+      "height": 23,
+      "tileId": 14,
+      "objectCount": 59,
+      "path": "maps/97.json"
+    },
+    {
+      "id": 98,
+      "name": "Trạm núi tuyết",
+      "status": "ready",
+      "width": 23,
+      "height": 30,
+      "tileId": 14,
+      "objectCount": 38,
+      "path": "maps/98.json"
+    },
+    {
+      "id": 99,
+      "name": "Map Boss",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 100,
+      "name": "Tập kết",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 101,
+      "name": "",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 102,
+      "name": "Lôi đài",
+      "status": "ready",
+      "width": 30,
+      "height": 18,
+      "tileId": 9,
+      "objectCount": 20,
+      "path": "maps/102.json"
+    },
+    {
+      "id": 103,
+      "name": "Thách đấu",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 104,
+      "name": "Khu mua bán đặc biệt",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 105,
+      "name": "Mê cung ",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 106,
+      "name": "Mê cung ",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 107,
+      "name": "Mê cung ",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 108,
+      "name": "Mê cung ",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 109,
+      "name": "Mê cung ",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 110,
+      "name": "Mê cung ",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 111,
+      "name": "Mê cung ",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 112,
+      "name": "Mê cung ",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 113,
+      "name": "Mê cung ",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 114,
+      "name": "Mê cung ",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 115,
+      "name": "Mê cung ",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 116,
+      "name": "Khu chờ",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 117,
+      "name": "Khu săn zombie ",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 118,
+      "name": "Vùng đất chiến binh",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 119,
+      "name": "Vùng đất sát thủ",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 120,
+      "name": "Vùng đất pháp sư",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 121,
+      "name": "Vùng đất xạ thủ",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 122,
+      "name": "Đảo đầu lâu",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    },
+    {
+      "id": 123,
+      "name": "Đảo Marshall",
+      "status": "name-only",
+      "reason": "Bộ dữ liệu hiện tại chưa có layout mapnew tương ứng."
+    }
+  ]
+}

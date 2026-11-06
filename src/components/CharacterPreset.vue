@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import WeaponControls from './WeaponControls.vue'
+import TitleControls from './TitleControls.vue'
 import CompanionControls from './CompanionControls.vue'
 import { query } from '../lib/catalog'
 import { characterParts } from '../lib/characterParts'
@@ -58,6 +59,7 @@ onMounted(() => { if (!props.layers.length) reset() })
     <label class="field">Phái nhân vật<select :value="clazz" aria-label="Phái nhân vật" @change="emit('update:clazz', Number($event.target.value))"><option v-for="profile in classes" :key="profile.id" :value="profile.id">{{ profile.label }} · {{ profile.weapon_label }} (type {{ profile.weapon_type }})</option></select></label>
     <div class="part-selectors"><label v-for="slot in slots" :key="slot.key" class="field">{{ slot.label }}<select :value="selected(slot.key)" :aria-label="`Bộ phận ${slot.label}`" @change="change(slot.key, $event.target.value)"><option value="">{{ slot.required ? 'Chưa chọn' : 'Không dùng' }}</option><option v-for="part in options(slot.key)" :key="part.id" :value="part.id">{{ part.label }}</option></select></label></div>
     <WeaponControls :clazz="clazz" @weapon="updateWeapon"/>
+    <TitleControls :layers="layers" @update="emit('update',$event)"/>
     <CompanionControls :layers="layers" @update="emit('update',$event)"/>
     <p v-for="l in layers.filter(l => l.qualityNote)" :key="l.slot" class="muted">{{ l.name }}: {{ l.qualityNote }}</p>
     <p class="muted">Ưu tiên PNG x4 và metadata riêng của x4; tọa độ chỉnh sửa dùng đơn vị x1. Chọn hướng và trạng thái ở bên dưới. Mắt dùng PNG và điểm neo gốc trong client 4.0.3. JAR chỉ có mắt x1; các bộ phận khác vẫn ưu tiên x4.</p>

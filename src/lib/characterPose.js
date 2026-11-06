@@ -1,5 +1,6 @@
 // x1 sheets group 15 clothing rectangles as front/back/side × 5 poses.
 // The 24 anchor pairs group four directions × 6 poses. Walking uses poses 0–2;
+import { titleFrame } from './titlePose.js'
 import { companionFrame } from './companionPose.js'
 import { clientSkillData } from './clientSkillCatalog.js'
 
@@ -92,7 +93,7 @@ export function clientSkillClip(clazz, skillId) {
 export function resolvePose(layers, directionKey = 'down', pose = 0, idleOffset = 0, options = {}) {
   const direction = DIRECTIONS.find(d => d.key === directionKey) || DIRECTIONS[0]
   const mount = layers.find(l=>l.slot==='mount' && l.companion && l.visible)
-  const hasComposite = layers.some(l => l.visible && l.companion?.rig?.kind)
+  const hasComposite = layers.some(l => l.visible && (l.companion?.rig?.kind || l.title))
   const mountedAttack = Boolean(mount && options.motion==='attack' && options.clientAttack && mount.companion.mountedAttack?.status==='ready' && mount.companion.mountedAttack.skillIds.includes(options.clientSkillId ?? 0))
   const mounted = mount ? companionFrame(mount.companion,directionKey,mountedAttack ? options.mountEntry?.motion ?? 'idle' : options.motion,mountedAttack ? options.mountEntry?.tick ?? 0 : options.tick) : null
   if (mounted) { options={...options,clientBodyFrame:mountedAttack ? options.clientBodyFrame : mounted.bodyFrame,experimentalAttack:false}; idleOffset=0 }
@@ -161,6 +162,11 @@ export function resolvePose(layers, directionKey = 'down', pose = 0, idleOffset 
     const frame = weapon.frames[dir], offset = weapon.offsets[dir][Math.min(bodyFrame, 2)]
     return { ...layer, ...frame, x: offset[0], y: offset[1], flipX: false, renderFront: !behind }
   }).flatMap((layer, index) => {
+    if (layer.title) {
+      const frame = titleFrame(layer.title, options.titleTick ?? options.tick, mounted?.seat ?? 0)
+      return frame.pieces.map((p, order) => ({...layer,...p,frame:frame.frame,
+        x:p.x+layer.x,y:p.y+layer.y,renderKey:`title:piece:${p.pieceIndex}`,renderDepth:layers.length+20+order/1000}))
+    }
     if (layer.companion) {
       const frame=layer.slot==='mount' && mountedAttack ? mounted : companionFrame(layer.companion,directionKey,options.motion,options.tick)
       if (frame.pieces) return frame.pieces.map(p => {

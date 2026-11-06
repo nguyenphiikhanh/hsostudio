@@ -1,3 +1,4 @@
+import { validateTitle } from './titlePose.js'
 import { validateCompanion, mountedAttackAllowed } from './companionPose.js'
 import { resolvePose } from './characterPose.js'
 
@@ -5,7 +6,7 @@ import { resolvePose } from './characterPose.js'
 export function preloadLibrary(scene, baseUrl, manifest, partKeys = null) {
   const base = baseUrl.replace(/\/$/, '')
   const selected = partKeys ? new Set(partKeys) : null
-  for (const atlas of [...manifest.atlases,...(manifest.companionAtlases || [])]) {
+  for (const atlas of [...manifest.atlases,...(manifest.companionAtlases || []),...(manifest.titleAtlases || [])]) {
     if (selected && atlas.partKey && !selected.has(atlas.partKey)) continue
     scene.load.atlas(atlas.key, `${base}/${atlas.image}`, `${base}/${atlas.data}`)
   }
@@ -22,6 +23,9 @@ export class EquipmentCharacter {
     this.state = 'idle'
     this.elapsed = 0
     this.images = new Map()
+    this.title = outfit.title ? {...outfit.title} : null
+    this.titleElapsed = 0
+    if(this.title)this.validateTitle(this.title.id)
     this.companions = {}
     for(const [slot,id] of Object.entries(outfit.companions || {})) {this.validateCompanion(slot,id); this.companions[slot]=String(id)}
     for (const [slot, selection] of Object.entries(outfit.equipment)) {
@@ -55,8 +59,19 @@ export class EquipmentCharacter {
   equipItem(itemId) {
     const item = this.items[String(itemId)]
     if (!item) throw new Error(`Item ${itemId} has no supported part mapping`)
+    if(item.slot==='title')return this.setTitle(item.titleId)
     const part = this.validatePart(item.slot, item.partKey)
     return this.equip(item.slot, part.partId)
+  }
+  validateTitle(id) {
+    const d=validateTitle(this.manifest.titles?.[String(id)])
+    if(this.scene.textures && !this.scene.textures.exists(d.frameEntries[0].texture))throw new Error('Title must be preloaded')
+    return d
+  }
+  setTitle(id) {
+    if(id==null)this.title=null
+    else {this.validateTitle(id);this.title={id:String(id),x:0,y:0,visible:true}}
+    this.titleElapsed=0;this.rebuild();return this
   }
   validateCompanion(slot,id) {
     const d=this.manifest.companions?.[slot]?.[String(id)]
@@ -116,6 +131,7 @@ export class EquipmentCharacter {
     if (this.destroyed) return
     if (!Number.isFinite(delta) || delta < 0) return
     this.elapsed += delta
+    this.titleElapsed += delta
     this.render()
   }
   render() {
@@ -136,12 +152,16 @@ export class EquipmentCharacter {
       const d=this.manifest.companions[slot][id]
       layers.push({slot,companion:d,asset:d.asset,...d.frameEntries[0].crop,x:0,y:0,visible:true})
     }
-    const posed = resolvePose(layers, this.direction, phase.pose, phase.idleOffset, { experimentalAttack: animation.experimental === true, anchorPose: phase.anchorPose, clientBodyFrame: phase.clientBodyFrame, motion:this.state,tick:Math.floor(this.elapsed*25/1000),clientAttack:this.state==='attack' && (animation.clientBasic===true || animation.clientSkill===true),clientWeaponFrame:phase.clientWeaponFrame,mountEntry:this.mountEntry,clientSkillId:animation.skillId })
+    if(this.title) {
+      const d=this.manifest.titles[this.title.id]
+      layers.push({slot:'title',title:d,asset:d.asset,...d.frameEntries[0].crop,x:this.title.x||0,y:this.title.y||0,visible:this.title.visible!==false})
+    }
+    const posed = resolvePose(layers, this.direction, phase.pose, phase.idleOffset, { experimentalAttack: animation.experimental === true, anchorPose: phase.anchorPose, clientBodyFrame: phase.clientBodyFrame, motion:this.state,titleTick:Math.floor(this.titleElapsed*25/1000),tick:Math.floor(this.elapsed*25/1000),clientAttack:this.state==='attack' && (animation.clientBasic===true || animation.clientSkill===true),clientWeaponFrame:phase.clientWeaponFrame,mountEntry:this.mountEntry,clientSkillId:animation.skillId })
     for(const image of this.images.values())image.setVisible(false)
     for (const layer of posed) {
-      const selection = this.outfit[layer.slot], part = layer.companion ? this.manifest.companions[layer.slot][this.companions[layer.slot]] : this.manifest.parts[selection.partKey]
-      const entries=layer.companion?part.frameEntries:part.frames
-      const density=layer.companion?part.asset.density:part.density
+      const selection = this.outfit[layer.slot], part = layer.title ? this.manifest.titles[this.title.id] : layer.companion ? this.manifest.companions[layer.slot][this.companions[layer.slot]] : this.manifest.parts[selection.partKey]
+      const entries=(layer.companion || layer.title)?part.frameEntries:part.frames
+      const density=(layer.companion || layer.title)?part.asset.density:part.density
       const entry = layer.slot === 'eyes' && part.sideFrame && layer.w === 1 ? part.sideFrame
         : entries.find(f => ['sx', 'sy', 'w', 'h'].every(key => f.crop[key] === layer[key]))
       if (!entry) throw new Error(`Missing frame for ${layer.slot}`)

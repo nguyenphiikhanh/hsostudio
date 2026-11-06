@@ -58,7 +58,10 @@ test('library ZIP contains all supported parts and runs equipment swapping in re
       expect(frame.h).toBe(entry.crop.h * (part.density || 1))
     }
   }
-  for (const item of Object.values(equipment.items)) expect(manifest.parts[item.partKey].slot).toBe(item.slot)
+  for (const item of Object.values(equipment.items)) {
+    if(item.slot==='title') expect(manifest.titles[item.titleId].slot).toBe('title')
+    else expect(manifest.parts[item.partKey].slot).toBe(item.slot)
+  }
   expect(json('animations.json').states.idle.fps).toBe(8)
   expect(json('animations.json').states.idle.frames.map(frame => frame.idleOffset)).toEqual([0, -0.5, -1, -0.5])
   expect(json('animations.json').states.walk.frames.map(frame => frame.pose)).toEqual([0, 1, 0, 2])

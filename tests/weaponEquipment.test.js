@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { test } from 'node:test'
 import initSqlJs from 'sql.js'
-import { weaponEquipmentFacts } from '../src/lib/weaponEquipment.js'
+import { weaponEquipmentFacts, groupWeaponAppearances } from '../src/lib/weaponEquipment.js'
 
 const SQL = await initSqlJs()
 const db = new SQL.Database(await readFile(new URL('../public/game/catalog.sqlite', import.meta.url)))
@@ -43,4 +43,16 @@ test('neutral cosmetic weapons use wear slot 17 and the exact server part+41 rul
     assert.equal(facts.visualStatus, 'unverified')
   }
   assert.throws(() => weaponEquipmentFacts({ type: 0 }, 0, 1), /Not an HSO weapon/)
+})
+
+
+test('appearance groups preserve every actual item without duplicate class/part choices', () => {
+ for(const clazz of [0,1,2,3]) {
+  const groups=groupWeaponAppearances(items,clazz)
+  assert.equal(groups.length,24)
+  assert.equal(new Set(groups.map(g=>g.key)).size,24)
+  assert.equal(groups.flatMap(g=>g.items).length,141)
+  assert.equal(new Set(groups.flatMap(g=>g.items.map(i=>i.id))).size,141)
+  for(const g of groups)assert.ok(g.items.every(i=>i.part===g.part&&i.clazz===clazz))
+ }
 })

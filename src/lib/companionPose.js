@@ -130,11 +130,11 @@ export function companionCycleLength(d,motion='idle') {
 }
 
 export function companionViewport(layers) {
-  if(!layers.some(l=>l.visible&&l.companion?.rig?.kind))return {scale:6,x:42,y:92}
+  if(!layers.some(l=>l.visible&&(l.companion?.rig?.kind || l.title)))return {scale:6,x:42,y:92}
   let left=-30,right=80,top=-95,bottom=10
   for(const l of layers) {
-    if(!l.visible||!l.companion?.rig?.kind)continue
-    const d=l.companion,r=d.rig,anchor=d.slot==='pet'?40:0,padding=d.slot==='mount'?Math.max(...r.dx.map(Math.abs)):0
+    if(!l.visible||(!l.companion?.rig?.kind && !l.title))continue
+    const d=l.companion ?? l.title,r=d.rig,anchor=d.slot==='pet'?40:0,padding=d.slot==='mount'?Math.max(...r.dx.map(Math.abs)):0
     for(const frame of r.frames)for(const p of frame){const crop=r.rects[p.image],extent=Math.max(Math.abs(p.x),Math.abs(p.x+crop.w))+padding;left=Math.min(left,anchor-extent);right=Math.max(right,anchor+extent);top=Math.min(top,p.y-(r.flightHeight||0)+(d.slot==='mount'?Math.min(...r.dy):0));bottom=Math.max(bottom,p.y+crop.h+(d.slot==='mount'?Math.max(...r.dy):0))}
   }
   const scale=Math.min(6,624/(right-left+12),624/(bottom-top+12))

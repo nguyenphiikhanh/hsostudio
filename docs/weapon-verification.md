@@ -1,5 +1,16 @@
 # Weapon verification — cập nhật
 
+## Bộ chọn ngoại hình và biến thể
+
+Mỗi phái có24 ngoại hình vũ khí thường, tương ứng141 template vật phẩm. Bộ chọn chính gom theo `(phái hiện tại, part)`; bộ chọn biến thể giữ nguyên toàn bộ ID/tên/cấp/màu. Không gộp hoặc xóa vật phẩm trong catalog, không thêm part24 vì dump không có item thường tương ứng.
+
+Preview mặc định cho chọn mọi cấp. Checkbox “Áp dụng điều kiện trang bị” bật lại kiểm tra cấp của server; khi bật và vật phẩm đang chọn không đủ điều kiện, Studio bỏ lựa chọn và lớp vũ khí. Việc bỏ giới hạn cấp trong preview không thay quy tắc game. Đổi phái xóa lựa chọn cũ, ánh xạ ảnh/animation vẫn theo phái hiện tại.
+
+9 vật phẩm thời trang vẫn chọn được để đối chiếu ở chế độ preview. Chúng chưa có renderer được xác minh; lựa chọn này báo rõ chưa thay đổi ảnh trên nhân vật và giữ vũ khí thường. Không dùng icon hoặc part+41 để giả làm sheet thường. Hệ thống hiện **chưa đầy đủ renderer thời trang**.
+
+Kiểm thử Chrome duyệt96 ngoại hình của bốn phái tại cấp1, chọn biến thể, đối chiếu9 món thời trang, kiểm tra bật/tắt điều kiện và WPS. Kiểm thử unit xác nhận564 template thường được giữ đủ trong96 nhóm.
+
+
 Đã tìm được client Java chính thức 4.0.3 và xác minh thêm mapping vũ khí thường, metadata/hướng/offset, WPS và đòn cơ bản. Xem [bằng chứng và phạm vi renderer](client403-verification.md).
 
 # Ghi nhận trước khi có client (đối chiếu chỉ từ server)

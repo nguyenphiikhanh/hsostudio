@@ -2,29 +2,45 @@
 import { computed, ref, watch } from 'vue'
 import { query } from '../lib/catalog'
 import { clientWeaponLayer } from '../lib/clientWeapon'
-import { weaponEquipmentFacts } from '../lib/weaponEquipment'
+import { weaponEquipmentFacts, groupWeaponAppearances } from '../lib/weaponEquipment'
 
 const emit = defineEmits(['weapon'])
 const props = defineProps({ clazz: { type: Number, required: true } })
-const level = ref(1), itemId = ref(''), cosmeticId = ref('')
+const level = ref(1), itemId = ref(''), cosmeticId = ref(''), appearanceId = ref(''), enforceRules = ref(false)
 const records = query('SELECT id,name,clazz,type,part,level,color FROM item3 WHERE type IN (8,9,10,11,24) ORDER BY level,part,color,id')
 const normal = computed(() => records.filter(item => item.type !== 24 && (item.clazz === props.clazz || item.clazz === 4)))
 const cosmetics = computed(() => records.filter(item => item.type === 24 && (item.clazz === props.clazz || item.clazz === 4)))
-const distinctParts = computed(() => new Set(normal.value.map(item => item.part)).size)
+const groups = computed(() => groupWeaponAppearances(normal.value, props.clazz))
+const group = computed(() => groups.value.find(g => String(g.representative.id) === String(appearanceId.value)))
+watch(appearanceId, () => { itemId.value = String(group.value?.items.find(selectable)?.id ?? '') })
+function selectable(item) { return !enforceRules.value || eligible(item) }
+function restriction(item) {
+  if (!Number.isInteger(level.value) || level.value < 1) return 'cấp nhân vật không hợp lệ'
+  return eligible(item) ? 'đủ điều kiện trang bị' : `cần cấp ${item.level}`
+}
 const selected = computed(() => [itemId.value, cosmeticId.value].filter(id => id !== '').map(id => records.find(item => item.id === Number(id))).filter(Boolean))
 const rendered = computed(() => {
   const item = records.find(item => item.id === Number(itemId.value))
-  return itemId.value !== '' && item && eligible(item) ? clientWeaponLayer(item) : null
+  return itemId.value !== '' && item && selectable(item) ? clientWeaponLayer(item, props.clazz) : null
 })
 watch(rendered, value => emit('weapon', value), { immediate: true })
-const facts = computed(() => selected.value.map(item => weaponEquipmentFacts(item, props.clazz, level.value)))
+const validLevel = computed(() => Number.isInteger(level.value) && level.value >= 1)
+const facts = computed(() => selected.value.map(item => ({
+  ...weaponEquipmentFacts(item, props.clazz, validLevel.value ? level.value : 1),
+  ...(!validLevel.value ? { levelAllowed: false, eligible: false } : {}),
+})))
 function eligible(item) {
   return Number.isInteger(level.value) && level.value >= 1 && weaponEquipmentFacts(item, props.clazz, level.value).eligible
 }
-watch([() => props.clazz, level], () => {
+watch(() => props.clazz, () => { appearanceId.value = ''; itemId.value = ''; cosmeticId.value = '' })
+watch([level, enforceRules], () => {
   for (const selection of [itemId, cosmeticId]) {
     const item = records.find(item => item.id === Number(selection.value))
-    if (selection.value !== '' && (!item || !eligible(item))) selection.value = ''
+    if (selection.value !== '' && (!item || !selectable(item))) selection.value = ''
+  }
+  if (group.value && !itemId.value) {
+    itemId.value = String(group.value.items.find(selectable)?.id ?? '')
+    if (!itemId.value) appearanceId.value = ''
   }
 })
 </script>
@@ -32,13 +48,16 @@ watch([() => props.clazz, level], () => {
 <template>
   <section class="weapon-equipment" aria-label="Vũ khí HSO đã đối chiếu">
     <p class="eyebrow">VẬT PHẨM VŨ KHÍ HSO · DỮ LIỆU SERVER</p>
+    <label><input v-model="enforceRules" type="checkbox" aria-label="Áp dụng điều kiện trang bị"> Áp dụng điều kiện trang bị theo cấp khi preview</label>
     <label class="field">Cấp nhân vật để đối chiếu<input v-model.number="level" aria-label="Cấp nhân vật để đối chiếu" type="number" min="1" step="1"></label>
-    <p class="muted">{{ normal.length }} mẫu vật phẩm của phái · {{ distinctParts }} giá trị part. Nhiều vật phẩm dùng cùng part; số sheet PNG không phải số món có thể trang bị.</p>
-    <label class="field">Vũ khí thường · wear[0]<select v-model="itemId" aria-label="Vũ khí thường HSO"><option value="">Chọn vật phẩm để đối chiếu</option><option v-for="item in normal" :key="item.id" :value="item.id" :disabled="!eligible(item)">#{{ item.id }} · {{ item.name }} · Lv.{{ item.level }} · màu {{ item.color }} · part {{ item.part }}</option></select></label>
-    <label class="field">Vũ khí thời trang · wear[17]<select v-model="cosmeticId" aria-label="Vũ khí thời trang HSO"><option value="">Không chọn</option><option v-for="item in cosmetics" :key="item.id" :value="item.id" :disabled="!eligible(item)">#{{ item.id }} · {{ item.name }} · Lv.{{ item.level }} · part {{ item.part }}</option></select></label>
+    <p class="muted">{{ groups.length }} ngoại hình · {{ normal.length }} vật phẩm của phái. Các màu/cấp dùng chung part được giữ trong bộ chọn biến thể. Preview mặc định không khóa theo cấp.</p>
+    <label class="field">Ngoại hình vũ khí thường · wear[0]<select v-model="appearanceId" aria-label="Vũ khí thường HSO"><option value="">Chọn ngoại hình để preview</option><option v-for="g in groups" :key="g.key" :value="g.representative.id" :disabled="!g.items.some(selectable)">{{ g.representative.name }} · part {{ g.part }} · {{ g.items.length }} biến thể vật phẩm</option></select></label>
+    <label v-if="group" class="field">Biến thể vật phẩm<select v-model="itemId" aria-label="Biến thể vũ khí HSO"><option v-for="item in group.items" :key="item.id" :value="item.id" :disabled="!selectable(item)">#{{ item.id }} · {{ item.name }} · Lv.{{ item.level }} · màu {{ item.color }} · {{ restriction(item) }}</option></select></label>
+    <label class="field">Vũ khí thời trang · chỉ đối chiếu wear[17]<select v-model="cosmeticId" aria-label="Vũ khí thời trang HSO"><option value="">Không chọn</option><option v-for="item in cosmetics" :key="item.id" :value="item.id" :disabled="!selectable(item)">#{{ item.id }} · {{ item.name }} · Lv.{{ item.level }} · part {{ item.part }}</option></select></label>
+    <p v-if="cosmeticId !== ''" class="muted" data-testid="cosmetic-visual-status">Đã chọn để đối chiếu dữ liệu. Chưa có renderer vũ khí thời trang được xác minh; lựa chọn này chưa thay đổi ảnh trên nhân vật. Vũ khí thường vẫn được giữ.</p>
     <div v-for="item in facts" :key="item.id" data-testid="verified-weapon-facts">
       <strong>#{{ item.id }} · {{ item.name }}</strong>
-      <dl><dt>Slot server</dt><dd>wear[{{ item.wearSlot }}]</dd><dt>clazz / type / part</dt><dd>{{ item.clazz }} / {{ item.type }} / {{ item.part }}</dd><template v-if="item.cosmeticWeaponId !== null"><dt>idWeapon thời trang</dt><dd>{{ item.cosmeticWeaponId }} (part + 41)</dd></template></dl>
+      <dl><dt>Điều kiện trang bị</dt><dd>{{ item.eligible ? 'Đủ điều kiện' : 'Chưa đủ cấp/phái (vẫn có thể preview nếu tắt kiểm tra điều kiện)' }}</dd><dt>Slot server</dt><dd>wear[{{ item.wearSlot }}]</dd><dt>clazz / type / part</dt><dd>{{ item.clazz }} / {{ item.type }} / {{ item.part }}</dd><template v-if="item.cosmeticWeaponId !== null"><dt>idWeapon thời trang</dt><dd>{{ item.cosmeticWeaponId }} (part + 41)</dd></template></dl>
     </div>
     <p class="muted" data-testid="weapon-visual-status">{{ rendered ? 'Đang vẽ vũ khí thường theo client HSO 4.0.3: type = 50 + clazz, id = part; crop/offset/hướng/lớp lấy từ mã client. Chọn Tấn công và kỹ năng #0 để xem WPS gốc.' : itemId !== '' ? 'Catalog thiếu mapping client hoặc ảnh tương ứng trong bộ dữ liệu đóng gói.' : 'Chọn vũ khí thường để preview theo client HSO 4.0.3. Vũ khí thời trang vẫn chỉ đối chiếu; chưa triển khai renderer hiệu ứng thời trang.' }}</p>
     <p v-if="rendered" class="path">{{ rendered.asset.source }} · {{ rendered.asset.density === 4 ? 'x4' : 'x1 fallback' }} · đòn đánh dùng WPS x1 gốc trong client</p>

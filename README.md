@@ -255,3 +255,28 @@ Khi cưỡi, chiêu #1–#4 có khung hiệu ứng chính đã khôi phục; #5�
 Đã có Cân đẩu vân, Chuột tuyết, Ma mút, mô tô, xe trượt tuyết, Hỏa kì lân, Phượng hoàng lửa, Rồng băng và6 pet đặc biệt. Tổng22 thú cưỡi +12 pet. Rig mới hỗ trợ đứng/đi bốn hướng và ZIP Phaser nhiều mảnh; 13 rig sheet cũ giữ các chiêu đánh đã mở. Chỉ còn vật phẩm271/272/283 chưa đủ mapping. Phượng hoàng băng có cảnh báo frame đánh lỗi trong nguồn, không tự sửa; chỉ bật idle/walk.
 
 Xem [API, dữ liệu gốc, giới hạn và workflow HD](docs/composite-companions.md). Studio vẫn không cần scripts, HSO, Java hoặc Python khi chạy/build.
+
+### Chọn vũ khí để preview
+
+Bộ chọn thường hiển thị24 ngoại hình mỗi phái; các vật phẩm cùng part nằm trong “Biến thể vật phẩm”. Mặc định có thể xem mọi cấp. Bật “Áp dụng điều kiện trang bị” để kiểm tra giới hạn cấp như server. Vũ khí thời trang hiện chỉ đối chiếu dữ liệu, chưa thay đổi ảnh nhân vật; Studio hiển thị rõ giới hạn khi chọn.
+
+### Danh hiệu cá nhân
+
+Có11 danh hiệu từ bộ server trong phần thay trang bị, dùng PNG x4 và animation gốc5FPS; chọn “Không dùng” để tháo. Đây là danh hiệu cá nhân, không phải tên bang/tổ đội. ZIP thư viện bổ sung `titles/<itemId>/`; Phaser dùng `character.setTitle(4720)` / `character.setTitle(null)` hoặc `character.equipItem(4724)`. Xem [nguồn và giới hạn](docs/titles.md).
+
+### Menu và các trang làm việc
+
+- `/character-lab`: Character Lab, bộ trang bị, canvas và animation bốn hướng/chiêu thức.
+- `/catalog`: thư viện tài nguyên, quái, vật phẩm, bộ lọc và chỉnh nháp dữ liệu.
+- `/` mở Character Lab. Menu bên trái chuyển giữa hai trang; trang bị, trạng thái preview, tên ZIP, bộ lọc và nháp được giữ trong cùng tab. Animation tạm dừng khi rời Character Lab và tiếp tục khi quay lại. Tải lại trình duyệt vẫn bỏ nháp như trước.
+
+Dùng Vue Router với HTML5 history. Vite dev/preview hỗ trợ mở trực tiếp và tải lại hai đường dẫn này. Khi phục vụ `dist` bằng web server riêng, cần SPA fallback về `index.html` cho route ứng dụng; `/game/` vẫn phải trả404 nếu thiếu asset. Ví dụ Nginx tại domain root:
+
+```nginx
+location /game/ { try_files $uri =404; }
+location / { try_files $uri $uri/ /index.html; }
+```
+
+### Map
+
+Menu **Map** (`/maps`) có91 layout gốc và33 mục chỉ có tên(chưa mở). Xem nền/vật thể x4, pan/zoom, lưới, collision và marker cổng/spawn; click xem dữ liệu nguồn. Xuất PNG x1/x4, JSON hoặc ZIP dựng cảnh tĩnh trong Phaser. Đây là viewer chỉ đọc; chưa có nước/thác động, background/parallax, NPC/quái actor hoặc chỉnh tile. Dữ liệu đã đóng gói, không cần hso/JAR/Python khi chạy. Xem [hướng dẫn Map](docs/maps.md).
