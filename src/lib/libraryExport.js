@@ -14,7 +14,7 @@ import { createAttackTrial } from './attackTrial'
 import { companionCatalog } from './companions'
 import { compileCompanion } from './companionPose.js'
 import companionSource from './companionPose.js?raw'
-const SLOT_ORDER = ['pants', 'shirt', 'head', 'eyes', 'hair', 'helmet']
+const SLOT_ORDER = ['pants', 'shirt', 'head', 'hair', 'eyes', 'helmet']
 const cropKeys = ['sx', 'sy', 'w', 'h']
 
 export async function exportPartLibrary(requestedName, layers, drafts, progress = () => {}, requestedTrial = {}) {
@@ -24,7 +24,7 @@ export async function exportPartLibrary(requestedName, layers, drafts, progress 
   const trial = requestedTrial.clientSkill ? clientSkillClip(requestedTrial.clazz, requestedTrial.skillId) : requestedTrial.clientBasic ? clientBasicClip(requestedTrial.clazz) : createAttackTrial(requestedTrial)
   if (!combat.classes.some(profile => profile.id === trial.clazz && profile.skills.some(skill => skill.id === trial.skillId))) throw new Error('Attack trial references an unknown server skill')
   if (!rows.length) throw new Error('Catalog chưa có part đã giải mã.')
-  const manifest = { version: 1, name, resolution: 'x4', coordinateUnits: 'x1', qualityNotes: rows.filter(row => row.quality_note).map(row => ({ slot: row.slot, partId: row.part_id, source: row.source, density: row.density, reason: row.quality_note })), layout: 'per-part-folders', slotOrder: SLOT_ORDER, directions: DIRECTIONS.map(d => d.key), atlases: [], parts: {}, limitations: ['Đứng yên là hiệu ứng thở của Studio.', 'Di chuyển suy ra từ sprite, chưa đối chiếu client gốc.', 'Vũ khí và hiệu ứng kỹ năng chưa có runtime trong thư viện; mount/pet chỉ hỗ trợ rig đã xác minh, chưa có AI pet.', trial.experimental ? 'Tấn công đang là chuỗi thử nghiệm.' : `Timeline thân kỹ năng #${trial.skillId} đã đối chiếu client 4.0.3; xem giới hạn trong animations.json.`, 'Mắt preview thay thế dữ liệu mắt gốc bị rỗng.', 'Ưu tiên PNG/metadata x4; vị trí và frame trong part.json dùng đơn vị x1; không xuất vùng cắt thủ công.'] }
+  const manifest = { version: 1, name, resolution: 'x4', coordinateUnits: 'x1', qualityNotes: rows.filter(row => row.quality_note).map(row => ({ slot: row.slot, partId: row.part_id, source: row.source, density: row.density, reason: row.quality_note })), layout: 'per-part-folders', slotOrder: SLOT_ORDER, directions: DIRECTIONS.map(d => d.key), atlases: [], parts: {}, limitations: ['Đứng yên là hiệu ứng thở của Studio.', 'Di chuyển suy ra từ sprite, chưa đối chiếu client gốc.', 'Vũ khí và hiệu ứng kỹ năng chưa có runtime trong thư viện; mount/pet chỉ hỗ trợ rig đã xác minh, chưa có AI pet.', trial.experimental ? 'Tấn công đang là chuỗi thử nghiệm.' : `Timeline thân kỹ năng #${trial.skillId} đã đối chiếu client 4.0.3; xem giới hạn trong animations.json.`, 'Mắt là PNG gốc x1 từ client 4.0.3, chưa có bản x4.', 'Ưu tiên PNG/metadata x4; vị trí và frame trong part.json dùng đơn vị x1; không xuất vùng cắt thủ công.'] }
   const files = {}, assetKeys = new Map()
   for (const [index, row] of rows.entries()) {
     const definition = { version: 1, slot: row.slot, partId: row.part_id, label: row.label, source: row.source, provenance: row.provenance, density: row.density, resolution: row.zoom, qualityNote: row.quality_note, width: row.width, height: row.height, frames: JSON.parse(row.frames), offsets: JSON.parse(row.offsets) }

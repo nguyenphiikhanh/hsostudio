@@ -141,7 +141,7 @@ export class EquipmentCharacter {
       const selection = this.outfit[layer.slot], part = layer.companion ? this.manifest.companions[layer.slot][this.companions[layer.slot]] : this.manifest.parts[selection.partKey]
       const entries=layer.companion?part.frameEntries:part.frames
       const density=layer.companion?part.asset.density:part.density
-      const entry = layer.slot === 'eyes' && layer.w === 1 ? part.sideFrame
+      const entry = layer.slot === 'eyes' && part.sideFrame && layer.w === 1 ? part.sideFrame
         : entries.find(f => ['sx', 'sy', 'w', 'h'].every(key => f.crop[key] === layer[key]))
       if (!entry) throw new Error(`Missing frame for ${layer.slot}`)
       this.images.get(layer.slot).setTexture(entry.texture, entry.frame)

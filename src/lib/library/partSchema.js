@@ -8,9 +8,9 @@ export function compilePart(definition, libraryName) {
   const key = `${slot}-${partId}`
   if (!PART_SLOTS.includes(slot) || !Number.isSafeInteger(partId) || partId < 0) throw new Error(`Invalid slot/partId: ${key}`)
   if (![width, height].every(value => Number.isSafeInteger(value) && value > 0)) throw new Error(`Invalid image dimensions: ${key}`)
-  const expected = slot === 'pants' || slot === 'shirt' ? 15 : slot === 'eyes' ? 1 : 3
+  const expected = slot === 'pants' || slot === 'shirt' ? 15 : slot === 'eyes' && frames?.length===1 ? 1 : 3
   if (!Array.isArray(frames) || frames.length !== expected) throw new Error(`${key} requires ${expected} frame crops`)
-  if (!Array.isArray(offsets) || offsets.length !== (slot === 'eyes' ? 1 : 24) || offsets.some(pair => !Array.isArray(pair) || pair.length !== 2 || pair.some(n => !Number.isSafeInteger(n)))) throw new Error(`Invalid anchors: ${key}`)
+  if (!Array.isArray(offsets) || offsets.length !== (slot === 'eyes' && definition.provenance==='editor-placeholder' ? 1 : 24) || offsets.some(pair => !Array.isArray(pair) || pair.length !== 2 || pair.some(n => !Number.isSafeInteger(n)))) throw new Error(`Invalid anchors: ${key}`)
   const directory = `parts/${slot}/${partId}`
   const paths = { image: `${directory}/sheet.png`, data: `${directory}/atlas.json`, definition: `${directory}/part.json` }
   const texture = `${libraryName}-${key}`

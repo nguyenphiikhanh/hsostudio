@@ -104,13 +104,14 @@ export function resolvePose(layers, directionKey = 'down', pose = 0, idleOffset 
     const index = layer.poseFrames.length === 15 ? direction.group * 5 + step : direction.group
     const frame = layer.poseFrames[index]
     const clientDirection = { down: 0, up: 1, left: 2, right: 3 }[direction.key]
-    const offset = layer.poseOffsets[(clientFrame !== undefined && clientDirection === 3 ? 12 : direction.anchor) + anchorStep]
+    const usesClientMirror=clientFrame !== undefined || layer.provenance==='official-client-4.0.3'
+    const offset = layer.poseOffsets[(usesClientMirror && clientDirection === 3 ? 12 : direction.anchor) + anchorStep]
     if (!frame || !offset) return { ...layer }
     const [baseX, baseY] = layer.poseOffsets[0]
     return {
       ...layer,
       ...(directionKey === 'down' && step === 0 && !options.experimentalAttack && clientFrame === undefined ? {} : frame),
-      x: (clientFrame !== undefined && clientDirection === 3 ? -offset[0] - frame.w : offset[0]) + layer.x - baseX,
+      x: (usesClientMirror && clientDirection === 3 ? -offset[0] - frame.w : offset[0]) + layer.x - baseX,
       y: offset[1] + layer.y - baseY,
       flipX: direction.flipX,
     }
@@ -119,6 +120,7 @@ export function resolvePose(layers, directionKey = 'down', pose = 0, idleOffset 
   const baseHead = layers.find(l => l.slot === 'head')
   const pants = resolved.find(l => l.slot === 'pants' && l.visible)
   const breathing = resolved.map(layer => {
+    if(layer.slot==='eyes' && layer.provenance==='official-client-4.0.3' && direction.key==='up')return {...layer,visible:false}
     if (layer.slot !== 'eyes' || layer.provenance !== 'editor-placeholder') return layer
     if (direction.key === 'up') return { ...layer, visible: false }
     const dx = head && baseHead ? head.x - baseHead.x : 0

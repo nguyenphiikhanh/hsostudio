@@ -11,8 +11,8 @@ const slots = [
   { key: 'pants', label: 'Quần', required: true },
   { key: 'shirt', label: 'Áo', required: true },
   { key: 'head', label: 'Đầu', required: true },
-  { key: 'eyes', label: 'Mắt preview', required: false },
   { key: 'hair', label: 'Tóc', required: false },
+  { key: 'eyes', label: 'Mắt gốc', required: false },
   { key: 'helmet', label: 'Mũ', required: false },
 ]
 const parts = characterParts()
@@ -32,7 +32,7 @@ function makeLayer(part) {
     name: part.label, qualityNote: part.quality_note, slot: part.slot, partId: part.part_id, provenance: part.provenance,
     asset: { id: part.id, source: part.source, image: part.image, width: part.width, height: part.height, density: part.density },
     ...frame, x, y, visible: true,
-    ...(part.provenance === 'packet-metadata' ? { poseFrames: JSON.parse(part.frames), poseOffsets: JSON.parse(part.offsets) } : {}),
+    ...(['packet-metadata','official-client-4.0.3'].includes(part.provenance) ? { poseFrames: JSON.parse(part.frames), poseOffsets: JSON.parse(part.offsets) } : {}),
   }
 }
 function change(slot, id) {
@@ -45,7 +45,7 @@ function change(slot, id) {
   emit('focus', next.findIndex(l => l.slot === slot))
 }
 function reset() {
-  const next = slots.filter(s => s.key !== 'helmet').map(s => options(s.key).find(p => p.part_id === 0)).filter(Boolean).map(makeLayer)
+  const next = slots.filter(s => s.key !== 'helmet').map(s => options(s.key).find(p => p.part_id === (s.key==='eyes'?8:0))).filter(Boolean).map(makeLayer)
   emit('update', next)
   emit('focus', 0)
 }
@@ -60,6 +60,6 @@ onMounted(() => { if (!props.layers.length) reset() })
     <WeaponControls :clazz="clazz" @weapon="updateWeapon"/>
     <CompanionControls :layers="layers" @update="emit('update',$event)"/>
     <p v-for="l in layers.filter(l => l.qualityNote)" :key="l.slot" class="muted">{{ l.name }}: {{ l.qualityNote }}</p>
-    <p class="muted">Ưu tiên PNG x4 và metadata riêng của x4; tọa độ chỉnh sửa dùng đơn vị x1. Chọn hướng và trạng thái ở bên dưới. Mắt gốc type 4 bị trống trong bộ dữ liệu; mắt preview là hình thay thế của Studio.</p>
+    <p class="muted">Ưu tiên PNG x4 và metadata riêng của x4; tọa độ chỉnh sửa dùng đơn vị x1. Chọn hướng và trạng thái ở bên dưới. Mắt dùng PNG và điểm neo gốc trong client 4.0.3. JAR chỉ có mắt x1; các bộ phận khác vẫn ưu tiên x4.</p>
   </div>
 </template>

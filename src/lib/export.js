@@ -77,7 +77,7 @@ export async function exportAtlas(layers, drafts, preview = null, requestedName 
   await downloadZip(name, {
     [`${name}.png`]: png,
     [`${name}.json`]: { frames, meta: { app: 'HSO Studio', image: `${name}.png`, format: 'RGBA8888', size: { w: width, h: height }, scale: '1' } },
-    [`${compositionName}.json`]: { version: 1, name, texture: name, origin: [0, 0], layers: composition.sort((a, b) => a.depth - b.depth), drafts, preview, animations: [], animationStatus: 'Xuất tư thế đang xem, chưa xuất toàn bộ chu kỳ animation. Part mẫu dùng metadata; chu kỳ preview suy ra từ hình ảnh. Mắt preview là ảnh thay thế của Studio.' },
+    [`${compositionName}.json`]: { version: 1, name, texture: name, origin: [0, 0], layers: composition.sort((a, b) => a.depth - b.depth), drafts, preview, animations: [], animationStatus: 'Xuất tư thế đang xem, chưa xuất toàn bộ chu kỳ animation. Part mẫu dùng metadata; chu kỳ preview suy ra từ hình ảnh. Mắt mặc định dùng PNG/metadata gốc x1 từ client 4.0.3.' },
     [`load-${name}.js`]: snippet,
   })
 }

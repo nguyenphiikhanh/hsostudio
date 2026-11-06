@@ -21,12 +21,12 @@ test('library ZIP contains all supported parts and runs equipment swapping in re
   const entries = unzipSync(await fs.readFile(await download.path()))
   const json = name => JSON.parse(strFromU8(entries[name]))
   const manifest = json('library.json'), equipment = json('equipment.json'), outfit = json('character.json')
-  expect(Object.keys(manifest.parts)).toHaveLength(415)
+  expect(Object.keys(manifest.parts)).toHaveLength(430)
   expect(manifest.layout).toBe('per-part-folders')
   expect(manifest.resolution).toBe('x4')
   expect(Object.values(manifest.parts).filter(part => part.density === 4)).toHaveLength(412)
   expect(manifest.qualityNotes.filter(note => note.slot !== 'eyes').map(note => `${note.slot}-${note.partId}`)).toEqual(['pants-44', 'shirt-92'])
-  expect(manifest.atlases).toHaveLength(415)
+  expect(manifest.atlases).toHaveLength(430)
   expect(Object.keys(entries).some(path => path.startsWith('atlases/'))).toBe(false)
   expect(manifest.directions.sort()).toEqual(['down', 'left', 'right', 'up'])
   expect(Object.keys(outfit.equipment)).toHaveLength(5)
@@ -48,7 +48,7 @@ test('library ZIP contains all supported parts and runs equipment swapping in re
     expect(part.directory).toBe(prefix)
     expect(part.files).toEqual({ image: `${prefix}/sheet.png`, data: `${prefix}/atlas.json`, definition: `${prefix}/part.json` })
     for (const path of Object.values(part.files)) expect(entries[path]).toBeTruthy()
-    expect(Buffer.from(entries[part.files.image]).equals(await fs.readFile(join(process.cwd(), 'public/game/images', part.source + (part.source.endsWith('.png') ? '' : '.png'))))).toBe(true)
+    expect(Buffer.from(entries[part.files.image]).equals(await fs.readFile(part.source.startsWith('jar:') ? join(process.cwd(),'public/game/client403/eyes',`b${part.partId}.png`) : join(process.cwd(), 'public/game/images', part.source + (part.source.endsWith('.png') ? '' : '.png'))))).toBe(true)
     for (const entry of [...part.frames, ...(part.sideFrame ? [part.sideFrame] : [])]) {
       const atlas = atlases.get(entry.texture)
       const frame = atlas.frames[entry.frame].frame
@@ -87,9 +87,9 @@ test('library ZIP contains all supported parts and runs equipment swapping in re
   definition.frames[0] = originalCrop
   await fs.writeFile(definitionPath, JSON.stringify(definition))
   const indexed = await run(process.execPath, [join(root, 'reindex-library.mjs')])
-  expect(indexed.stdout).toContain('Indexed 416 parts')
+  expect(indexed.stdout).toContain('Indexed 431 parts')
   for (const path of ['library.json', 'parts/shirt/9000/sheet.png', 'parts/shirt/9000/part.json', 'parts/shirt/9000/atlas.json']) entries[path] = new Uint8Array(await fs.readFile(join(root, path)))
-  expect(Object.keys(json('library.json').parts)).toHaveLength(416)
+  expect(Object.keys(json('library.json').parts)).toHaveLength(431)
   expect(JSON.parse(await fs.readFile(join(root, 'parts/shirt/1/atlas.json'), 'utf8'))).toEqual(json('parts/shirt/1/atlas.json'))
   await page.route('**/export-smoke/**', async route => {
     const path = new URL(route.request().url()).pathname.replace('/export-smoke/', '')

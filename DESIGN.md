@@ -46,3 +46,6 @@ Actual item selection drives a verified 4.0.3 renderer, not editable arbitrary s
 
 ## Companion selectors
 Place the Mount and Pet selectors below verified weapon controls, using existing field, part-selectors and muted text tokens. Default each to None. Show original quality and separate unsupported-rig details. Reuse four direction canvases with a wider logical viewport when companions are selected. State clearly that pet placement is a preview fixture, and mounted previews support idle/walk. All 13 permitted sheet mounts expose verified offensive skills #0–#8/#17/#19/#20 with a real equipped weapon; brown horse remains blocked; other skills are disabled in this mode. Explain the restriction beside the animation controls.
+
+## Original client eyes
+The eye selector uses original Java4.0.3 eye resource IDs0–15, default8, with actual crop/anchor data. Explain the x1 source quality without calling it a placeholder. Preserve optional removal and old export compatibility. Render hair before eyes and hide eyes in the rear direction per the client.

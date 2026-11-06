@@ -27,7 +27,7 @@ JAR Java4.0.3 SHA256: `f023b34e0ba0a3dcf44249ed5f90b78f0427deee4668562b8e3a0e9e3
 
 ## ZIP và Phaser
 
-Vẫn là version1, giữ nguyên `parts/<slot>/<id>/` và 415 part cơ thể. Thêm:
+Vẫn là version1, giữ nguyên `parts/<slot>/<id>/` và 430 part (gồm16 mắt client gốc). Thêm:
 
 ```text
 mounts/0/{sheet.png,atlas.json,companion.json}
@@ -56,16 +56,9 @@ Copy thư mục thú sang ID riêng; sửa `id` trong companion.json trùng tên
 
 Chạy `node reindex-library.mjs` trong gói giải nén. Công cụ đọc lại các folder mount/pet, kiểm tra rig/crop/kích thước PNG và sinh lại atlas/manifest; lỗi thì không ghi các atlas đã xếp hàng. Không sửa atlas cơ thể hoặc ID vật phẩm để nâng độ phân giải. Bản runtime hoàn toàn dùng file tĩnh, không cần server HSO, Java hoặc Python.
 
-## Nhập lại reference (chỉ người bảo trì)
+## Dữ liệu đóng gói
 
-`scripts/import-companions.mjs` là công cụ Node chạy thủ công, không nằm trong dev/build/runtime. Công cụ cần dữ liệu server, JAR đã khóa checksum ở root repo và thư mục decompile tĩnh của cùng JAR:
-
-```sh
-node scripts/import-companions.mjs /path/to/hso /path/to/decompiled-client403
-```
-
-Nguồn mới được nhập vào metadata trong repo, dùng ảnh đã đóng gói. Không cần giữ các nguồn bên ngoài để chạy Studio. Rig effect id_horse (Cân đẩu vân, xe/phượng hoàng/rồng...) và PetTool được ghi trong inventory, chưa có renderer. Không coi `id_horse` là tiền tố file ảnh.
-
+Reference, PNG và inventory đã được đóng gói trong repo. Studio không còn công cụ nhập dữ liệu ngoài; chạy/build/xuất ZIP không cần server HSO, JAR, Python hay thư mục scripts. Khi cần thay thiết kế, dùng workflow PNG/metadata và reindex trong gói xuất ở trên. Rig effect id_horse và PetTool chưa có renderer; trạng thái được giữ trong inventory.
 
 ## Các chiêu đánh trên thú dạng sheet thường
 

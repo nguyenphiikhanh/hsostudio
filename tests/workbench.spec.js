@@ -79,7 +79,7 @@ test('complete standing character starts ready and swaps parts using packet meta
   await page.goto('/')
   await expect(page.getByLabel('Bộ phận Quần', { exact: true })).toBeVisible({ timeout: 30000 })
   await expect(page.locator('.layer-row')).toHaveCount(5)
-  for (const label of ['Quần', 'Áo', 'Đầu', 'Tóc', 'Mắt preview']) {
+  for (const label of ['Quần', 'Áo', 'Đầu', 'Tóc', 'Mắt gốc']) {
     await expect(page.getByLabel(`Bộ phận ${label}`, { exact: true })).not.toHaveValue('')
   }
   await page.getByRole('button', { name: 'Tạm dừng', exact: true }).click()
@@ -89,10 +89,10 @@ test('complete standing character starts ready and swaps parts using packet meta
   expect(source).toBe('part_char/imgver/x4/5_1')
   const archive = await exportZip(page)
   const composition = archive.json('character-composition.json')
-  expect(composition.layers.map(l => l.slot)).toEqual(['pants', 'shirt', 'head', 'eyes', 'hair'])
+  expect(composition.layers.map(l => l.slot)).toEqual(['pants', 'shirt', 'head', 'hair', 'eyes'])
   expect(composition.layers.find(l => l.slot === 'head')).toMatchObject({ x: -8, density: 4, provenance: 'packet-metadata' })
   expect([-30, -30.5, -31]).toContain(composition.layers.find(l => l.slot === 'head').y)
-  expect(composition.layers.find(l => l.slot === 'eyes').provenance).toBe('editor-placeholder')
+  expect(composition.layers.find(l => l.slot === 'eyes').provenance).toBe('official-client-4.0.3')
   const frameData = archive.json('character.json')
   expect(frameData.frames['part-0'].frame).toMatchObject({ w: 56, h: 52 })
   expect(frameData.frames['part-1'].frame).toMatchObject({ w: 80, h: Math.ceil(40 * (6 - composition.preview.breath) / 6) })
@@ -125,7 +125,7 @@ test('four directions animate, pause, step and export the selected mirrored pose
   expect(composition.preview.direction).toBe('right')
   expect(composition.preview.motion).toBe('walk')
   expect(composition.layers.find(l => l.slot === 'head').flipX).toBe(true)
-  expect(composition.layers.find(l => l.slot === 'eyes').flipX).toBe(false)
+  expect(composition.layers.find(l => l.slot === 'eyes').flipX).toBe(true)
   await page.getByRole('button', { name: 'Xem hướng Nhìn sau', exact: true }).click()
   await page.screenshot({ path: '/tmp/hso-character-directions.png', fullPage: true })
   await page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption('idle')
