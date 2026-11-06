@@ -49,3 +49,6 @@ Place the Mount and Pet selectors below verified weapon controls, using existing
 
 ## Original client eyes
 The eye selector uses original Java4.0.3 eye resource IDs0–15, default8, with actual crop/anchor data. Explain the x1 source quality without calling it a placeholder. Preserve optional removal and old export compatibility. Render hair before eyes and hide eyes in the rear direction per the client.
+
+## Composite companions
+Reuse the mount/pet selectors. Only show three still-unmapped items in the unsupported list, with source warnings on the selected pet when applicable. New DataSkillEff/PetTool rigs expose idle/walk; explain why mounted attack remains disabled for these rigs. Expand direction thumbnail logical bounds to include all component pieces without animation-dependent zoom changes.

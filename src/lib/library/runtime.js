@@ -76,7 +76,7 @@ export class EquipmentCharacter {
   equipCompanionItem(kind,itemId) {
     const item=this.manifest.companionInventory?.find(i=>i.kind===kind && i.id===itemId && i.status==='ready')
     if(!item)throw new Error('Unsupported companion item')
-    return this.setCompanion(kind,kind==='mount'?item.typeId:item.imageId)
+    return this.setCompanion(kind,item.companionId ?? (kind==='mount'?item.typeId:item.imageId))
   }
   setState(state, direction = this.direction) {
     if(this.companions.mount && state==='attack') {
@@ -137,6 +137,7 @@ export class EquipmentCharacter {
       layers.push({slot,companion:d,asset:d.asset,...d.frameEntries[0].crop,x:0,y:0,visible:true})
     }
     const posed = resolvePose(layers, this.direction, phase.pose, phase.idleOffset, { experimentalAttack: animation.experimental === true, anchorPose: phase.anchorPose, clientBodyFrame: phase.clientBodyFrame, motion:this.state,tick:Math.floor(this.elapsed*25/1000),clientAttack:this.state==='attack' && (animation.clientBasic===true || animation.clientSkill===true),clientWeaponFrame:phase.clientWeaponFrame,mountEntry:this.mountEntry,clientSkillId:animation.skillId })
+    for(const image of this.images.values())image.setVisible(false)
     for (const layer of posed) {
       const selection = this.outfit[layer.slot], part = layer.companion ? this.manifest.companions[layer.slot][this.companions[layer.slot]] : this.manifest.parts[selection.partKey]
       const entries=layer.companion?part.frameEntries:part.frames
@@ -144,7 +145,9 @@ export class EquipmentCharacter {
       const entry = layer.slot === 'eyes' && part.sideFrame && layer.w === 1 ? part.sideFrame
         : entries.find(f => ['sx', 'sy', 'w', 'h'].every(key => f.crop[key] === layer[key]))
       if (!entry) throw new Error(`Missing frame for ${layer.slot}`)
-      this.images.get(layer.slot).setTexture(entry.texture, entry.frame)
+      const key=layer.renderKey ?? layer.slot
+      if(!this.images.has(key)){const image=this.scene.add.image(0,0,entry.texture,entry.frame).setOrigin(0,0);this.images.set(key,image);this.container.add(image)}
+      this.images.get(key).setTexture(entry.texture, entry.frame)
         .setScale(1 / (density || 1), (layer.displayHeight ?? layer.h) / layer.h / (density || 1)).setPosition(layer.x, layer.y).setFlipX(Boolean(layer.flipX)).setVisible(layer.visible).setDepth(layer.renderDepth ?? (layer.slot==='weapon'?100:this.manifest.slotOrder.indexOf(layer.slot)))
     }
     this.container.sort('depth')

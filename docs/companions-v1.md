@@ -1,3 +1,5 @@
+> Cập nhật: đã bổ sung 8 rig hiệu ứng và6 PetTool cho đứng/đi; xem [hướng dẫn mới](composite-companions.md). Các số liệu14/6 bên dưới mô tả mốc triển khai sheet ban đầu.
+
 # Thú cưỡi và pet trong thư viện v1
 
 Đã khôi phục 14 ngoại hình thú cưỡi sheet thường (20 vật phẩm/alias) và 6 pet cơ bản. PNG gốc ưu tiên x4, không vẽ lại hoặc lấy tên file đoán loại thú. Các bản x99/vĩnh viễn chỉ dùng chung rig khi đã xác minh mapping. Inventory có 48 vật phẩm mount và 12 template vật phẩm pet; 34 mục chưa hỗ trợ được ghi rõ, không biến thành thiết kế giả.

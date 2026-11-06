@@ -7,6 +7,7 @@ import SkillThreePreview from './SkillThreePreview.vue'
 import SkillFourPreview from './SkillFourPreview.vue'
 import ClientSkillEffectPreview from './ClientSkillEffectPreview.vue'
 import { createAttackTrial } from '../lib/attackTrial'
+import { companionCycleLength, companionViewport } from '../lib/companionPose.js'
 import { loadImage } from '../lib/export'
 import { DIRECTIONS, WALK_CYCLE, IDLE_CYCLE, IDLE_FPS, paintLayers, resolvePose, clientSkillPhase, clientSkillClip } from '../lib/characterPose'
 import { clientSkillData, isClientAttackSkill } from '../lib/clientSkillCatalog'
@@ -37,7 +38,7 @@ watch(motion,(value,old)=>{
 },{flush:'sync'})
 const effectiveFps = computed(() => clientVerified.value || hasCompanion.value ? 25 : fps.value)
 const companionCycle = computed(()=>{
-  const lengths=props.layers.filter(l=>l.companion && l.visible).flatMap(l=>l.slot==='mount'?[motion.value==='walk'?9:12]:l.companion.frames[motion.value==='walk'?1:0].map(c=>c.length))
+  const lengths=props.layers.filter(l=>l.companion && l.visible).map(l=>companionCycleLength(l.companion,motion.value))
   const gcd=(a,b)=>b?gcd(b,a%b):a
   if(!hasMount.value)lengths.push(100/gcd(fps.value,100))
   return lengths.reduce((a,b)=>a*b/gcd(a,b),1)
@@ -49,6 +50,7 @@ const attackPhase = computed(() => trial.value.frames[tick.value % trial.value.f
 const baseAttackOptions = computed(() => clientVerified.value ? { clientAttack: true, clientBodyFrame: nativePhase.value.bodyFrame, clientWeaponFrame: nativePhase.value.weaponFrame } : motion.value === 'attack' ? { experimentalAttack: true, anchorPose: attackPhase.value.anchorPose } : {})
 const attackOptions = computed(()=>hasCompanion.value ? {...baseAttackOptions.value,motion:motion.value,tick:tick.value,...(hasMount.value && motion.value==='attack'?{mountEntry:mountEntry.value,clientSkillId:trial.value.skillId}:{})} : baseAttackOptions.value)
 const views = new Map()
+const viewport=computed(()=>companionViewport(props.layers))
 const cycleLength = computed(() => hasCompanion.value && motion.value!=='attack' ? companionCycle.value : clientSkill.value ? Math.max(32, clientSkillClip(props.clazz, trial.value.skillId).frames.length) : clientBasic.value ? 9 : motion.value === 'attack' ? trial.value.frames.length : motion.value === 'walk' ? WALK_CYCLE.length : IDLE_CYCLE.length)
 const bodyTick = computed(()=>hasCompanion.value && !hasMount.value ? Math.floor(tick.value*fps.value/25) : tick.value)
 const breath = computed(() => motion.value === 'idle' && !hasMount.value ? IDLE_CYCLE[bodyTick.value % IDLE_CYCLE.length] : 0)
@@ -79,9 +81,9 @@ async function drawViews() {
       const ctx = canvas.getContext('2d')
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       ctx.save()
-      ctx.scale(hasCompanion.value ? 6 : 12, hasCompanion.value ? 6 : 12)
+      ctx.scale(hasCompanion.value ? viewport.value.scale : 12, hasCompanion.value ? viewport.value.scale : 12)
       ctx.imageSmoothingEnabled = false
-      paintLayers(ctx, posed, images, hasCompanion.value ? 42 : 26, hasCompanion.value ? 92 : 45)
+      paintLayers(ctx, posed, images, hasCompanion.value ? viewport.value.x : 26, hasCompanion.value ? viewport.value.y : 45)
       canvas.dataset.renderedMount=posed.find(l=>l.slot==='mount' && l.visible)?.companion.id ?? ''
       ctx.restore()
     }))

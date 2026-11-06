@@ -24,7 +24,7 @@ test('mount/pet preview and v1 ZIP restore actual horse/owl and run in Phaser',a
  const json=p=>JSON.parse(strFromU8(zip[p]))
  expect(json('character.json').companions).toEqual({mount:'0',pet:'3'})
  expect(zip['mounts/0/sheet.png']).toBeTruthy();expect(zip['pets/3/companion.json']).toBeTruthy()
- expect(json('library.json').companionAtlases).toHaveLength(20)
+ expect(json('library.json').companionAtlases).toHaveLength(34)
  for(const d of Object.values(json('library.json').companions.mount))expect(d.asset.density).toBe(4)
  await page.route('**/companion-smoke/**',route=>{
    const path=new URL(route.request().url()).pathname.replace('/companion-smoke/','')

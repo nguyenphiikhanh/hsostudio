@@ -92,6 +92,7 @@ export function clientSkillClip(clazz, skillId) {
 export function resolvePose(layers, directionKey = 'down', pose = 0, idleOffset = 0, options = {}) {
   const direction = DIRECTIONS.find(d => d.key === directionKey) || DIRECTIONS[0]
   const mount = layers.find(l=>l.slot==='mount' && l.companion && l.visible)
+  const hasComposite = layers.some(l => l.visible && l.companion?.rig?.kind)
   const mountedAttack = Boolean(mount && options.motion==='attack' && options.clientAttack && mount.companion.mountedAttack?.status==='ready' && mount.companion.mountedAttack.skillIds.includes(options.clientSkillId ?? 0))
   const mounted = mount ? companionFrame(mount.companion,directionKey,mountedAttack ? options.mountEntry?.motion ?? 'idle' : options.motion,mountedAttack ? options.mountEntry?.tick ?? 0 : options.tick) : null
   if (mounted) { options={...options,clientBodyFrame:mountedAttack ? options.clientBodyFrame : mounted.bodyFrame,experimentalAttack:false}; idleOffset=0 }
@@ -159,12 +160,24 @@ export function resolvePose(layers, directionKey = 'down', pose = 0, idleOffset 
     }
     const frame = weapon.frames[dir], offset = weapon.offsets[dir][Math.min(bodyFrame, 2)]
     return { ...layer, ...frame, x: offset[0], y: offset[1], flipX: false, renderFront: !behind }
-  }).map(layer => {
+  }).flatMap((layer, index) => {
     if (layer.companion) {
       const frame=layer.slot==='mount' && mountedAttack ? mounted : companionFrame(layer.companion,directionKey,options.motion,options.tick)
+      if (frame.pieces) return frame.pieces.map(p => {
+        const depth = layer.slot === 'mount' ? (p.front ? layers.length + 4 : -3) : layers.length + 5
+        // Preserve source piece order even when pooled sprites change layers between frames.
+        return { ...layer, ...p, frame: frame.frame, seat: frame.seat,
+          renderKey: p.pieceIndex === 0 ? layer.slot : layer.slot + ':piece:' + p.pieceIndex,
+          renderDepth: depth + p.pieceIndex / (frame.pieces.length + 1) * 0.1 }
+      })
       return {...layer,...frame,renderDepth:layer.slot==='mount'?(frame.front?layers.length+1:-1):layers.length+3}
     }
-    return mounted ? {...layer,y:layer.y-mounted.seat,visible:layer.slot==='pants'?false:layer.visible} : layer
+    const placed = mounted ? {...layer,y:layer.y-mounted.seat,visible:layer.slot==='pants'?false:layer.visible} : layer
+    // Composite expansion must not change body/weapon depth by shifting array indices.
+    if (hasComposite) {
+      return { ...placed, renderDepth: layer.renderDepth ?? (layer.slot === 'weapon' && layer.clientWeapon ? (layer.renderFront ? layers.length + 2 : -2) : index) }
+    }
+    return placed
   })
 }
 

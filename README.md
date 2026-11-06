@@ -238,7 +238,7 @@ Khung xem dùng sprite chính của effect client và mục tiêu tĩnh. Hạt p
 
 ## Thú cưỡi và thú cưng
 
-Đã có hai bộ chọn riêng trong phần thay bộ phận: 14 ngoại hình thú cưỡi sheet thường và 6 pet cơ bản, gồm **Ngựa nâu + Cú**, ưu tiên PNG x4 gốc. Có đứng/đi bốn hướng, frame/điểm ngồi/layer đối chiếu client4.0.3. Xuất thư viện part bổ sung folder `mounts/<id>/`, `pets/<id>/` và API `character.mount(id)` / `character.setPet(id)`; vẫn giữ cấu trúc v1.
+Đã có hai bộ chọn riêng trong phần thay bộ phận: 22 ngoại hình thú cưỡi (14 sheet +8 rig hiệu ứng) và12 pet, gồm **Ngựa nâu + Cú**, ưu tiên PNG x4 gốc. Có đứng/đi bốn hướng, frame/layer đối chiếu client4.0.3. Riêng ghế ngồi Chuột tuyết và Voi Ma mút chưa được xác nhận khớp PNG; giữ tọa độ nguồn và cảnh báo trong preview/ZIP. Xuất thư viện part bổ sung folder `mounts/<id>/`, `pets/<id>/` và API `character.mount(id)` / `character.setPet(id)`; vẫn giữ cấu trúc v1.
 
 Pet đang dùng đội hình xem trước, chưa có AI đi theo/chiến đấu. 13 rig sheet thường đã hỗ trợ các chiêu đánh #0–#8, #17, #19, #20 của bốn phái khi chọn vũ khí thường; Ngựa nâu bị client cấm đánh, rig hiệu ứng đặc biệt chưa hỗ trợ. Demo arena H5 chưa dùng rig thú. Các rig chưa xác minh nằm trong báo cáo, không tạo asset thay thế. Xem [nguồn đối chiếu, cách dùng và thay PNG HD](docs/companions-v1.md).
 
@@ -249,3 +249,9 @@ Khi cưỡi, chiêu #1–#4 có khung hiệu ứng chính đã khôi phục; #5�
 ## Mắt gốc từ client
 
 Đã thay mắt tạm bằng 16 PNG/metadata mắt gốc từ client Java4.0.3. Nhân vật mẫu dùng mắt #8; nhìn sau ẩn mắt, hướng ngang và điểm neo theo client. Mắt chỉ có x1 gốc, các part khác tiếp tục ưu tiên x4. Thư viện mới có 430 part; schema mắt placeholder cũ vẫn đọc được. Xem [bằng chứng và phạm vi](docs/client-eyes.md).
+
+## Rig hiệu ứng và PetTool mới
+
+Đã có Cân đẩu vân, Chuột tuyết, Ma mút, mô tô, xe trượt tuyết, Hỏa kì lân, Phượng hoàng lửa, Rồng băng và6 pet đặc biệt. Tổng22 thú cưỡi +12 pet. Rig mới hỗ trợ đứng/đi bốn hướng và ZIP Phaser nhiều mảnh; 13 rig sheet cũ giữ các chiêu đánh đã mở. Chỉ còn vật phẩm271/272/283 chưa đủ mapping. Phượng hoàng băng có cảnh báo frame đánh lỗi trong nguồn, không tự sửa; chỉ bật idle/walk.
+
+Xem [API, dữ liệu gốc, giới hạn và workflow HD](docs/composite-companions.md). Studio vẫn không cần scripts, HSO, Java hoặc Python khi chạy/build.

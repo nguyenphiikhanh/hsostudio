@@ -119,7 +119,7 @@ async function exportLibrary() {
   const draftSnapshot = JSON.parse(JSON.stringify(drafts.value))
   try {
     const result = await exportPartLibrary(name, snapshot, draftSnapshot, message => { notice.value = message }, preview.value.attackTrial)
-    notice.value = `Đã tải ${exportFileName(name).slice(0, 72)}-library.zip: ${result.parts} thư mục part ưu tiên x4 (PNG + metadata + atlas riêng), ${result.items} trang bị có ánh xạ. Hỗ trợ đứng/đi 4 hướng; có clip tấn công kèm provenance trong animations.json. Runtime hỗ trợ part cơ thể và rig mount/pet đã xác minh; vũ khí vẫn là preview.${result.omitted ? ' Xem character.omittedLayers cho các lớp/vùng cắt không được giữ lại.' : ''}`
+    notice.value = `Đã tải ${exportFileName(name).slice(0, 72)}-library.zip: ${result.parts} thư mục part ưu tiên x4 và ${result.companions} rig thú (PNG + metadata + atlas riêng), ${result.items} trang bị có ánh xạ. Hỗ trợ đứng/đi 4 hướng; có clip tấn công kèm provenance trong animations.json. Runtime hỗ trợ part cơ thể và rig mount/pet đã xác minh; vũ khí vẫn là preview.${result.omitted ? ' Xem character.omittedLayers cho các lớp/vùng cắt không được giữ lại.' : ''}`
   } catch (e) { error.value = e.message; notice.value = '' }
   finally { busy.value = false }
 }

@@ -9,18 +9,17 @@ const horse=catalog.mounts.find(d=>d.id==='0'), owl=catalog.pets.find(d=>d.id===
 const layer=d=>({slot:d.slot,companion:d,asset:d.asset,visible:true,x:0,y:0})
 
 test('all ready companion textures have exact hashes, crop bounds and x4 geometry in bundle',()=>{
-  assert.equal(catalog.mounts.length,14);assert.equal(catalog.pets.length,6)
+  assert.equal(catalog.mounts.length,22);assert.equal(catalog.pets.length,12)
   for(const d of [...catalog.mounts,...catalog.pets]){
     validateCompanion(d,d.slot)
     const png=fs.readFileSync(new URL(`../public/game/${d.asset.image}`,import.meta.url))
     assert.equal(createHash('sha256').update(png).digest('hex'),d.asset.sha256)
     assert.equal(png.readUInt32BE(16),d.asset.width);assert.equal(png.readUInt32BE(20),d.asset.height)
     const compiled=compileCompanion(d,'test')
-    assert.equal(Object.keys(compiled.atlas.frames).length,d.asset.columns*d.asset.rows)
+    assert.equal(Object.keys(compiled.atlas.frames).length,d.rig?.kind?d.rig.rects.length:d.asset.columns*d.asset.rows)
     for(const direction of ['down','up','left','right'])for(const motion of ['idle','walk'])for(let tick=0;tick<36;tick++){
       const p=companionFrame(d,direction,motion,tick)
-      assert.ok(p.sx+p.w<=d.asset.width/d.asset.density)
-      assert.ok(p.sy+p.h<=d.asset.height/d.asset.density)
+      for(const crop of p.pieces??[p]){assert.ok(crop.sx+crop.w<=d.asset.width/d.asset.density);assert.ok(crop.sy+crop.h<=d.asset.height/d.asset.density)}
     }
   }
 })
@@ -47,7 +46,7 @@ test('owl maps item2944 -> image3, lands for idle and uses mOwl frames during fl
   const move=companionFrame(owl,'right','walk',3)
   assert.equal(move.frame,3);assert.equal(move.flipX,true)
   assert.equal(move.y,-50-owl.asset.frameHeight)
-  assert.ok(catalog.inventory.some(i=>i.kind==='mount'&&i.id===275&&i.status==='unsupported-rig'))
+  assert.ok(catalog.inventory.some(i=>i.kind==='mount'&&i.id===275&&i.status==='ready'&&i.companionId==='effect-111'))
   assert.throws(()=>validateCompanion({...owl,status:'unmapped'},'pet'))
 })
 
@@ -61,7 +60,7 @@ test('quality upgrades preserve world geometry and invalid seat metadata fails b
 test('all permitted sheet mounts preserve native body/WPS while freezing the entry mount frame and seat',async()=>{
  const {clientBasicPhase,clientBasicClip}=await import('../src/lib/characterPose.js')
  const {mountedAttackAllowed}=await import('../src/lib/companionPose.js')
- const allowed=catalog.mounts.filter(d=>d.typeId!==0)
+ const allowed=catalog.mounts.filter(d=>d.mountedAttack?.status==='ready')
  assert.equal(allowed.length,13)
  for(const white of allowed)assert.equal(mountedAttackAllowed(white,clientBasicClip(0)),true)
  const white=allowed[0]
@@ -98,7 +97,7 @@ test('all permitted sheet mounts preserve native body/WPS while freezing the ent
 test('all offensive mounted clips retain their native phases, including extended WPS and plash0',async()=>{
  const {clientSkillClip,clientSkillPhase}=await import('../src/lib/characterPose.js')
  const {mountedAttackAllowed}=await import('../src/lib/companionPose.js')
- const allowed=catalog.mounts.filter(d=>d.typeId!==0),skills=[0,1,2,3,4,5,6,7,8,17,19,20]
+ const allowed=catalog.mounts.filter(d=>d.mountedAttack?.status==='ready'),skills=[0,1,2,3,4,5,6,7,8,17,19,20]
  const frames=Array.from({length:15},(_,i)=>({sx:i*10,sy:0,w:10,h:10}))
  const offsets=Array.from({length:24},(_,i)=>[i,-i])
  const shirt={slot:'shirt',visible:true,...frames[0],x:0,y:0,poseFrames:frames,poseOffsets:offsets}
