@@ -1,6 +1,6 @@
-# Map viewer
+# Map editor
 
-Menu **Map** mở `/maps`, độc lập Character Lab và Thư viện dữ liệu. Đây là viewer chỉ đọc: không sửa tile, không thay spawn, không lưu vào server.
+Menu **Map** mở `/maps`, độc lập Character Lab và Thư viện dữ liệu. Map gốc chỉ đọc; có thể chỉnh tile/vật thể trên bản nháp riêng. Chưa sửa spawn/cổng và không lưu vào server. Xem [hướng dẫn nháp và phần còn thiếu](map-editor.md).
 
 ## Dùng
 
@@ -9,21 +9,21 @@ Menu **Map** mở `/maps`, độc lập Character Lab và Thư viện dữ liệ
 - Các lớp: nền, vật thể, lưới24×24, collision, cổng và marker spawn quái. Hover xem world/ô/tile/type; click chọn ô và vật thể theo khung ảnh để xem source, offset và ô chặn.
 - Collision overlay đỏ=chặn(type1), xanh=chậm(type2 client). Có thêm ô chặn từ template.Block, nhưng chưa có NPC hoặc trạng thái động của server. Đây không phải toàn bộ luật gameplay.
 - Cổng dùng vị trí/tên từ packet map; đích được nối vào cấu hình SQLite chỉ khi tọa độ nguồn khớp duy nhất. Đích chưa khớp được báo chưa xác minh. Marker quái lấy trực tiếp từ maps.mobs, không dùng sprite/AI tự chế. NPC hiện chỉ giữ danh sách tham chiếu packet, không đoán vị trí.
-- Khi chuyển menu rồi quay lại, lựa chọn map, camera và lớp hiển thị được giữ trong bộ nhớ. Reload trình duyệt trở về map0.
+- Khi chuyển menu rồi quay lại, lựa chọn map, camera và lớp hiển thị được giữ trong bộ nhớ. Nháp và lịch sử được giữ riêng theo map trong tab; reload trở về map0 và bỏ nháp chưa tải JSON.
 
 ## Render gốc và giới hạn
 
 Ô24×24 dùng logical units x1, ảnh terrain và vật thể lấy từ PNG x4. Nền tĩnh dùng nhánh LoadMap.paint ở gameTick%14==7: mọi tile được đọc trực tiếp từ ảnh terrain, không rơi vào nhánh nước động. Không sử dụng ảnh nước placeholder để giả lập. Vật thể dùng tọa độ ô×24 +dx/dy, đầy đủ ảnh gốc và thứ tự CRes.quickSort1, kể cả cách xử lý các vật thể cùng hàng.
 
-Chưa hỗ trợ nước/thác động, background/parallax, actor NPC/quái, hiệu ứng đuôi payload và collision runtime. Những phần chưa dựng giữ raw/checksum và được báo trong inspector/JSON. Không khẳng định toàn bộ cảnh/gameplay đã được khôi phục.
+Chưa hỗ trợ nước/thác động, background/parallax, actor NPC/quái, hiệu ứng đuôi payload và collision runtime. Những phần chưa dựng giữ raw/checksum và được báo trong inspector/JSON. Không khẳng định toàn bộ cảnh/gameplay đã được khôi phục. Layout đã sửa được ghi rõ studio-draft và có hậu tố edited khi xuất; raw/checksum trong source chỉ tham chiếu bản gốc.
 
 Dữ liệu vật thể dùng307 template từ msg_1 server gửi lúc Login_Ok; không dùng table_item mặc định khác phiên bản trong JAR. Đối chiếu nguồn: [báo cáo khảo sát](map-feasibility.md).
 
 ## Xuất
 
 - **PNG map:** ảnh toàn bản đồ, luôn gồm nền+vật thể, không kèm overlay/marker. Chọn x1(logical) hoặc x4(kích thước PNG nguồn). Giới hạn64triệu pixel để tránh canvas quá lớn.
-- **JSON map:** layout, tileset, template vật thể được sử dụng, collision đã tính, spawn, cổng, tham chiếu NPC, raw nguồn và giới hạn. Đường dẫn PNG còn trỏ tới asset đóng gói của Studio; dùng ZIP nếu cần mang toàn bộ ảnh đi.
-- **ZIP Phaser:** `map.json`, PNG x4 cho terrain/các vật thể cần dùng, `runtime.js`, `mapGeometry.js`, `example.js` và README. Không preload tất cả91 map, không có phụ thuộc vào server/JAR/Python. JSON là schema Studio, chưa phải file Tiled.
+- **JSON map:** layout đang xem (gốc hoặc nháp), tileset, template vật thể được sử dụng, collision đã tính, spawn, cổng, tham chiếu NPC, raw nguồn và giới hạn. Đường dẫn PNG còn trỏ tới asset đóng gói của Studio; dùng ZIP nếu cần mang toàn bộ ảnh đi.
+- **ZIP Phaser:** layout đang xem trong `map.json`, PNG x4 cho terrain/các vật thể cần dùng, `runtime.js`, `mapGeometry.js`, `example.js` và README. Không preload tất cả91 map, không có phụ thuộc vào server/JAR/Python. JSON là schema Studio, chưa phải file Tiled.
 
 API trong ZIP:
 

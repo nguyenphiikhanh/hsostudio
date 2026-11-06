@@ -5,13 +5,13 @@ import {drawMap} from './mapCanvas.js'
 import geometrySource from './mapGeometry.js?raw'
 import runtimeSource from './mapRuntime.js?raw'
 
-function nameOf(map){return exportFileName(`map-${map.id}-${map.name}`)}
+function nameOf(map,modified=false){return exportFileName(`map-${map.id}-${map.name}${modified?'-edited':''}`)}
 export function mapDocument(data) {
   const {map,templates}=data
   const objectTemplates=Object.fromEntries([...new Set(map.objects.map(o=>o.templateId))].map(id=>[id,templates[id]]))
-  return {...map,objectTableSource:data.tableSource,objectTemplates,collision:collisionGrid(map,templates),rendering:{mode:'native-static-tick-7',coordinateUnits:'x1',textureDensity:4,markerActors:false}}
+  return {...map,editInfo:data.editInfo??{modified:false},sourceScope:data.editInfo?.modified?'Reference base packet; rawHex/checksum do not encode Studio edits.':'Original native layout',objectTableSource:data.tableSource,objectTemplates,collision:collisionGrid(map,templates),rendering:{mode:'native-static-tick-7',coordinateUnits:'x1',textureDensity:4,markerActors:false,layout:data.editInfo?.modified?'studio-draft':'native'}}
 }
-export function exportMapJSON(data){download(nameOf(data.map)+'.json',new Blob([JSON.stringify(mapDocument(data),null,2)],{type:'application/json'}))}
+export function exportMapJSON(data){download(nameOf(data.map,data.editInfo?.modified)+'.json',new Blob([JSON.stringify(mapDocument(data),null,2)],{type:'application/json'}))}
 export async function exportMapPNG(data,density=1) {
   if(![1,4].includes(density))throw new Error('Độ phân giải PNG không hợp lệ')
   const m=data.map,w=m.width*m.tileSize*density,h=m.height*m.tileSize*density
@@ -20,7 +20,7 @@ export async function exportMapPNG(data,density=1) {
   const ctx=canvas.getContext('2d');ctx.scale(density,density)
   drawMap(ctx,m,data.templates,data.images)
   const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('Không tạo được PNG map'))))
-  download(`${nameOf(m)}-x${density}.png`,blob)
+  download(`${nameOf(m,data.editInfo?.modified)}-x${density}.png`,blob)
 }
 export async function exportMapZIP(data) {
   const doc=JSON.parse(JSON.stringify(mapDocument(data))),files={},paths=new Map()
@@ -41,6 +41,6 @@ export async function exportMapZIP(data) {
   files['map.json']=doc;files['mapGeometry.js']=geometrySource;files['runtime.js']=runtimeSource
   files['package.json']={private:true,type:'module'}
   files['example.js']=`import {preloadMap,createMap} from './runtime.js';\n// Fetch map.json before creating a Phaser scene.\nexport function mapScene(Phaser,map,baseUrl='.') {\n return class extends Phaser.Scene {\n  preload(){preloadMap(this,baseUrl,map)}\n  create(){this.map=createMap(this,map);this.cameras.main.setBounds(0,0,this.map.width,this.map.height)}\n };\n}\n`
-  files['README.md']=`# ${doc.name}\n\nPNG x4 gốc, layout dùng đơn vị x1; ô24×24. Nạp map.json trước Scene, gọi preloadMap trong preload và createMap trong create (xem example.js). Runtime cần thư viện Phaser của game; không cần HSO/JAR/Python.\n\nBản xuất nền tĩnh theo client tick7 và vật thể gốc. terrainLayer là nền; objectLayer đã sắp xếp theo y như client. Nếu thêm actor, tự đưa vào lớp phù hợp và cập nhật depth; chưa khôi phục toàn bộ quy tắc actor/NPC.\n\ncollisionAt(x,y): 0 bình thường,1 chặn hoặc ngoài map,2 chậm theo client. Collision chỉ gồm nền và template.Block, chưa có NPC/event/runtime server. Không tự bật physics/pathfinding.\n\nSpawn/cổng/NPC tham chiếu nằm trong map.json; không được vẽ thành actor. Nước/thác động, background/parallax, đuôi hiệu ứng chưa được dựng. PNG/JSON export không ghi thay đổi vào server. Raw nguồn và checksum giữ trong source; giữ tọa độ, không tự suy diễn metadata chưa hiểu.\n`
-  await downloadZip(nameOf(doc),files)
+  files['README.md']=`# ${doc.name}\n\n${doc.editInfo.modified?'LAYOUT BẢN NHÁP STUDIO: tile/vật thể đã chỉnh; không phải layout HSO gốc. Raw/checksum giữ để tham chiếu bản gốc.':'Layout nguồn gốc, chưa chỉnh sửa trong Studio.'}\n\nPNG x4 gốc, layout dùng đơn vị x1; ô24×24. Nạp map.json trước Scene, gọi preloadMap trong preload và createMap trong create (xem example.js). Runtime cần thư viện Phaser của game; không cần HSO/JAR/Python.\n\nBản xuất nền tĩnh theo client tick7, PNG vật thể gốc và vị trí của layout đang xem. terrainLayer là nền; objectLayer đã sắp xếp theo y như client. Nếu thêm actor, tự đưa vào lớp phù hợp và cập nhật depth; chưa khôi phục toàn bộ quy tắc actor/NPC.\n\ncollisionAt(x,y): 0 bình thường,1 chặn hoặc ngoài map,2 chậm theo client. Collision chỉ gồm nền và template.Block, chưa có NPC/event/runtime server. Không tự bật physics/pathfinding.\n\nSpawn/cổng/NPC tham chiếu nằm trong map.json; không được vẽ thành actor. Nước/thác động, background/parallax, đuôi hiệu ứng chưa được dựng. PNG/JSON export không ghi thay đổi vào server. Raw nguồn và checksum giữ trong source; giữ tọa độ, không tự suy diễn metadata chưa hiểu.\n`
+  await downloadZip(nameOf(doc,doc.editInfo.modified),files)
 }

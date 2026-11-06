@@ -12,8 +12,10 @@ export function objectPlacement(object, template, tileSize = 24) {
 export function sortObjects(objects) {
   const a = [...objects]
   const swap = (i,j) => { if(a[i].cellY!==a[j].cellY) [a[i],a[j]]=[a[j],a[i]] }
-  function sort(lo,hi) {
-    if(hi<=lo)return
+  const pending=[[0,a.length-1]]
+  while(pending.length) {
+    const [lo,hi]=pending.pop()
+    if(hi<=lo)continue
     const pivot=a[hi].cellY;let left=lo-1,right=hi
     while(true) {
       if(a[++left].cellY<pivot)continue
@@ -21,9 +23,8 @@ export function sortObjects(objects) {
       if(left>=right)break
       swap(left,right)
     }
-    swap(left,hi);sort(lo,left-1);sort(left+1,hi)
+    swap(left,hi);pending.push([left+1,hi],[lo,left-1])
   }
-  sort(0,a.length-1)
   return a
 }
 export function collisionGrid(map, templates) {

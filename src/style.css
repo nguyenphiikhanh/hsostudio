@@ -40,3 +40,14 @@
 .map-object-preview{display:block;max-width:100%;max-height:180px;object-fit:contain;image-rendering:pixelated;margin:12px auto}
 @media(max-width:1100px){.workspace.workspace-map{grid-template-columns:150px minmax(0,1fr)}.map-workspace{grid-template-columns:minmax(0,1fr)}.map-inspector{position:static}}
 @media(max-width:600px){.workspace.workspace-map{display:block}.map-picker{display:block}.map-picker .muted{display:block;padding-bottom:0}.map-canvas-shell{height:52dvh;min-height:300px}.map-export-tools{gap:8px}.map-page .section-heading{align-items:start;flex-wrap:wrap}}
+
+.map-editor-panel{margin:16px 0;padding:14px;border:1px solid #536a42;border-radius:6px;background:#222a20;min-width:0}
+.map-editor-panel .section-heading{flex-wrap:wrap;margin-bottom:10px}.map-edit-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0}.map-edit-tools button{font-size:12px}
+.map-editor-panel details{margin-top:12px}.map-editor-panel summary{cursor:pointer;font-size:12px;color:#b9e581}
+.map-tile-palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:6px;max-height:220px;overflow:auto;padding:8px 2px}
+.map-tile-choice{padding:4px;display:grid;justify-items:center;gap:4px}.map-tile-choice small{font:10px monospace}.map-tile-swatch{display:block;width:48px;height:48px;image-rendering:pixelated;background-repeat:no-repeat}
+.map-template-picker{display:grid;grid-template-columns:minmax(120px,1fr) minmax(160px,2fr);gap:12px}.map-template-picker select{width:100%;min-width:0}
+.map-template-info{display:flex;align-items:center;gap:16px;min-width:0}.map-template-info img{max-width:150px;max-height:130px;object-fit:contain;image-rendering:pixelated}.map-template-info>div{min-width:0}
+@media(max-width:600px){.map-template-picker{grid-template-columns:minmax(0,1fr)}.map-template-info{flex-wrap:wrap}.map-edit-tools .muted{width:100%}}
+
+@media(max-width:600px){.map-editor-panel .section-heading>span{width:100%}.map-edit-tools [data-testid="map-edit-count"]{min-height:3.2em}}

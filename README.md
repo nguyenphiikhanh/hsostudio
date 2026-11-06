@@ -279,4 +279,8 @@ location / { try_files $uri $uri/ /index.html; }
 
 ### Map
 
-Menu **Map** (`/maps`) có91 layout gốc và33 mục chỉ có tên(chưa mở). Xem nền/vật thể x4, pan/zoom, lưới, collision và marker cổng/spawn; click xem dữ liệu nguồn. Xuất PNG x1/x4, JSON hoặc ZIP dựng cảnh tĩnh trong Phaser. Đây là viewer chỉ đọc; chưa có nước/thác động, background/parallax, NPC/quái actor hoặc chỉnh tile. Dữ liệu đã đóng gói, không cần hso/JAR/Python khi chạy. Xem [hướng dẫn Map](docs/maps.md).
+Menu **Map** (`/maps`) có91 layout gốc và33 mục chỉ có tên(chưa mở). Xem nền/vật thể x4, pan/zoom, lưới, collision và marker cổng/spawn; click xem dữ liệu nguồn. Xuất PNG x1/x4, JSON hoặc ZIP dựng cảnh tĩnh trong Phaser. Map gốc được giữ chỉ đọc; editor cho sửa tile/vật thể, Undo/Redo và tải/nhập nháp JSON. Xuất PNG/JSON/Phaser dùng layout đang xem. Chưa có nước/thác động, background/parallax, NPC/quái actor. Dữ liệu đã đóng gói, không cần hso/JAR/Python khi chạy. Xem [hướng dẫn Map](docs/maps.md).
+
+### Chỉnh map trên bản nháp
+
+Tại `/maps`, chọn Bút tile/Tẩy tile/Tô vùng/Hút tile hoặc Đặt/Kéo vật thể. Mỗi nét/kéo là một bước Undo; Space/chuột giữa để pan khi đang dùng công cụ sửa. Nhân bản đặt cùng ô và tự chọn bản sao để kéo tiếp. Nháp giữ riêng theo map trong tab; bấm **Tải nháp JSON** trước khi reload, rồi **Nhập nháp JSON** vào đúng map để khôi phục. Map gốc/PNG nguồn không bị sửa. File PNG/JSON/ZIP đã chỉnh có hậu tố `edited` và provenance rõ ràng. [Cách dùng và các nhiệm vụ còn thiếu](docs/map-editor.md).

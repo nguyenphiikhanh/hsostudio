@@ -1,6 +1,6 @@
 # Khả năng thêm menu Map
 
-Trạng thái: viewer Map `/maps` đã triển khai. Dữ liệu tĩnh gồm91 layout,14 tileset và307 template vật thể đã đóng gói trong public/game/maps. Xem [cách dùng và giới hạn](maps.md). Chưa có editor chỉnh tile/ghi server.
+Trạng thái: Map `/maps` đã có viewer và editor tile/vật thể trên nháp riêng. Dữ liệu tĩnh gồm91 layout,14 tileset và307 template vật thể đã đóng gói trong public/game/maps. Xem [cách dùng và giới hạn](maps.md). Đã có editor chỉnh tile/vật thể; không ghi server. Xem [phạm vi editor](map-editor.md).
 
 ## Dữ liệu đã kiểm tra
 
