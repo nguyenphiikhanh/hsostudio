@@ -43,3 +43,6 @@ Keep the class selector synchronized with the attack lab. Show actual item3 weap
 
 ## Client-verified ordinary weapon rendering
 Actual item selection drives a verified 4.0.3 renderer, not editable arbitrary sheet bindings. Basic attack with a selected ordinary weapon has a visible client/version badge, fixed 25FPS and original WPS frames; hide manual pose controls in that mode. Other skills remain marked trial and do not draw unverified weapons. Display WPS x1 quality explicitly. Cosmetic weapon selection remains metadata-only. Keep provenance/version and export limitations visible.
+
+## Companion selectors
+Place the Mount and Pet selectors below verified weapon controls, using existing field, part-selectors and muted text tokens. Default each to None. Show original quality and separate unsupported-rig details. Reuse four direction canvases with a wider logical viewport when companions are selected. State clearly that pet placement is a preview fixture, and mounted previews support idle/walk.

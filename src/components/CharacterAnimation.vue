@@ -24,14 +24,25 @@ const clientSkillFour = computed(() => motion.value === 'attack' && trial.value.
 const clientSkill = computed(() => motion.value === 'attack' && isClientAttackSkill(props.clazz, trial.value.skillId) && hasClientWeapon.value)
 const clientNonAttackSkill = computed(() => motion.value === 'attack' && trial.value.skillId > 0 && !isClientAttackSkill(props.clazz, trial.value.skillId) && Boolean(clientSkillData(props.clazz, trial.value.skillId)))
 const clientVerified = computed(() => clientBasic.value || clientSkill.value)
-const effectiveFps = computed(() => clientVerified.value ? 25 : fps.value)
+const hasCompanion = computed(()=>props.layers.some(l=>l.companion && l.visible))
+const hasMount = computed(()=>props.layers.some(l=>l.slot==='mount' && l.visible))
+const effectiveFps = computed(() => clientVerified.value || hasCompanion.value ? 25 : fps.value)
+const companionCycle = computed(()=>{
+  const lengths=props.layers.filter(l=>l.companion && l.visible).flatMap(l=>l.slot==='mount'?[motion.value==='walk'?9:12]:l.companion.frames[motion.value==='walk'?1:0].map(c=>c.length))
+  const gcd=(a,b)=>b?gcd(b,a%b):a
+  if(!hasMount.value)lengths.push(100/gcd(fps.value,100))
+  return lengths.reduce((a,b)=>a*b/gcd(a,b),1)
+})
+watch(hasMount,value=>{if(value && motion.value==='attack')motion.value='idle'})
 const nativePhase = computed(() => clientSkillPhase(props.clazz, clientSkill.value ? trial.value.skillId : 0, tick.value))
 const attackPhase = computed(() => trial.value.frames[tick.value % trial.value.frames.length])
-const attackOptions = computed(() => clientVerified.value ? { clientAttack: true, clientBodyFrame: nativePhase.value.bodyFrame, clientWeaponFrame: nativePhase.value.weaponFrame } : motion.value === 'attack' ? { experimentalAttack: true, anchorPose: attackPhase.value.anchorPose } : {})
+const baseAttackOptions = computed(() => clientVerified.value ? { clientAttack: true, clientBodyFrame: nativePhase.value.bodyFrame, clientWeaponFrame: nativePhase.value.weaponFrame } : motion.value === 'attack' ? { experimentalAttack: true, anchorPose: attackPhase.value.anchorPose } : {})
+const attackOptions = computed(()=>hasCompanion.value ? {...baseAttackOptions.value,motion:motion.value,tick:tick.value} : baseAttackOptions.value)
 const views = new Map()
-const cycleLength = computed(() => clientSkill.value ? Math.max(32, clientSkillClip(props.clazz, trial.value.skillId).frames.length) : clientBasic.value ? 9 : motion.value === 'attack' ? trial.value.frames.length : motion.value === 'walk' ? WALK_CYCLE.length : IDLE_CYCLE.length)
-const breath = computed(() => motion.value === 'idle' ? IDLE_CYCLE[tick.value] : 0)
-const pose = computed(() => clientVerified.value ? [0, 0, 1, 2, 3, 4][nativePhase.value.bodyFrame] : motion.value === 'attack' ? attackPhase.value.pose : motion.value === 'walk' ? WALK_CYCLE[tick.value] : 0)
+const cycleLength = computed(() => hasCompanion.value && motion.value!=='attack' ? companionCycle.value : clientSkill.value ? Math.max(32, clientSkillClip(props.clazz, trial.value.skillId).frames.length) : clientBasic.value ? 9 : motion.value === 'attack' ? trial.value.frames.length : motion.value === 'walk' ? WALK_CYCLE.length : IDLE_CYCLE.length)
+const bodyTick = computed(()=>hasCompanion.value && !hasMount.value ? Math.floor(tick.value*fps.value/25) : tick.value)
+const breath = computed(() => motion.value === 'idle' && !hasMount.value ? IDLE_CYCLE[bodyTick.value % IDLE_CYCLE.length] : 0)
+const pose = computed(() => clientVerified.value ? [0, 0, 1, 2, 3, 4][nativePhase.value.bodyFrame] : motion.value === 'attack' ? attackPhase.value.pose : motion.value === 'walk' ? WALK_CYCLE[bodyTick.value % WALK_CYCLE.length] : 0)
 let timer, renderVersion = 0
 function stopTimer() { clearInterval(timer); timer = undefined }
 function restartTimer() {
@@ -41,7 +52,7 @@ function restartTimer() {
 function nextFrame() { playing.value = false; tick.value = (tick.value + 1) % cycleLength.value }
 function updateTrial(value) { trial.value = value; tick.value = 0; emit('update:clazz', value.clazz) }
 watch(() => props.clazz, clazz => { if (clazz !== trial.value.clazz) updateTrial({ ...trial.value, clazz, skillId: 0 }) })
-watch([clientVerified, clientSkill], () => { tick.value = 0 })
+watch([clientVerified, clientSkill, hasCompanion, hasMount], () => { tick.value = 0 })
 function changeMotion() { tick.value = 0; playing.value = true; restartTimer() }
 async function drawViews() {
   const version = ++renderVersion
@@ -58,9 +69,9 @@ async function drawViews() {
       const ctx = canvas.getContext('2d')
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       ctx.save()
-      ctx.scale(12, 12)
+      ctx.scale(hasCompanion.value ? 6 : 12, hasCompanion.value ? 6 : 12)
       ctx.imageSmoothingEnabled = false
-      paintLayers(ctx, posed, images, 26, 45)
+      paintLayers(ctx, posed, images, hasCompanion.value ? 42 : 26, hasCompanion.value ? 92 : 45)
       ctx.restore()
     }))
   } catch (error) { emit('error', error.message) }
@@ -77,11 +88,11 @@ onUnmounted(() => { stopTimer(); renderVersion++ })
 <template>
   <section class="animation-panel" aria-label="Hướng và trạng thái nhân vật">
     <div class="motion-controls">
-      <label class="field">Trạng thái<select v-model="motion" aria-label="Trạng thái nhân vật" @change="changeMotion"><option value="idle">Đứng yên</option><option value="walk">Di chuyển</option><option value="attack">Tấn công · thử nghiệm</option></select></label>
+      <label class="field">Trạng thái<select v-model="motion" aria-label="Trạng thái nhân vật" @change="changeMotion"><option value="idle">Đứng yên</option><option value="walk">Di chuyển</option><option value="attack" :disabled="hasMount">Tấn công · thử nghiệm</option></select></label>
       <button @click="playing = !playing">{{ playing ? 'Tạm dừng' : 'Phát animation' }}</button>
       <button @click="nextFrame">Frame tiếp →</button>
-      <label class="field">Tốc độ<select :value="effectiveFps" :disabled="clientVerified" aria-label="Tốc độ animation" @change="fps = Number($event.target.value)"><option v-for="value in [4,6,8,10,12,25]" :key="value" :value="value">{{ value }} fps</option></select></label>
-      <span class="frame-status" role="status">{{ clientVerified ? `Client tick ${tick + 1}/${cycleLength} · body ${nativePhase.bodyFrame} · WPS ${nativePhase.weaponFrame}` : motion === 'attack' ? `Đòn ${tick + 1}/${cycleLength} · pose ${pose} · anchor ${attackPhase.anchorPose}` : motion === 'walk' ? `Bước ${tick + 1}/4 · pose ${pose}` : `Thở ${tick + 1}/${cycleLength} · lệch ${breath}px` }}</span>
+      <label class="field">Tốc độ<select :value="effectiveFps" :disabled="clientVerified || hasCompanion" aria-label="Tốc độ animation" @change="fps = Number($event.target.value)"><option v-for="value in [4,6,8,10,12,25]" :key="value" :value="value">{{ value }} fps</option></select></label>
+      <span class="frame-status" role="status">{{ hasCompanion ? `Client tick ${tick + 1}/${cycleLength} · ${motion} · 25 FPS` : clientVerified ? `Client tick ${tick + 1}/${cycleLength} · body ${nativePhase.bodyFrame} · WPS ${nativePhase.weaponFrame}` : motion === 'attack' ? `Đòn ${tick + 1}/${cycleLength} · pose ${pose} · anchor ${attackPhase.anchorPose}` : motion === 'walk' ? `Bước ${tick + 1}/4 · pose ${pose}` : `Thở ${tick + 1}/${cycleLength} · lệch ${breath}px` }}</span>
     </div>
     <AttackControls v-if="motion === 'attack'" :trial="trial" :client-verified="clientVerified" @update="updateTrial"/>
     <p v-if="clientVerified" class="muted" data-testid="client-weapon-animation">Client HSO 4.0.3 · kỹ năng #{{ trial.skillId }} · 25 FPS (40 ms/tick). Body/WPS đổi theo plash của kỹ năng; preview lặp để xem, không mô phỏng cooldown.</p>

@@ -119,7 +119,7 @@ async function exportLibrary() {
   const draftSnapshot = JSON.parse(JSON.stringify(drafts.value))
   try {
     const result = await exportPartLibrary(name, snapshot, draftSnapshot, message => { notice.value = message }, preview.value.attackTrial)
-    notice.value = `Đã tải ${exportFileName(name).slice(0, 72)}-library.zip: ${result.parts} thư mục part ưu tiên x4 (PNG + metadata + atlas riêng), ${result.items} trang bị có ánh xạ. Hỗ trợ đứng/đi 4 hướng; có clip tấn công kèm provenance trong animations.json. Runtime thư viện chỉ equip part cơ thể; vũ khí preview, pet và thú cưỡi chưa được equip trong gói này.${result.omitted ? ' Xem character.omittedLayers cho các lớp/vùng cắt không được giữ lại.' : ''}`
+    notice.value = `Đã tải ${exportFileName(name).slice(0, 72)}-library.zip: ${result.parts} thư mục part ưu tiên x4 (PNG + metadata + atlas riêng), ${result.items} trang bị có ánh xạ. Hỗ trợ đứng/đi 4 hướng; có clip tấn công kèm provenance trong animations.json. Runtime hỗ trợ part cơ thể và rig mount/pet đã xác minh; vũ khí vẫn là preview.${result.omitted ? ' Xem character.omittedLayers cho các lớp/vùng cắt không được giữ lại.' : ''}`
   } catch (e) { error.value = e.message; notice.value = '' }
   finally { busy.value = false }
 }
@@ -148,7 +148,7 @@ onMounted(async () => {
 <template>
   <div class="workbench">
     <GamePreview v-if="gameLayers" :layers="gameLayers" @close="gameLayers = null"/>
-    <header><div class="brand"><span class="mark">H</span><div><strong>HSO STUDIO</strong><small>Asset workbench / Hiệp Sĩ Ong Đất</small></div></div><button :disabled="!ready || !layers.length || busy" @click="openGame">Chơi thử H5</button><span class="badge">CHỈNH NHÁP · KHÔNG LƯU NGUỒN</span><label class="export-name">Tên bản xuất<input v-model="exportName" aria-label="Tên bản xuất" :disabled="busy" maxlength="100" placeholder="character"><small>{{ archiveName }}.zip</small></label><button :disabled="!ready || busy" @click="exportDrafts">Xuất nháp ({{ draftCount }})</button><button :disabled="!ready || busy" @click="exportLibrary">Xuất thư viện part</button><button class="primary" :disabled="busy || !layers.length" @click="exportCharacter">{{ busy ? 'Đang đóng gói…' : 'Xuất cho Phaser ↗' }}</button></header>
+    <header><div class="brand"><span class="mark">H</span><div><strong>HSO STUDIO</strong><small>Asset workbench / Hiệp Sĩ Ong Đất</small></div></div><button :disabled="!ready || !layers.length || busy || layers.some(l=>l.companion)" title="Demo arena chưa hỗ trợ mount/pet; dùng preview Studio hoặc runtime trong ZIP để xem." @click="openGame">Chơi thử H5</button><span class="badge">CHỈNH NHÁP · KHÔNG LƯU NGUỒN</span><label class="export-name">Tên bản xuất<input v-model="exportName" aria-label="Tên bản xuất" :disabled="busy" maxlength="100" placeholder="character"><small>{{ archiveName }}.zip</small></label><button :disabled="!ready || busy" @click="exportDrafts">Xuất nháp ({{ draftCount }})</button><button :disabled="!ready || busy" @click="exportLibrary">Xuất thư viện part</button><button class="primary" :disabled="busy || !layers.length" @click="exportCharacter">{{ busy ? 'Đang đóng gói…' : 'Xuất cho Phaser ↗' }}</button></header>
     <p v-if="error" class="alert" role="alert">{{ error }} <button @click="error = ''">Đóng</button></p>
     <p v-if="notice" class="notice" role="status">{{ notice }} <button @click="notice = ''">Đóng</button></p>
     <div v-if="!ready" class="loading">{{ error ? 'Chưa thể mở catalog.' : 'Đang mở SQLite và lập chỉ mục tài nguyên…' }}</div>

@@ -172,7 +172,7 @@ test('library export rejects HTML assets instead of downloading a corrupt ZIP', 
   const button = page.getByRole('button', { name: 'Xuất thư viện part', exact: true })
   await expect(button).toBeEnabled({ timeout: 30000 })
   await button.click()
-  await expect(page.getByRole('alert')).toContainText('Không tải được ảnh part:')
+  await expect(page.getByRole('alert')).toContainText('Không tải được ảnh part')
   await expect(page.getByRole('alert')).toContainText('part_char/imgver/x4/0_1')
   await expect(button).toBeEnabled()
   expect(downloads).toHaveLength(0)

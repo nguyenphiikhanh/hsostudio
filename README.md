@@ -105,7 +105,7 @@ Package files:
 | `example.js` + `README.md` | Loader, Scene factory and usage instructions |
 | `drafts.json` | Current record drafts |
 
-This library supports head/hair/pants/shirt/helmet and the explicitly marked eye placeholder. Weapons, pets and mounts are not equipped. An explicitly experimental body attack clip is included; its sequence, anchors and timing are not recovered client animation. Equipment mapping uses the same type/part convention as Studio; the consumer must enforce class and level restrictions. Raw atlas frames are retained, idle/walk are retained, with an opt-in experimental attack sequence. Custom crop edits are replaced by original frame crops, and manually assembled layers are omitted; inspect `character.omittedLayers`. Position adjustments on recognized parts are preserved. No MySQL/SQLite connection is needed in the consuming game.
+This library supports head/hair/pants/shirt/helmet and the explicitly marked eye placeholder. Weapon textures remain preview-only. Verified mount/pet rigs are included in dedicated folders and can be equipped by the v1 runtime; see docs/companions-v1.md. An explicitly experimental body attack clip is included; its sequence, anchors and timing are not recovered client animation. Equipment mapping uses the same type/part convention as Studio; the consumer must enforce class and level restrictions. Raw atlas frames are retained, idle/walk are retained, with an opt-in experimental attack sequence. Custom crop edits are replaced by original frame crops, and manually assembled layers are omitted; inspect `character.omittedLayers`. Position adjustments on recognized parts are preserved. No MySQL/SQLite connection is needed in the consuming game.
 
 Browser verification exports and unzips the complete library, validates every frame reference, then uses the exported runtime and images in a real Phaser Scene to change parts/items, remove a helmet, mirror a side view, hide back-facing eyes and clean up listeners.
 
@@ -116,7 +116,7 @@ The character selectors and library ZIP use the same texture selection: **412 or
 
 The character keeps its logical size, position, breath offset and gameplay collider. Preview canvases keep a 4× backing resolution; the Phaser library runtime uses `1 / density` when displaying each texture. The single-pose export also preserves x4 pixels and records the scale in its loader. PNG sheets in the part library are copied without modification.
 
-Two source files cannot be used safely as x4: `part_char/imgver/x4/0_44` has a crop outside its PNG, and `1_92` has x1-sized PNG data with out-of-bounds x4 crops. Pants 44 and shirt 92 use x1 and show a reason in preview, `part.json` and `library.json.qualityNotes`. The existing eye placeholder remains explicitly labeled x1; it is not original HSO art. No unsupported weapon/pet/mount archive is added.
+Two source files cannot be used safely as x4: `part_char/imgver/x4/0_44` has a crop outside its PNG, and `1_92` has x1-sized PNG data with out-of-bounds x4 crops. Pants 44 and shirt 92 use x1 and show a reason in preview, `part.json` and `library.json.qualityNotes`. The existing eye placeholder remains explicitly labeled x1; it is not original HSO art. Unsupported mount/pet rigs remain listed in companions.inventory.json; only verified rigs are exported as runtime assets.
 
 `part.json` keeps logical `frames`/`offsets`, physical PNG `width`/`height`, and per-part `density`. Generated `atlas.json` uses physical pixel rectangles. Keep the runtime shipped with the ZIP; older consumers that assume every crop is a PNG pixel must read `density`.
 
@@ -235,3 +235,9 @@ Chọn **Kỹ năng server → #4** cùng vũ khí thường để xem nhánh th
 | Xạ thủ | Tia công phá | 40 | 51 | 5 | 3 |
 
 Khung xem dùng sprite chính của effect client và mục tiêu tĩnh. Hạt phụ ngẫu nhiên, sát thương, âm thanh và cooldown chưa mô phỏng.
+
+## Thú cưỡi và thú cưng
+
+Đã có hai bộ chọn riêng trong phần thay bộ phận: 14 ngoại hình thú cưỡi sheet thường và 6 pet cơ bản, gồm **Ngựa nâu + Cú**, ưu tiên PNG x4 gốc. Có đứng/đi bốn hướng, frame/điểm ngồi/layer đối chiếu client4.0.3. Xuất thư viện part bổ sung folder `mounts/<id>/`, `pets/<id>/` và API `character.mount(id)` / `character.setPet(id)`; vẫn giữ cấu trúc v1.
+
+Pet đang dùng đội hình xem trước, chưa có AI đi theo/chiến đấu. Mount chưa hỗ trợ attack; demo arena H5 chưa dùng rig thú. Các rig chưa xác minh nằm trong báo cáo, không tạo asset thay thế. Xem [nguồn đối chiếu, cách dùng và thay PNG HD](docs/companions-v1.md).

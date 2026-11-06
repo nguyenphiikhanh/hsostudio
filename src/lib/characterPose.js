@@ -1,5 +1,6 @@
 // x1 sheets group 15 clothing rectangles as front/back/side × 5 poses.
 // The 24 anchor pairs group four directions × 6 poses. Walking uses poses 0–2;
+import { companionFrame } from './companionPose.js'
 import { clientSkillData } from './clientSkillCatalog.js'
 
 // Client skill and body/WPS mappings are stored in clientSkillCatalog.js.
@@ -90,6 +91,9 @@ export function clientSkillClip(clazz, skillId) {
 
 export function resolvePose(layers, directionKey = 'down', pose = 0, idleOffset = 0, options = {}) {
   const direction = DIRECTIONS.find(d => d.key === directionKey) || DIRECTIONS[0]
+  const mount = layers.find(l=>l.slot==='mount' && l.companion && l.visible)
+  const mounted = mount ? companionFrame(mount.companion,directionKey,options.motion,options.tick) : null
+  if (mounted) { options={...options,clientBodyFrame:mounted.bodyFrame,experimentalAttack:false}; idleOffset=0 }
   const hasClientWeapon = layers.some(layer => layer.slot === 'weapon' && layer.clientWeapon)
   const clientFrame = options.clientBodyFrame ?? (hasClientWeapon && !options.experimentalAttack ? [0, 2, 3][Math.max(0, Math.min(2, Math.trunc(pose)))] : undefined)
   const step = clientFrame !== undefined ? [0, 0, 1, 2, 3, 4][clientFrame] : Math.max(0, Math.min(options.experimentalAttack ? 4 : 2, Math.trunc(pose)))
@@ -151,11 +155,17 @@ export function resolvePose(layers, directionKey = 'down', pose = 0, idleOffset 
     }
     const frame = weapon.frames[dir], offset = weapon.offsets[dir][Math.min(bodyFrame, 2)]
     return { ...layer, ...frame, x: offset[0], y: offset[1], flipX: false, renderFront: !behind }
+  }).map(layer => {
+    if (layer.companion) {
+      const frame=companionFrame(layer.companion,directionKey,options.motion,options.tick)
+      return {...layer,...frame,renderDepth:layer.slot==='mount'?(frame.front?layers.length+1:-1):layers.length+3}
+    }
+    return mounted ? {...layer,y:layer.y-mounted.seat,visible:layer.slot==='pants'?false:layer.visible} : layer
   })
 }
 
 export function paintLayers(ctx, layers, images, originX, originY) {
-  const ordered = layers.map((layer, index) => ({ layer, index, depth: layer.slot === 'weapon' && layer.clientWeapon ? (layer.renderFront ? layers.length : -1) : index })).sort((a, b) => a.depth - b.depth)
+  const ordered = layers.map((layer, index) => ({ layer, index, depth: layer.renderDepth ?? (layer.slot === 'weapon' && layer.clientWeapon ? (layer.renderFront ? layers.length+2 : -2) : index) })).sort((a, b) => a.depth - b.depth)
   ordered.forEach(({ layer, index }) => {
     if (!layer.visible) return
     if (![layer.sx, layer.sy, layer.w, layer.h].every(Number.isInteger) || ![layer.x, layer.y].every(Number.isFinite)) return

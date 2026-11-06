@@ -67,7 +67,7 @@ export async function exportAtlas(layers, drafts, preview = null, requestedName 
     ctx.drawImage(images[i], layer.sx * sourceDensity, layer.sy * sourceDensity, layer.w * sourceDensity, layer.h * sourceDensity, 2, top, layer.w * density, packedHeight)
     frames[key] = { frame: { x: 2, y: top, w: layer.w * density, h: packedHeight }, rotated: false, trimmed: false,
       spriteSourceSize: { x: 0, y: 0, w: layer.w * density, h: packedHeight }, sourceSize: { w: layer.w * density, h: packedHeight } }
-    composition.push({ frame: key, density, scaleY: displayHeight * density / packedHeight, name: layer.name, source: layer.asset.source, slot: layer.slot ?? null, partId: layer.partId ?? null, provenance: layer.provenance ?? 'manual-crop', x: layer.x, y: layer.y, depth: layer.slot === 'weapon' && layer.clientWeapon ? (layer.renderFront ? layers.length : -1) : i, visible: layer.visible, flipX: Boolean(layer.flipX) })
+    composition.push({ frame: key, density, scaleY: displayHeight * density / packedHeight, name: layer.name, source: layer.asset.source, slot: layer.slot ?? null, partId: layer.partId ?? null, provenance: layer.provenance ?? 'manual-crop', x: layer.x, y: layer.y, depth: layer.renderDepth ?? (layer.slot === 'weapon' && layer.clientWeapon ? (layer.renderFront ? layers.length+2 : -2) : i), visible: layer.visible, flipX: Boolean(layer.flipX) })
     top += packedHeight + 4
   })
   const png = await new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Không tạo được PNG.'))))

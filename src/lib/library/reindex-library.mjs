@@ -1,6 +1,7 @@
 import { readFile, readdir, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
+import { compileCompanion } from './companionPose.js'
 import { compilePart, PART_SLOTS } from './partSchema.js'
 
 const root = fileURLToPath(new URL('.', import.meta.url))
@@ -27,6 +28,22 @@ async function main() {
       generated.push([result.paths.data, result.atlas])
     }
   }
+  const companions={mount:{},pet:{}}, companionAtlases=[]
+  for(const [slot,folder] of [['mount','mounts'],['pet','pets']]) {
+    let directories
+    try {directories=await readdir(join(root,folder),{withFileTypes:true})}
+    catch(error){if(error.code==='ENOENT')continue;throw error}
+    for(const directory of directories){
+      if(!directory.isDirectory())continue
+      const d=await readJSON(`${folder}/${directory.name}/companion.json`)
+      if(d.slot!==slot || d.id!==directory.name)throw new Error('Companion folder must match ID/slot')
+      const result=compileCompanion(d,manifest.name)
+      const png=await readFile(join(root,result.paths.image))
+      if(png.length<24 || png.subarray(0,8).toString('hex')!=='89504e470d0a1a0a' || png.readUInt32BE(16)!==d.asset.width || png.readUInt32BE(20)!==d.asset.height)throw new Error('Companion PNG dimensions do not match metadata')
+      companions[slot][d.id]=result.part;companionAtlases.push(result.atlasEntry);generated.push([result.paths.data,result.atlas])
+    }
+  }
+  for(const [slot,id] of Object.entries(character.companions||{}))if(!companions[slot]?.[id])throw new Error('Character references missing companion')
   if (!Object.keys(parts).length) throw new Error('No part folders found')
   for (const [id, item] of Object.entries(equipment.items)) {
     if (!parts[item.partKey] || parts[item.partKey].slot !== item.slot) throw new Error(`Item ${id} references missing or mismatched part ${item.partKey}`)
@@ -36,7 +53,7 @@ async function main() {
   }
   // Validate every folder and cross-reference before writing any generated files.
   for (const [path, data] of generated) await writeFile(join(root, path), JSON.stringify(data, null, 2) + '\n')
-  await writeFile(join(root, 'library.json'), JSON.stringify({ ...manifest, layout: 'per-part-folders', parts, atlases }, null, 2) + '\n')
+  await writeFile(join(root, 'library.json'), JSON.stringify({ ...manifest, layout: 'per-part-folders', parts, atlases, companions, companionAtlases }, null, 2) + '\n')
   console.log(`Indexed ${Object.keys(parts).length} parts. Updated atlas.json files and library.json.`)
 }
 main().catch(error => { console.error(error.message); process.exitCode = 1 })

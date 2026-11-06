@@ -23,7 +23,7 @@ test('skill #1 maps each class through actual client internal ID, gunner divisio
     assert.deepEqual(clientSkillPhase(clazz,1,windup+4),{bodyFrame:0,weaponFrame:0})
     assert.deepEqual(clientSkillPhase(clazz,1,31),{bodyFrame:0,weaponFrame:0})
   }
-  assert.throws(() => clientSkillClip(0,3),/Unverified/)
+  assert.throws(() => clientSkillClip(0,21),/Unverified/)
 })
 
 test('effect PNGs retain locked hashes and exact logical vertical-strip geometry at x4', async () => {
