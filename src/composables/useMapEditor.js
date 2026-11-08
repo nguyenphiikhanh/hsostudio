@@ -56,7 +56,10 @@ export function useMapEditor(source,{selectedCell,selectedObject,hoverCell}){
    e.begin(tool.value==='erase'?'Tẩy tile':'Vẽ tile');gesture={kind:'tiles',last:cell,tile:tool.value==='erase'?0:brush.value};e.paint([cell],gesture.tile);changed()
   }else if(tool.value==='fill'){e.fill(cell.col,cell.row,brush.value);changed()}
   else if(tool.value==='eyedrop'){brush.value=cell.tile;selectTool('paint')}
-  else if(tool.value==='place'){
+  else if(tool.value==='block'||tool.value==='unblock'){
+   const type=tool.value==='block'?1:0
+   e.begin(tool.value==='block'?'Thêm vùng chặn':'Xóa vùng chặn');gesture={kind:'collision',last:cell,type};e.paintCollision([cell],type);changed()
+  }else if(tool.value==='place'){
    if(!templateReady.value)throw new Error('PNG vật thể chưa sẵn sàng')
    const id=e.add(templateId.value,cell.col,cell.row);selectedObject.value=e.map.objects.find(o=>o.index===id);changed()
   }else if(tool.value==='move'&&point.object){
@@ -69,6 +72,9 @@ export function useMapEditor(source,{selectedCell,selectedObject,hoverCell}){
   if(point.cell)selectedCell.value=point.cell
   if(gesture.kind==='tiles'){
    if(point.cell)e.paint(lineCells(gesture.last,point.cell),gesture.tile)
+   gesture.last=point.cell
+  }else if(gesture.kind==='collision'){
+   if(point.cell)e.paintCollision(lineCells(gesture.last,point.cell),gesture.type)
    gesture.last=point.cell
   }else{
    const x=gesture.col+Math.floor(point.world.x/24)-Math.floor(gesture.start.x/24),y=gesture.row+Math.floor(point.world.y/24)-Math.floor(gesture.start.y/24)

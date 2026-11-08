@@ -17,7 +17,7 @@ const busy=ref(false),notice=ref(''),density=ref(1),editError=ref('')
 watch(selectedId,()=>{editError.value=''})
 function select(result){selectedCell.value=result.cell;selectedObject.value=result.object}
 function act(action){if(busy.value||!data.value)return;try{editError.value='';action()}catch(e){editor.cancel();editError.value=e.message}}
-function setTool(value){act(()=>{editor.selectTool(value);if(['paint','erase','fill','eyedrop'].includes(value))layers.value.terrain=true;if(['place','move'].includes(value))layers.value.objects=true})}
+function setTool(value){act(()=>{editor.selectTool(value);if(['paint','erase','fill','eyedrop'].includes(value))layers.value.terrain=true;if(['block','unblock'].includes(value))layers.value.collision=true;if(['place','move'].includes(value))layers.value.objects=true})}
 async function run(action){if(!data.value||busy.value)return;editor.end();busy.value=true;editError.value='';notice.value='';try{await action(data.value);notice.value='Đã xuất map đang chọn.'}catch(e){editError.value=e.message}finally{busy.value=false}}
 function saveDraft(){return run(()=>{const doc=editor.draft();download(`${exportFileName(`map-${doc.base.mapId}-${data.value.map.name}`)}.map-draft.json`,new Blob([JSON.stringify(doc,null,2)],{type:'application/json'}))})}
 async function importDraft(event){

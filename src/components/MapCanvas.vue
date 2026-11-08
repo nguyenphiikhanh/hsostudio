@@ -98,6 +98,6 @@ onUnmounted(()=>{observer?.disconnect();cancelAnimationFrame(frame)})
  <div class="map-canvas-panel">
   <div class="map-camera-tools"><button :disabled="!data" @click="zoomAt(.8)" aria-label="Thu nhỏ map">−</button><span data-testid="map-zoom">{{Math.round(zoom*100)}}%</span><button :disabled="!data" @click="zoomAt(1.25)" aria-label="Phóng to map">+</button><button :disabled="!data" @click="fit">Vừa khung</button></div>
   <div class="map-canvas-shell"><canvas ref="canvas" aria-label="Khung xem bản đồ" role="img" tabindex="0" aria-describedby="map-pan-help" :data-map-id="data?.map.id ?? ''" :data-tool="tool" :data-zoom="zoom" :data-pan-x="pan.x" :data-pan-y="pan.y" @pointerdown="down" @pointermove="move" @pointerup="up" @pointercancel="cancelDrag" @lostpointercapture="drag && cancelDrag()" @pointerleave="!drag && emit('hover',null)" @wheel.prevent="!drag && zoomAt($event.deltaY<0?1.15:1/1.15,point($event))" @keydown="key" @keyup.space="space=false" @blur="space=false"></canvas></div>
-  <p id="map-pan-help" class="muted">Chọn/Pan: kéo để di chuyển, click chọn ô/vật thể. Công cụ sửa: kéo để vẽ/kéo vật thể. Giữ Space hoặc chuột giữa để pan · Cuộn/+− zoom · 0 vừa khung · Ctrl/Cmd+Z Undo, Shift+Z Redo · Esc hủy nét/kéo · Delete xóa vật thể chọn.</p>
+  <p id="map-pan-help" class="muted">Chọn/Pan: kéo để di chuyển, click chọn ô/vật thể. Công cụ sửa: kéo để vẽ tile, vùng chặn hoặc kéo vật thể. Giữ Space hoặc chuột giữa để pan · Cuộn/+− zoom · 0 vừa khung · Ctrl/Cmd+Z Undo, Shift+Z Redo · Esc hủy nét/kéo · Delete xóa vật thể chọn.</p>
  </div>
 </template>

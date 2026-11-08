@@ -1,6 +1,6 @@
-import {validateMap} from './mapGeometry.js'
+import {validateMap,terrainType} from './mapGeometry.js'
 const clone=value=>structuredClone(value)
-const editable=map=>({tiles:[...map.tiles],objects:map.objects.map(o=>({...o}))})
+const editable=map=>({tiles:[...map.tiles],objects:map.objects.map(o=>({...o})),collisionOverrides:{...(map.collisionOverrides??{})}})
 const sameObject=(a,b)=>a.index===b.index&&a.templateId===b.templateId&&a.cellX===b.cellX&&a.cellY===b.cellY
 export function tileCount(map){return Math.floor(map.tileset.terrain.height/(map.tileSize*map.tileset.terrain.density))}
 export function lineCells(from,to){
@@ -12,7 +12,7 @@ export function lineCells(from,to){
 }
 export function validateEdits(edits,base,templates){
  if(!edits||!Array.isArray(edits.tiles)||edits.tiles.length!==base.width*base.height||!Array.isArray(edits.objects)||edits.objects.length>5000)throw new Error('Nháp có kích thước hoặc số vật thể không hợp lệ')
- if(Object.keys(edits).some(k=>!['tiles','objects'].includes(k)))throw new Error('Nháp chỉ hỗ trợ tiles và objects')
+ if(Object.keys(edits).some(k=>!['tiles','objects','collisionOverrides'].includes(k)))throw new Error('Nháp có dữ liệu chỉnh sửa chưa hỗ trợ')
  const max=tileCount(base)
  for(const t of edits.tiles)if(!Number.isInteger(t)||t<0||t>max)throw new Error('Tile trong nháp nằm ngoài tileset')
  const ids=new Set(),source=new Map(base.objects.map(o=>[o.index,o]))
@@ -24,34 +24,49 @@ export function validateEdits(edits,base,templates){
   ids.add(o.index)
   return {index:o.index,templateId:o.templateId,cellX:o.cellX,cellY:o.cellY}
  })
- const result={tiles:[...edits.tiles],objects}
+ const collisionOverrides=edits.collisionOverrides??{}
+ if(!collisionOverrides||typeof collisionOverrides!=='object'||Array.isArray(collisionOverrides)||Object.entries(collisionOverrides).some(([index,type])=>!/^\d+$/.test(index)||String(Number(index))!==index||!Number.isSafeInteger(Number(index))||Number(index)>=base.width*base.height||![0,1].includes(type)))throw new Error('Nháp có vùng chặn không hợp lệ')
+ const result={tiles:[...edits.tiles],objects,collisionOverrides:{...collisionOverrides}}
  validateMap({...base,...result},templates)
  return result
 }
 export function createMapEditor(source,templates,objectTableSha256,historyLimit=100){
  const base=clone(source),map=clone(source),past=[],future=[]
+ base.collisionOverrides={...(base.collisionOverrides??{})};map.collisionOverrides={...(map.collisionOverrides??{})}
  const signature={mapId:base.id,sourceSha256:base.source.sha256,objectTableSha256,terrainSha256:base.tileset.terrain.sha256,width:base.width,height:base.height,tileSize:base.tileSize,tilesetId:base.tileset.id}
  let before=null,label=''
  function begin(name){if(before)throw new Error('Đang có thao tác chỉnh sửa');before=editable(map);label=name}
- function replace(state){map.tiles=[...state.tiles];map.objects=state.objects.map(o=>({...o}))}
+ function replace(state){map.tiles=[...state.tiles];map.objects=state.objects.map(o=>({...o}));map.collisionOverrides={...(state.collisionOverrides??{})}}
  function cancel(){if(!before)return false;replace(before);before=null;return true}
  function commit(){
   if(!before)return false
   const tiles=[]
   for(let i=0;i<map.tiles.length;i++)if(map.tiles[i]!==before.tiles[i])tiles.push({index:i,before:before.tiles[i],after:map.tiles[i]})
   const changed=JSON.stringify(map.objects)!==JSON.stringify(before.objects)
-  const command={label,tiles,...(changed?{beforeObjects:before.objects,afterObjects:map.objects.map(o=>({...o}))}:{})}
+  const collisionChanged=JSON.stringify(map.collisionOverrides)!==JSON.stringify(before.collisionOverrides)
+  const command={label,tiles,...(changed?{beforeObjects:before.objects,afterObjects:map.objects.map(o=>({...o}))}:{}),...(collisionChanged?{beforeCollision:before.collisionOverrides,afterCollision:{...map.collisionOverrides}}:{})}
   before=null
-  if(!tiles.length&&!changed)return false
+  if(!tiles.length&&!changed&&!collisionChanged)return false
   past.push(command);if(past.length>historyLimit)past.shift();future.length=0;return true
  }
- function apply(command,forward){for(const t of command.tiles)map.tiles[t.index]=forward?t.after:t.before;if(command.beforeObjects)map.objects=(forward?command.afterObjects:command.beforeObjects).map(o=>({...o}))}
+ function apply(command,forward){for(const t of command.tiles)map.tiles[t.index]=forward?t.after:t.before;if(command.beforeObjects)map.objects=(forward?command.afterObjects:command.beforeObjects).map(o=>({...o}));if(command.beforeCollision)map.collisionOverrides={...(forward?command.afterCollision:command.beforeCollision)}}
  function once(name,action){begin(name);try{action();return commit()}catch(e){cancel();throw e}}
  function assertCell(col,row){if(!Number.isInteger(col)||!Number.isInteger(row)||col<0||row<0||col>=map.width||row>=map.height)throw new Error('Ô neo phải nằm trong map')}
  function paint(cells,tile){
   if(!before)throw new Error('Chưa bắt đầu nét vẽ')
   if(!Number.isInteger(tile)||tile<0||tile>tileCount(map))throw new Error('Tile không hợp lệ')
   for(const c of cells){assertCell(c.col,c.row);map.tiles[c.row*map.width+c.col]=tile}
+ }
+ function paintCollision(cells,type){
+  if(!before)throw new Error('Chưa bắt đầu nét chỉnh vùng chặn')
+  if(![0,1].includes(type))throw new Error('Loại vùng chặn không hợp lệ')
+  for(const c of cells){assertCell(c.col,c.row);const index=c.row*map.width+c.col;if(type===nativeCollisionAt(c.col,c.row))delete map.collisionOverrides[index];else map.collisionOverrides[index]=type}
+ }
+ function nativeCollisionAt(col,row){
+  const index=row*map.width+col
+  let type=terrainType(map.tiles[index],map.tileset)
+  for(const o of map.objects)for(const [dx,dy] of templates[o.templateId].blocks)if(o.cellX+dx===col&&o.cellY+dy===row)type=1
+  return type
  }
  function add(templateId,col,row){
   assertCell(col,row);if(!templates[templateId]?.asset)throw new Error('Template chưa có PNG được hỗ trợ')
@@ -62,10 +77,12 @@ export function createMapEditor(source,templates,objectTableSha256,historyLimit=
  }
  function stats(){
   const originals=new Map(base.objects.map(o=>[o.index,o])),current=new Map(map.objects.map(o=>[o.index,o]))
-  return {order:Number(base.objects.length===map.objects.length&&base.objects.some((o,i)=>o.index!==map.objects[i].index)),tiles:map.tiles.reduce((n,t,i)=>n+Number(t!==base.tiles[i]),0),added:map.objects.filter(o=>!originals.has(o.index)).length,removed:base.objects.filter(o=>!current.has(o.index)).length,changed:map.objects.filter(o=>originals.has(o.index)&&!sameObject(o,originals.get(o.index))).length}
+  const collisionCells=new Set([...Object.keys(base.collisionOverrides),...Object.keys(map.collisionOverrides)])
+  const collision=[...collisionCells].filter(i=>base.collisionOverrides[i]!==map.collisionOverrides[i]).length
+  return {order:Number(base.objects.length===map.objects.length&&base.objects.some((o,i)=>o.index!==map.objects[i].index)),tiles:map.tiles.reduce((n,t,i)=>n+Number(t!==base.tiles[i]),0),added:map.objects.filter(o=>!originals.has(o.index)).length,removed:base.objects.filter(o=>!current.has(o.index)).length,changed:map.objects.filter(o=>originals.has(o.index)&&!sameObject(o,originals.get(o.index))).length,collision}
  }
  return {map,signature,get active(){return before!==null},get history(){return{undo:past.length,redo:future.length,undoLabel:past.at(-1)?.label,redoLabel:future.at(-1)?.label}},get stats(){return stats()},
-  begin,commit,cancel,paint,
+  begin,commit,cancel,paint,paintCollision,
   fill(col,row,tile){
    assertCell(col,row)
    return once('Tô vùng',()=>{

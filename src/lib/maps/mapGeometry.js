@@ -33,6 +33,7 @@ export function collisionGrid(map, templates) {
     const x=o.cellX+dx,y=o.cellY+dy
     if(x>=0&&y>=0&&x<map.width&&y<map.height)cells[y*map.width+x]=1
   }
+  for(const [index,type] of Object.entries(map.collisionOverrides??{}))cells[Number(index)]=type
   return cells
 }
 export function cellAt(map, collision, x, y) {
@@ -49,6 +50,8 @@ export function hitObject(map, templates, x, y) {
 }
 export function validateMap(map, templates) {
   if(!map || map.version!==1 || !Number.isInteger(map.id) || !Number.isInteger(map.width) || !Number.isInteger(map.height) || map.width<1 || map.height<1 || map.width>127 || map.height>127 || map.tileSize!==24 || map.tiles.length!==map.width*map.height)throw new Error('Layout map không hợp lệ')
+  const overrides=map.collisionOverrides??{}
+  if(!overrides||typeof overrides!=='object'||Array.isArray(overrides)||Object.entries(overrides).some(([index,type])=>!/^\d+$/.test(index)||String(Number(index))!==index||!Number.isSafeInteger(Number(index))||Number(index)>=map.width*map.height||![0,1].includes(type)))throw new Error('Vùng chặn chỉnh sửa không hợp lệ')
   const a=map.tileset?.terrain
   if(!a || a.density!==4 || a.width<96 || !a.image || !Array.isArray(map.tileset.info) || (map.tileset.id>=9 && !newStand[map.tileset.id]))throw new Error('Thiếu tileset/metadata được hỗ trợ')
   for(const t of map.tiles)if(!Number.isInteger(t)||t<0||t*96>a.height)throw new Error('Tile nằm ngoài PNG')
