@@ -1,3 +1,4 @@
+import {inCharacterTab} from './workspaceTabs.js'
 import {test,expect} from '@playwright/test'
 import fs from 'node:fs/promises'
 import {unzipSync,strFromU8} from 'fflate'
@@ -11,15 +12,15 @@ test('all permitted sheet mounts attack and export native mounted runtime, with 
  const weapon=page.getByLabel('Vũ khí thường HSO',{exact:true})
  await expect(mount).toBeVisible({timeout:30000})
  for(const [clazz,item,folder]of [[0,0,'kiem'],[1,5,'songkiem'],[2,10,'phapsu'],[3,15,'sung']]) {
-   await page.getByLabel('Phái nhân vật',{exact:true}).selectOption(String(clazz))
-   await weapon.selectOption(String(item));await mount.selectOption('1')
-   await motion.selectOption('idle');await motion.selectOption('attack')
+   await inCharacterTab(page,'Trang bị',()=>page.getByLabel('Phái nhân vật',{exact:true}).selectOption(String(clazz)))
+   await inCharacterTab(page,'Trang bị',()=>weapon.selectOption(String(item)));await inCharacterTab(page,'Trang bị',()=>mount.selectOption('1'))
+   await inCharacterTab(page,'Animation',()=>motion.selectOption('idle'));await inCharacterTab(page,'Animation',()=>motion.selectOption('attack'))
    await expect(page.getByTestId('mounted-attack-status')).toContainText('Ngựa trắng')
    await expect(page.getByTestId('client-weapon-animation')).toContainText('#0')
    await expect(page.getByLabel('Kỹ năng tấn công',{exact:true}).locator('option[value="1"]')).toHaveJSProperty('disabled',false)
-   await page.getByRole('button',{name:'Tạm dừng',exact:true}).click()
-   for(let i=0;i<9 && !(await page.locator('.frame-status').textContent()).includes('tick 1/9');i++)await page.getByRole('button',{name:'Frame tiếp →',exact:true}).click()
-   for(let i=0;i<5;i++)await page.getByRole('button',{name:'Frame tiếp →',exact:true}).click()
+   await inCharacterTab(page,'Animation',()=>page.getByRole('button',{name:'Tạm dừng',exact:true}).click())
+   for(let i=0;i<9 && !(await page.locator('.frame-status').textContent()).includes('tick 1/9');i++)await inCharacterTab(page,'Animation',()=>page.getByRole('button',{name:'Frame tiếp →',exact:true}).click())
+   for(let i=0;i<5;i++)await inCharacterTab(page,'Animation',()=>page.getByRole('button',{name:'Frame tiếp →',exact:true}).click())
    await expect(page.locator('.frame-status')).toContainText('body 5')
    await page.locator('.direction-views').screenshot({path:`/tmp/hso-mounted-attack-class-${clazz}.png`})
    const pending=page.waitForEvent('download')
@@ -32,9 +33,9 @@ test('all permitted sheet mounts attack and export native mounted runtime, with 
    expect(config.layers.find(l=>l.slot==='mount').source).toBe('icon/x4/10701.png')
  }
  for(const d of companions.mounts.filter(d=>d.mountedAttack.status==='ready')) {
-   await mount.selectOption(d.id);await motion.selectOption('idle');await motion.selectOption('attack')
+   await inCharacterTab(page,'Trang bị',()=>mount.selectOption(d.id));await inCharacterTab(page,'Animation',()=>motion.selectOption('idle'));await inCharacterTab(page,'Animation',()=>motion.selectOption('attack'))
    await expect(page.getByTestId('mounted-attack-status')).toContainText(d.label)
-   await page.getByRole('button',{name:'Tạm dừng',exact:true}).click()
+   await inCharacterTab(page,'Animation',()=>page.getByRole('button',{name:'Tạm dừng',exact:true}).click())
    await expect(page.locator('.direction-views canvas').first()).toHaveAttribute('data-rendered-mount',d.id)
    await expect(page.getByRole('alert')).toHaveCount(0)
    await page.locator('.direction-views').screenshot({path:`/tmp/hso-mounted-rig-${d.id}.png`})
@@ -43,7 +44,7 @@ test('all permitted sheet mounts attack and export native mounted runtime, with 
  await page.getByRole('button',{name:'Xuất thư viện part',exact:true}).click()
  const zip=unzipSync(await fs.readFile(await(await pending).path()))
  expect(JSON.parse(strFromU8(zip['animations.json'])).states.attack).toMatchObject({clientBasic:true,experimental:false,clazz:3,skillId:0})
- await mount.selectOption('0')
+ await inCharacterTab(page,'Trang bị',()=>mount.selectOption('0'))
  await expect(motion).toHaveValue('idle')
  await expect(motion.locator('option[value="attack"]')).toHaveJSProperty('disabled',true)
  await expect(page.getByTestId('mounted-attack-status')).toContainText('Ngựa nâu')

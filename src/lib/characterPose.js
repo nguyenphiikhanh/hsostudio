@@ -1,5 +1,5 @@
 // x1 sheets group 15 clothing rectangles as front/back/side × 5 poses.
-// The 24 anchor pairs group four directions × 6 poses. Walking uses poses 0–2;
+// The 24 anchor pairs group four directions × 6 body frames; crop and anchor indices differ.
 import { titleFrame } from './titlePose.js'
 import { companionFrame } from './companionPose.js'
 import { clientSkillData } from './clientSkillCatalog.js'
@@ -12,8 +12,20 @@ export const DIRECTIONS = [
   { key: 'left', label: 'Sang trái', anchor: 12, group: 2, flipX: false },
 ]
 export const IDLE_FPS = 8
-export const WALK_FPS = 8
-export const WALK_CYCLE = [0, 1, 0, 2]
+export const WALK_FPS = 25
+// MainObject.A_Move / ArrMount1, not crop indices: 40ms per client update.
+export const CLIENT_WALK_BODY_FRAMES = Object.freeze([2, 2, 2, 0, 0, 3, 3, 3, 0, 0])
+export const WALK_CYCLE = Object.freeze(CLIENT_WALK_BODY_FRAMES.map(frame => [0, 0, 1, 2, 3, 4][frame]))
+export function clientWalkPhase(tick) {
+  const frame = Math.max(0, Math.trunc(tick)) % CLIENT_WALK_BODY_FRAMES.length
+  return { pose: WALK_CYCLE[frame], clientBodyFrame: CLIENT_WALK_BODY_FRAMES[frame], idleOffset: 0 }
+}
+export function clientWalkClip() {
+  return { clientWalk: true, experimental: false, provenance: 'official-client-4.0.3',
+    clientSha256: 'f023b34e0ba0a3dcf44249ed5f90b78f0427deee4668562b8e3a0e9e349b18c6',
+    fps: WALK_FPS, repeat: -1, frames: CLIENT_WALK_BODY_FRAMES.map((_,tick) => clientWalkPhase(tick)),
+    limitations: ['Walking on foot only; mounts retain their own body/seat timelines.', 'Clip phase starts at A_Move[0] for repeatable Studio preview; the client can enter walking with an existing f counter.'] }
+}
 // Studio breathing: lift the head, stretch the shirt around the waist anchor, keep feet planted.
 export const IDLE_CYCLE = [0, -0.5, -1, -0.5]
 
@@ -97,8 +109,7 @@ export function resolvePose(layers, directionKey = 'down', pose = 0, idleOffset 
   const mountedAttack = Boolean(mount && options.motion==='attack' && options.clientAttack && mount.companion.mountedAttack?.status==='ready' && mount.companion.mountedAttack.skillIds.includes(options.clientSkillId ?? 0))
   const mounted = mount ? companionFrame(mount.companion,directionKey,mountedAttack ? options.mountEntry?.motion ?? 'idle' : options.motion,mountedAttack ? options.mountEntry?.tick ?? 0 : options.tick) : null
   if (mounted) { options={...options,clientBodyFrame:mountedAttack ? options.clientBodyFrame : mounted.bodyFrame,experimentalAttack:false}; idleOffset=0 }
-  const hasClientWeapon = layers.some(layer => layer.slot === 'weapon' && layer.clientWeapon)
-  const clientFrame = options.clientBodyFrame ?? (hasClientWeapon && !options.experimentalAttack ? [0, 2, 3][Math.max(0, Math.min(2, Math.trunc(pose)))] : undefined)
+  const clientFrame = options.clientBodyFrame ?? (!options.experimentalAttack ? [0, 2, 3][Math.max(0, Math.min(2, Math.trunc(pose)))] : undefined)
   const step = clientFrame !== undefined ? [0, 0, 1, 2, 3, 4][clientFrame] : Math.max(0, Math.min(options.experimentalAttack ? 4 : 2, Math.trunc(pose)))
   const anchorStep = clientFrame !== undefined ? clientFrame : options.experimentalAttack ? Math.max(0, Math.min(5, Math.trunc(options.anchorPose ?? step))) : step
   const resolved = layers.map(layer => {
@@ -112,7 +123,7 @@ export function resolvePose(layers, directionKey = 'down', pose = 0, idleOffset 
     const [baseX, baseY] = layer.poseOffsets[0]
     return {
       ...layer,
-      ...(directionKey === 'down' && step === 0 && !options.experimentalAttack && clientFrame === undefined ? {} : frame),
+      ...(directionKey === 'down' && step === 0 && !options.experimentalAttack && options.clientBodyFrame === undefined ? {} : frame),
       x: (usesClientMirror && clientDirection === 3 ? -offset[0] - frame.w : offset[0]) + layer.x - baseX,
       y: offset[1] + layer.y - baseY,
       flipX: direction.flipX,
@@ -148,6 +159,7 @@ export function resolvePose(layers, directionKey = 'down', pose = 0, idleOffset 
   return breathing.map(layer => {
     if (layer.slot !== 'weapon' || !layer.clientWeapon) return layer
     if (options.experimentalAttack && !options.clientAttack) return { ...layer, visible: false }
+    if (options.clientAttack && layer.customDesign && !layer.customDesign.splashReady) return {...layer,visible:false}
     const weapon = layer.clientWeapon
     const dir = { down: 0, up: 1, left: 2, right: 3 }[direction.key]
     const bodyFrame = clientFrame ?? anchorStep

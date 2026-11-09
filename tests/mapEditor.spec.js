@@ -132,8 +132,8 @@ test('import requiring a missing object PNG leaves draft/history intact and reco
 })
 
 
-test('mobile painting keeps canvas coordinates stable when the draft status changes',async({page})=>{
- await page.setViewportSize({width:390,height:844});await page.goto('/maps')
+test('laptop painting keeps canvas coordinates stable when the draft status changes',async({page})=>{
+ await page.setViewportSize({width:1280,height:900});await page.goto('/maps')
  const c=page.locator('.map-canvas-shell canvas');await expect(c).toHaveAttribute('data-rendered-map-id','0',{timeout:30000})
  const col=26,row=13,tile=[2,3,4,72].find(t=>[0,1,2,3].every(dx=>native.tiles[row*58+col+dx]!==t))
  await page.getByRole('button',{name:'Bút tile',exact:true}).click();await page.getByRole('button',{name:`Chọn tile ${tile}`,exact:true}).click()

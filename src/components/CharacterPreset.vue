@@ -55,13 +55,13 @@ onMounted(() => { if (!props.layers.length) reset() })
 
 <template>
   <div class="preset-panel">
-    <div class="section-heading"><div><p class="eyebrow">NHÂN VẬT MẪU · BỘ PHẬN</p><h2>{{ complete ? 'Thay bộ phận trực tiếp trên nhân vật' : 'Chọn đủ đầu, áo và quần để ghép nhân vật' }}</h2></div><button @click="reset">Khôi phục nhân vật mẫu</button></div>
+    <div class="section-heading"><div><p class="eyebrow">NHÂN VẬT MẪU · BỘ PHẬN</p><h2>{{ complete ? 'Bộ trang bị' : 'Chọn đầu, áo và quần' }}</h2></div><button @click="reset">Khôi phục nhân vật mẫu</button></div>
     <label class="field">Phái nhân vật<select :value="clazz" aria-label="Phái nhân vật" @change="emit('update:clazz', Number($event.target.value))"><option v-for="profile in classes" :key="profile.id" :value="profile.id">{{ profile.label }} · {{ profile.weapon_label }} (type {{ profile.weapon_type }})</option></select></label>
-    <div class="part-selectors"><label v-for="slot in slots" :key="slot.key" class="field">{{ slot.label }}<select :value="selected(slot.key)" :aria-label="`Bộ phận ${slot.label}`" @change="change(slot.key, $event.target.value)"><option value="">{{ slot.required ? 'Chưa chọn' : 'Không dùng' }}</option><option v-for="part in options(slot.key)" :key="part.id" :value="part.id">{{ part.label }}</option></select></label></div>
+    <div class="part-selectors"><label v-for="slot in slots" :key="slot.key" class="field">{{ slot.label }}<select :value="selected(slot.key)" :aria-label="`Bộ phận ${slot.label}`" @change="change(slot.key, $event.target.value)"><option value="">{{ slot.required ? 'Chưa chọn' : 'Không dùng' }}</option><option v-if="layers.find(l=>l.slot===slot.key)?.customDesign" :value="selected(slot.key)">Nháp: {{layers.find(l=>l.slot===slot.key).name}}</option><option v-for="part in options(slot.key)" :key="part.id" :value="part.id">{{ part.label }}</option></select></label></div>
     <WeaponControls :clazz="clazz" @weapon="updateWeapon"/>
     <TitleControls :layers="layers" @update="emit('update',$event)"/>
     <CompanionControls :layers="layers" @update="emit('update',$event)"/>
-    <p v-for="l in layers.filter(l => l.qualityNote)" :key="l.slot" class="muted">{{ l.name }}: {{ l.qualityNote }}</p>
-    <p class="muted">Ưu tiên PNG x4 và metadata riêng của x4; tọa độ chỉnh sửa dùng đơn vị x1. Chọn hướng và trạng thái ở bên dưới. Mắt dùng PNG và điểm neo gốc trong client 4.0.3. JAR chỉ có mắt x1; các bộ phận khác vẫn ưu tiên x4.</p>
+    <details class="equipment-provenance"><summary>Chất lượng ảnh và nguồn dữ liệu</summary><p v-for="l in layers.filter(l => l.qualityNote)" :key="l.slot" class="muted">{{ l.name }}: {{ l.qualityNote }}</p>
+    <p class="muted">Ưu tiên PNG x4 và metadata riêng của x4; tọa độ chỉnh sửa dùng đơn vị x1. Chọn hướng và trạng thái ở bên dưới. Mắt dùng PNG và điểm neo gốc trong client 4.0.3. JAR chỉ có mắt x1; các bộ phận khác vẫn ưu tiên x4.</p></details>
   </div>
 </template>

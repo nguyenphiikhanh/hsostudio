@@ -47,6 +47,8 @@ onUnmounted(() => version++)
   <div class="skill-preview" data-testid="client-skill-effect-preview">
     <p class="eyebrow">CHIÊU #{{ skillId }} · THÂN / VŨ KHÍ / HIỆU ỨNG GỐC · effect {{ skill.effectId }}</p>
     <canvas ref="canvas" class="checker" width="1360" height="960" style="width:100%;max-width:680px;height:auto" aria-label="Preview hiệu ứng chiêu và mục tiêu mẫu" :data-clazz="clazz" :data-skill-id="skillId" :data-tick="tick" :data-direction="direction" />
+    <details class="skill-provenance"><summary>Nguồn hiệu ứng và giới hạn preview</summary>
     <p class="muted">Hiệu ứng chính dùng FrameImage client khi có sprite; nhánh không có ảnh dùng nét vẽ minh họa cố định. Khung viền là mục tiêu mẫu, không phải sprite quái. Hạt ngẫu nhiên, hiệu ứng phụ, sát thương, âm thanh và cooldown chưa mô phỏng.</p>
+    </details>
   </div>
 </template>

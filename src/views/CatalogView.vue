@@ -1,11 +1,16 @@
 <script setup>
+import WorkbenchInspector from '../components/WorkbenchInspector.vue'
+import CharacterExports from '../components/CharacterExports.vue'
 import { useWorkbench } from '../composables/useWorkbench'
 import { gameUrl, imageAsset } from '../lib/catalog'
-const { title, table, total, search, category, categories, zoom, decoded, rows, selected, page, pageSize, select } = useWorkbench()
+const { tables, report, changeTable, title, table, total, search, category, categories, zoom, decoded, rows, selected, page, pageSize, select } = useWorkbench()
 </script>
 
 <template>
   <div class="catalog-page">
+    <div class="page-heading"><div><p class="eyebrow">TÀI NGUYÊN GAME</p><h1>Thư viện dữ liệu</h1></div><CharacterExports catalog/></div>
+    <div class="catalog-layout"><section class="catalog-browser">
+    <nav class="catalog-categories" aria-label="Danh mục"><button v-for="[key,label] in tables" :key="key" :class="{active:table===key}" @click="changeTable(key)">{{label}} <small>{{key==='assets'?report.assets:report.tables[key]}}</small></button></nav>
           <div class="section-heading"><div><p class="eyebrow">THƯ VIỆN / {{ table }}</p><h1>{{ title }}</h1></div><span>{{ total.toLocaleString() }} kết quả</span></div>
 
           <div class="filters"><input v-model="search" aria-label="Tìm theo tên hoặc ID" placeholder="Tìm tên, đường dẫn hoặc ID…"><template v-if="table === 'assets'"><select v-model="category" aria-label="Loại asset"><option value="">Mọi loại</option><option v-for="c in categories" :key="c">{{ c }}</option></select><select v-model="zoom" aria-label="Độ phân giải"><option value="">Mọi độ phân giải</option><option v-for="z in ['x1','x2','x3','x4']" :key="z">{{ z }}</option></select><label class="inline"><input v-model="decoded" type="checkbox"> Có ảnh</label></template></div>
@@ -13,5 +18,6 @@ const { title, table, total, search, category, categories, zoom, decoded, rows, 
           <p v-if="!rows.length" class="empty">Không có kết quả phù hợp bộ lọc.</p>
           <div class="pagination"><button :disabled="page === 0" @click="page--">← Trước</button><span>{{ page + 1 }} / {{ Math.max(1, Math.ceil(total / pageSize)) }}</span><button :disabled="(page + 1) * pageSize >= total" @click="page++">Sau →</button></div>
 
+    </section><WorkbenchInspector show-record/></div>
   </div>
 </template>

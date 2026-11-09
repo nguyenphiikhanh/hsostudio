@@ -1,3 +1,4 @@
+import {inCharacterTab} from './workspaceTabs.js'
 import { test, expect } from '@playwright/test'
 import fs from 'node:fs/promises'
 import { unzipSync, strFromU8 } from 'fflate'
@@ -10,18 +11,18 @@ test('skill one restores class-specific body/WPS and original primary FX in a ta
   await page.goto('/')
   const weapon=page.getByLabel('Vũ khí thường HSO',{exact:true})
   await expect(weapon).toBeEnabled({timeout:30000})
-  await page.getByLabel('Trạng thái nhân vật',{exact:true}).selectOption('attack')
-  await page.getByRole('button',{name:'Tạm dừng',exact:true}).click()
+  await inCharacterTab(page,'Animation',()=>page.getByLabel('Trạng thái nhân vật',{exact:true}).selectOption('attack'))
+  await inCharacterTab(page,'Animation',()=>page.getByRole('button',{name:'Tạm dừng',exact:true}).click())
   for(const [clazz,item,name,trigger] of [[0,0,'Búa địa chấn',9],[1,5,'Nhát chém chí mạng',9],[2,10,'Quả cầu nội lực',9],[3,15,'Phát súng công phá',4]]) {
-    await page.getByLabel('Phái nhân vật',{exact:true}).selectOption(String(clazz))
-    await weapon.selectOption(String(item))
-    await page.getByLabel('Kỹ năng tấn công',{exact:true}).selectOption('1')
+    await inCharacterTab(page,'Trang bị',()=>page.getByLabel('Phái nhân vật',{exact:true}).selectOption(String(clazz)))
+    await inCharacterTab(page,'Trang bị',()=>weapon.selectOption(String(item)))
+    await inCharacterTab(page,'Animation',()=>page.getByLabel('Kỹ năng tấn công',{exact:true}).selectOption('1'))
     await expect(page.getByTestId('attack-evidence')).toContainText(name)
     await expect(page.getByLabel('Pose tấn công A',{exact:true})).toHaveCount(0)
     const canvas=page.getByLabel('Preview chiêu 1 và mục tiêu mẫu',{exact:true})
     await expect(canvas).toHaveAttribute('data-tick','0')
     await expect(canvas).toHaveAttribute('data-sprites','0')
-    for(let tick=0;tick<trigger;tick++) await page.getByRole('button',{name:'Frame tiếp →',exact:true}).click()
+    for(let tick=0;tick<trigger;tick++) await inCharacterTab(page,'Animation',()=>page.getByRole('button',{name:'Frame tiếp →',exact:true}).click())
     await expect(canvas).toHaveAttribute('data-effect-frame','0')
     await expect(canvas).toHaveAttribute('data-sprites',clazz===3?'4':'1')
     await page.getByRole('button',{name:'Xem hướng Nhìn trước',exact:true}).click()

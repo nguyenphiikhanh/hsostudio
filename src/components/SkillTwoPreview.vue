@@ -45,7 +45,9 @@ onUnmounted(() => version++)
   <div class="skill-preview" data-testid="skill-two-preview">
     <p class="eyebrow">CHIÊU #2 · THÂN / VŨ KHÍ / HIỆU ỨNG GỐC · {{ labels[clazz] }}</p>
     <canvas ref="canvas" class="checker" width="1360" height="960" style="width:100%;max-width:680px;height:auto" aria-label="Preview chiêu 2 và mục tiêu mẫu" :data-clazz="clazz" :data-tick="tick" :data-direction="direction" />
+    <details class="skill-provenance"><summary>Nguồn hiệu ứng và giới hạn preview</summary>
     <p class="muted">Hiệu ứng dùng sprite client HSO 4.0.3 đã đối chiếu và dừng theo frame; khung viền là mục tiêu mẫu, không phải sprite quái. Hướng hiện tại điều khiển cả nhân vật và mục tiêu.</p>
     <p class="muted">Dữ liệu skill ID, effect ID, frame ảnh và nhịp kích hoạt lấy từ client. Hạt ngẫu nhiên, sát thương, âm thanh và cooldown không được mô phỏng. ZIP thư viện part chỉ xuất timeline cơ thể, không kèm hiệu ứng kỹ năng.</p>
+    </details>
   </div>
 </template>

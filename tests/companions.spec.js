@@ -1,3 +1,4 @@
+import {inCharacterTab} from './workspaceTabs.js'
 import {test,expect} from '@playwright/test'
 import fs from 'node:fs/promises'
 import {unzipSync,strFromU8} from 'fflate'
@@ -8,14 +9,14 @@ test('mount/pet preview and v1 ZIP restore actual horse/owl and run in Phaser',a
  await page.goto('/')
  const mount=page.getByLabel('Thú cưỡi',{exact:true}),pet=page.getByLabel('Thú cưng',{exact:true})
  await expect(mount).toBeVisible({timeout:30000})
- await mount.selectOption('0');await pet.selectOption('3')
+ await inCharacterTab(page,'Trang bị',()=>mount.selectOption('0'));await inCharacterTab(page,'Trang bị',()=>pet.selectOption('3'))
  await expect(page.getByRole('button',{name:'Chơi thử H5',exact:true})).toBeDisabled()
- await page.getByLabel('Trạng thái nhân vật',{exact:true}).selectOption('walk')
- await page.getByRole('button',{name:'Tạm dừng',exact:true}).click()
+ await inCharacterTab(page,'Animation',()=>page.getByLabel('Trạng thái nhân vật',{exact:true}).selectOption('walk'))
+ await inCharacterTab(page,'Animation',()=>page.getByRole('button',{name:'Tạm dừng',exact:true}).click())
  await expect(page.getByLabel('Tốc độ animation',{exact:true})).toHaveValue('25')
  const canvas=page.locator('.direction-views canvas').first()
  const before=await canvas.evaluate(c=>c.toDataURL())
- for(let i=0;i<4;i++)await page.getByRole('button',{name:'Frame tiếp →',exact:true}).click()
+ for(let i=0;i<4;i++)await inCharacterTab(page,'Animation',()=>page.getByRole('button',{name:'Frame tiếp →',exact:true}).click())
  await expect.poll(()=>canvas.evaluate((c,b)=>c.toDataURL()!==b,before)).toBe(true)
  await page.locator('.direction-views').screenshot({path:'/tmp/hso-mount-owl-preview.png'})
  const pending=page.waitForEvent('download')

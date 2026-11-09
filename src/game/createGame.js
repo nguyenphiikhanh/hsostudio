@@ -72,7 +72,7 @@ export async function createPlayableGame(parent, layers, onState) {
           const texture = this.textures.createCanvas(key, 64 * textureDensity, 64 * textureDensity)
           texture.context.scale(textureDensity, textureDensity)
           texture.context.imageSmoothingEnabled = false
-          paintLayers(texture.context, resolvePose(layers, direction.key, pose), images, 32, 48)
+          paintLayers(texture.context, resolvePose(layers, direction.key, pose, 0, {clientBodyFrame:[0,2,3][pose]}), images, 32, 48)
           texture.refresh()
         }
         for (const offset of new Set(IDLE_CYCLE.filter(value => value !== 0))) {

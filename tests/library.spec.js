@@ -64,7 +64,8 @@ test('library ZIP contains all supported parts and runs equipment swapping in re
   }
   expect(json('animations.json').states.idle.fps).toBe(8)
   expect(json('animations.json').states.idle.frames.map(frame => frame.idleOffset)).toEqual([0, -0.5, -1, -0.5])
-  expect(json('animations.json').states.walk.frames.map(frame => frame.pose)).toEqual([0, 1, 0, 2])
+  expect(json('animations.json').states.walk).toMatchObject({clientWalk:true,fps:25,provenance:'official-client-4.0.3'})
+  expect(json('animations.json').states.walk.frames.map(frame => frame.clientBodyFrame)).toEqual([2,2,2,0,0,3,3,3,0,0])
   // Add an original design by copying a single folder, then run the tool shipped in the ZIP.
   const root = await fs.mkdtemp(join(tmpdir(), 'hso-part-folders-'))
   for (const [path, bytes] of Object.entries(entries)) {
@@ -104,8 +105,19 @@ test('library ZIP contains all supported parts and runs equipment swapping in re
   await expect.poll(() => page.evaluate(() => Boolean(window.libraryHarness)), { timeout: 40000 }).toBe(true)
   const result = await page.evaluate(() => {
     const { character, scene, equipment } = window.libraryHarness
+    const walkConformance=[]
+    const nativeFrames=[2,2,2,0,0,3,3,3,0,0]
+    for(const [direction,group,start] of [['down',0,0],['up',1,6],['left',2,12],['right',2,12]])for(let tick=0;tick<10;tick++){
+      character.setState('walk',direction);character.elapsed=tick*40;character.render()
+      for(const slot of ['pants','shirt','head','hair']){
+        const selection=character.outfit[slot],part=character.manifest.parts[selection.partKey],image=character.images.get(slot)
+        const frame=nativeFrames[tick],cropIndex=part.frames.length===15?group*5+[0,0,1,2,3,4][frame]:group
+        const crop=part.frames[cropIndex],offset=part.offsets[start+frame]
+        walkConformance.push(image.frame.name===crop.frame && image.flipX===(direction==='right') && image.x===(direction==='right'?-offset[0]-crop.crop.w:offset[0])+(selection.x||0) && image.y===offset[1]+(selection.y||0))
+      }
+    }
     character.setState('walk', 'right').equip('shirt', 1)
-    character.elapsed = 125
+    character.elapsed = 80
     character.render()
     const shirt = character.images.get('shirt')
     const swapped = { name: shirt.frame.name, flip: shirt.flipX, y: shirt.y, densityScale: shirt.scaleX, worldWidth: shirt.displayWidth, frameWidth: shirt.frame.width }
@@ -148,8 +160,10 @@ test('library ZIP contains all supported parts and runs equipment swapping in re
     const before = scene.events.listenerCount('update')
     character.destroy()
     const cleaned = scene.events.listenerCount('update') === before - 1
-    return { swapped, custom, itemKey, expectedItem: item.partKey, rejected, preserved, helmet, removed, hiddenEyes, cleaned, hem, breathingHem, breathingLift, attackA, attackB, attackEnd, replayed }
+    return { walkConformance, swapped, custom, itemKey, expectedItem: item.partKey, rejected, preserved, helmet, removed, hiddenEyes, cleaned, hem, breathingHem, breathingLift, attackA, attackB, attackEnd, replayed }
   })
+  expect(result.walkConformance).toHaveLength(160)
+  expect(result.walkConformance.every(Boolean)).toBe(true)
   expect(result.swapped.name).toBe('shirt-1-frame-11')
   expect(result.swapped.flip).toBe(true)
   expect(result.swapped.densityScale).toBe(0.25)

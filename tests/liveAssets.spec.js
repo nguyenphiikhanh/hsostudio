@@ -1,3 +1,4 @@
+import {inCharacterTab} from './workspaceTabs.js'
 import { test, expect } from '@playwright/test'
 import fs from 'node:fs/promises'
 import { join } from 'node:path'
@@ -18,8 +19,8 @@ test('WPS PNG created after Vite starts is served as image and works in attack p
       ref.classes[0].splash.image = image
       query('UPDATE hso_client_reference SET definition=? WHERE id=1', [JSON.stringify(ref)])
     }, `client403/${filename}`)
-    await page.getByLabel('Vũ khí thường HSO', { exact: true }).selectOption('0')
-    await page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption('attack')
+    await inCharacterTab(page,'Trang bị',()=>page.getByLabel('Vũ khí thường HSO', { exact: true }).selectOption('0'))
+    await inCharacterTab(page,'Animation',()=>page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption('attack'))
     await expect(page.getByTestId('client-weapon-animation')).toBeVisible()
     await page.waitForTimeout(400)
     await expect(page.getByRole('alert')).toHaveCount(0)
@@ -50,7 +51,7 @@ test('failed WPS loads identify the actual image URL, not just the JAR resource 
   await page.goto('/')
   const select = page.getByLabel('Vũ khí thường HSO', { exact: true })
   await expect(select).toBeEnabled({ timeout: 30000 })
-  await select.selectOption('0')
-  await page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption('attack')
+  await inCharacterTab(page,'Trang bị',()=>select.selectOption('0'))
+  await inCharacterTab(page,'Animation',()=>page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption('attack'))
   await expect(page.getByRole('alert')).toContainText('Không tải được PNG /game/client403/wps-0.png')
 })

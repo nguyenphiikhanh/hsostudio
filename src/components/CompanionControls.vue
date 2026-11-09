@@ -10,7 +10,7 @@ function change(slot,id){const next=props.layers.filter(l=>l.slot!==slot);if(id!
     <div class="part-selectors">
       <label v-for="[slot,title,key] in [['mount','Thú cưỡi','mounts'],['pet','Thú cưng','pets']]" :key="slot" class="field">{{title}}
         <select :aria-label="title" :value="layers.find(l=>l.slot===slot)?.companion.id ?? ''" @change="change(slot,$event.target.value)">
-          <option value="">Không dùng</option><option v-for="d in companionCatalog[key]" :key="d.id" :value="d.id">{{d.label}} · #{{d.id}} · x{{d.asset.density}}{{ d.riderBinding?.status === 'unverified' ? ' · ghế chưa xác minh' : '' }}</option>
+          <option value="">Không dùng</option><option v-if="layers.find(l=>l.slot===slot)?.customDesign" :value="layers.find(l=>l.slot===slot).companion.id">Nháp: {{layers.find(l=>l.slot===slot).name}}</option><option v-for="d in companionCatalog[key]" :key="d.id" :value="d.id">{{d.label}} · #{{d.id}} · x{{d.asset.density}}{{ d.riderBinding?.status === 'unverified' ? ' · ghế chưa xác minh' : '' }}</option>
         </select>
       </label>
     </div>

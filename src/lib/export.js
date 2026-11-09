@@ -27,7 +27,7 @@ export async function downloadZip(name, files) {
 const imageCache = new Map()
 export function loadImage(asset) {
   if (!asset?.image || asset.image.startsWith('jar:')) return Promise.reject(new Error('Thiếu đường dẫn PNG trong bộ dữ liệu đóng gói.'))
-  const url = gameUrl(asset.image)
+  const url = asset.image.startsWith('blob:') ? asset.image : gameUrl(asset.image)
   if (imageCache.has(asset.image)) return imageCache.get(asset.image)
   const pending = new Promise((resolve, reject) => {
     const img = new Image()
@@ -38,6 +38,7 @@ export function loadImage(asset) {
   imageCache.set(asset.image, pending)
   return pending
 }
+export function releasePreviewImage(url) { imageCache.delete(url); URL.revokeObjectURL(url) }
 export function validCrop(layer) {
   const density = layer.asset.density || 1
   return ['sx', 'sy', 'w', 'h'].every(k => Number.isInteger(layer[k])) && ['x', 'y'].every(k => Number.isFinite(layer[k])) &&
@@ -77,7 +78,7 @@ export async function exportAtlas(layers, drafts, preview = null, requestedName 
   await downloadZip(name, {
     [`${name}.png`]: png,
     [`${name}.json`]: { frames, meta: { app: 'HSO Studio', image: `${name}.png`, format: 'RGBA8888', size: { w: width, h: height }, scale: '1' } },
-    [`${compositionName}.json`]: { version: 1, name, texture: name, origin: [0, 0], layers: composition.sort((a, b) => a.depth - b.depth), drafts, preview, animations: [], animationStatus: 'Xuất tư thế đang xem, chưa xuất toàn bộ chu kỳ animation. Part mẫu dùng metadata; chu kỳ preview suy ra từ hình ảnh. Mắt mặc định dùng PNG/metadata gốc x1 từ client 4.0.3.' },
+    [`${compositionName}.json`]: { version: 1, name, texture: name, origin: [0, 0], layers: composition.sort((a, b) => a.depth - b.depth), drafts, preview, animations: [], animationStatus: preview?.clientWalk ? 'Xuất tư thế đi bộ đang xem theo A_Move/PART_OF_FRAME client 4.0.3 ở 25 FPS; chưa xuất toàn bộ chu kỳ trong gói tư thế. Dùng Xuất thư viện part để lấy clip đi bộ đầy đủ.' : 'Xuất tư thế đang xem, chưa xuất toàn bộ chu kỳ animation. Part mẫu dùng metadata; nhịp thở là xử lý Studio. Xem preview để phân biệt attack client với chuỗi thử nghiệm. Mắt dùng PNG/metadata gốc x1 từ client 4.0.3.' },
     [`load-${name}.js`]: snippet,
   })
 }

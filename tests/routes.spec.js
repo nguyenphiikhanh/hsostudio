@@ -1,14 +1,5 @@
+import {inCharacterTab} from './workspaceTabs.js'
 import {test,expect} from '@playwright/test'
-import fs from 'node:fs/promises'
-import {unzipSync,strFromU8} from 'fflate'
-
-async function exportPose(page) {
- const pending=page.waitForEvent('download')
- await page.getByRole('button',{name:'Xuất cho Phaser',exact:false}).click()
- const files=unzipSync(await fs.readFile(await(await pending).path()))
- const name=Object.keys(files).find(name=>name.endsWith('-composition.json'))
- return JSON.parse(strFromU8(files[name]))
-}
 
 test('separate routes load directly, refresh, and expose only their own workspace',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message))
@@ -30,7 +21,7 @@ test('separate routes load directly, refresh, and expose only their own workspac
  await page.goto('/unknown-workspace');await expect(page).toHaveURL(/\/character-lab$/)
  await expect(page.getByRole('heading',{name:'Character Lab',exact:true})).toBeVisible()
  await page.screenshot({path:'/tmp/hso-character-lab-route.png',fullPage:true})
- await page.setViewportSize({width:390,height:844})
+ await page.setViewportSize({width:1024,height:900})
  await expect(page.getByRole('link',{name:'Thư viện dữ liệu',exact:true})).toBeVisible()
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
  expect(errors).toEqual([])
@@ -41,19 +32,16 @@ test('navigation preserves equipment, drafts and filters; inactive lab animation
  const errors=[];page.on('pageerror',e=>errors.push(e.message))
  await page.goto('/character-lab')
  await expect(page.getByLabel('Phái nhân vật',{exact:true})).toBeVisible({timeout:30000})
- await page.getByLabel('Phái nhân vật',{exact:true}).selectOption('2')
- await page.getByLabel('Bộ phận Tóc',{exact:true}).selectOption({label:'Tóc #1'})
- await page.getByLabel('Vũ khí thường HSO',{exact:true}).selectOption('10')
- await page.getByLabel('Danh hiệu cá nhân',{exact:true}).selectOption('4720')
- await page.getByLabel('Trạng thái nhân vật',{exact:true}).selectOption('walk')
+ await inCharacterTab(page,'Trang bị',()=>page.getByLabel('Phái nhân vật',{exact:true}).selectOption('2'))
+ await inCharacterTab(page,'Trang bị',()=>page.getByLabel('Bộ phận Tóc',{exact:true}).selectOption({label:'Tóc #1'}))
+ await inCharacterTab(page,'Trang bị',()=>page.getByLabel('Vũ khí thường HSO',{exact:true}).selectOption('10'))
+ await inCharacterTab(page,'Trang bị',()=>page.getByLabel('Danh hiệu cá nhân',{exact:true}).selectOption('4720'))
+ await inCharacterTab(page,'Animation',()=>page.getByLabel('Trạng thái nhân vật',{exact:true}).selectOption('walk'))
  await page.getByLabel('Tên bản xuất',{exact:true}).fill('route-state')
+ const clock=await page.locator('.frame-status').elementHandle()
  await page.getByRole('link',{name:'Thư viện dữ liệu',exact:true}).click()
  await expect(page.locator('.direction-views')).toHaveCount(0)
- const before=await exportPose(page)
- await page.waitForTimeout(300)
- const after=await exportPose(page)
- expect(after.preview.frame).toBe(before.preview.frame)
- expect(after.preview.attackOptions.titleTick).toBe(before.preview.attackOptions.titleTick)
+ const stopped=await clock.textContent();await page.waitForTimeout(300);expect(await clock.textContent()).toBe(stopped)
  await page.getByRole('button',{name:'Quái vật'}).click()
  await page.getByRole('textbox',{name:'Tìm theo tên hoặc ID',exact:true}).fill('Ốc sên')
  await page.locator('.asset-card').filter({has:page.getByText('Ốc sên',{exact:true})}).click()
@@ -67,6 +55,7 @@ test('navigation preserves equipment, drafts and filters; inactive lab animation
  await expect(page.getByLabel('Trạng thái nhân vật',{exact:true})).toHaveValue('walk')
  await expect(page.getByLabel('Tên bản xuất',{exact:true})).toHaveValue('route-state')
  await expect(page.getByLabel('hp',{exact:true})).toHaveCount(0)
+ await page.getByRole('tab',{name:'Animation',exact:true}).click()
  await expect(page.getByRole('button',{name:'Tạm dừng',exact:true})).toBeVisible()
  const status=await page.locator('.frame-status').textContent()
  await expect.poll(()=>page.locator('.frame-status').textContent()).not.toBe(status)

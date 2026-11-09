@@ -1,3 +1,4 @@
+import {inCharacterTab} from './workspaceTabs.js'
 import { test, expect } from '@playwright/test'
 import fs from 'node:fs/promises'
 import { unzipSync, strFromU8 } from 'fflate'
@@ -11,25 +12,25 @@ test('real HSO weapons render from verified class/part and animate with the offi
   await expect(ordinary).toBeEnabled({ timeout: 30000 })
   await expect(ordinary.locator('option')).toHaveCount(25)
   await expect(cosmetic.locator('option[value="4691"]')).toHaveJSProperty('disabled', false)
-  await page.getByLabel('Áp dụng điều kiện trang bị', { exact: true }).check()
+  await inCharacterTab(page,'Trang bị',()=>page.getByLabel('Áp dụng điều kiện trang bị', { exact: true }).check())
   await expect(cosmetic.locator('option[value="4691"]')).toHaveJSProperty('disabled', true)
-  await page.getByLabel('Áp dụng điều kiện trang bị', { exact: true }).uncheck()
-  await ordinary.selectOption('0')
+  await inCharacterTab(page,'Trang bị',()=>page.getByLabel('Áp dụng điều kiện trang bị', { exact: true }).uncheck())
+  await inCharacterTab(page,'Trang bị',()=>ordinary.selectOption('0'))
   await expect(page.locator('.layer-row')).toHaveCount(6)
   await expect(page.getByTestId('weapon-visual-status')).toContainText('Đang vẽ vũ khí thường')
   await expect(page.getByTestId('verified-weapon-facts')).toContainText('wear[0]')
-  await page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption('attack')
+  await inCharacterTab(page,'Animation',()=>page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption('attack'))
   await expect(page.getByTestId('client-weapon-animation')).toContainText('25 FPS')
   await expect(page.getByLabel('Tốc độ animation', { exact: true })).toHaveValue('25')
   await expect(page.getByLabel('Tốc độ animation', { exact: true })).toBeDisabled()
-  await page.getByRole('button', { name: 'Tạm dừng', exact: true }).click()
+  await inCharacterTab(page,'Animation',()=>page.getByRole('button', { name: 'Tạm dừng', exact: true }).click())
   // Return to a deterministic first attack tick without racing autoplay.
   for (let i = 0; i < 9 && !(await page.locator('.frame-status').textContent()).includes('tick 1/9'); i++) {
-    await page.getByRole('button', { name: 'Frame tiếp →', exact: true }).click()
+    await inCharacterTab(page,'Animation',()=>page.getByRole('button', { name: 'Frame tiếp →', exact: true }).click())
   }
   const canvases = page.locator('.direction-views canvas')
   const before = await canvases.evaluateAll(cs => cs.map(c => c.toDataURL()))
-  for (let i = 0; i < 5; i++) await page.getByRole('button', { name: 'Frame tiếp →', exact: true }).click()
+  for (let i = 0; i < 5; i++) await inCharacterTab(page,'Animation',()=>page.getByRole('button', { name: 'Frame tiếp →', exact: true }).click())
   await expect.poll(() => canvases.evaluateAll(cs => cs.map(c => c.toDataURL()))).not.toEqual(before)
   const download = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Xuất cho Phaser', exact: false }).click()
@@ -49,23 +50,24 @@ test('real HSO weapons render from verified class/part and animate with the offi
   await page.screenshot({ path: '/tmp/hso-client-weapon-attack.png', fullPage: true })
   // The other three classes choose their actual item, not an arbitrary sheet list.
   for (const [clazz, id] of [[1, 5], [2, 10], [3, 15]]) {
-    await page.getByLabel('Phái nhân vật', { exact: true }).selectOption(String(clazz))
+    await inCharacterTab(page,'Trang bị',()=>page.getByLabel('Phái nhân vật', { exact: true }).selectOption(String(clazz)))
     await expect(ordinary).toHaveValue('')
-    await ordinary.selectOption(String(id))
+    await inCharacterTab(page,'Trang bị',()=>ordinary.selectOption(String(id)))
+    await page.getByRole('tab',{name:'Animation',exact:true}).click()
     await expect(page.getByTestId('client-weapon-animation')).toBeVisible()
     await expect(page.getByLabel('Phái tấn công', { exact: true })).toHaveValue(String(clazz))
     await expect(page.locator('.layer-row')).toHaveCount(6)
   }
-  await page.getByLabel('Kỹ năng tấn công', { exact: true }).selectOption('9')
+  await inCharacterTab(page,'Animation',()=>page.getByLabel('Kỹ năng tấn công', { exact: true }).selectOption('9'))
   await expect(page.getByTestId('client-weapon-animation')).toHaveCount(0)
   await expect(page.getByLabel('Pose tấn công A', { exact: true })).toBeVisible()
-  await page.getByLabel('Cấp nhân vật để đối chiếu', { exact: true }).fill('150')
-  await cosmetic.selectOption('4691')
+  await inCharacterTab(page,'Trang bị',()=>page.getByLabel('Cấp nhân vật để đối chiếu', { exact: true }).fill('150'))
+  await inCharacterTab(page,'Trang bị',()=>cosmetic.selectOption('4691'))
   await expect(page.getByTestId('verified-weapon-facts').last()).toContainText('61 (part + 41)')
   // A cached pre-client catalog must produce a recovery message, not a Vue/SQLite exception.
-  await ordinary.selectOption('')
+  await inCharacterTab(page,'Trang bị',()=>ordinary.selectOption(''))
   await page.evaluate(async () => { const { query } = await import('/src/lib/catalog.js'); query('DROP TABLE hso_weapon_sheets') })
-  await ordinary.selectOption('15')
+  await inCharacterTab(page,'Trang bị',()=>ordinary.selectOption('15'))
   await expect(page.getByTestId('weapon-visual-status')).toContainText('bộ dữ liệu đóng gói')
   await expect(page.locator('.layer-row')).toHaveCount(5)
   expect(errors).toEqual([])
@@ -78,29 +80,29 @@ test('all 96 ordinary appearances can preview at level 1, variants remain select
   const ordinary=page.getByLabel('Vũ khí thường HSO',{exact:true})
   await expect(ordinary).toBeEnabled({timeout:30000})
   for(const clazz of [0,1,2,3]) {
-    await page.getByLabel('Phái nhân vật',{exact:true}).selectOption(String(clazz))
+    await inCharacterTab(page,'Trang bị',()=>page.getByLabel('Phái nhân vật',{exact:true}).selectOption(String(clazz)))
     await expect(ordinary.locator('option')).toHaveCount(25)
     const options=await ordinary.locator('option').evaluateAll(os=>os.filter(o=>o.value).map(o=>({id:o.value,disabled:o.disabled})))
     expect(options.every(o=>!o.disabled)).toBe(true)
     for(const option of options) {
-      await ordinary.selectOption(option.id)
+      await inCharacterTab(page,'Trang bị',()=>ordinary.selectOption(option.id))
       await expect(page.getByTestId('weapon-visual-status')).toContainText('Đang vẽ vũ khí thường')
       await expect(page.locator('.layer-row')).toHaveCount(6)
     }
     const variants=page.getByLabel('Biến thể vũ khí HSO',{exact:true})
     const ids=await variants.locator('option').evaluateAll(os=>os.map(o=>o.value))
-    for(const id of ids)await variants.selectOption(id)
+    for(const id of ids)await inCharacterTab(page,'Trang bị',()=>variants.selectOption(id))
     await expect(variants).toHaveValue(ids.at(-1))
   }
   const cosmetic=page.getByLabel('Vũ khí thời trang HSO',{exact:true})
   for(const id of await cosmetic.locator('option').evaluateAll(os=>os.filter(o=>o.value).map(o=>o.value))) {
-    await cosmetic.selectOption(id)
+    await inCharacterTab(page,'Trang bị',()=>cosmetic.selectOption(id))
     await expect(page.getByTestId('cosmetic-visual-status')).toContainText('chưa thay đổi ảnh')
   }
-  await page.getByLabel('Cấp nhân vật để đối chiếu',{exact:true}).fill('')
+  await inCharacterTab(page,'Trang bị',()=>page.getByLabel('Cấp nhân vật để đối chiếu',{exact:true}).fill(''))
   await expect(page.locator('.layer-row')).toHaveCount(6)
-  await page.getByLabel('Cấp nhân vật để đối chiếu',{exact:true}).fill('1')
-  await page.getByLabel('Áp dụng điều kiện trang bị',{exact:true}).check()
+  await inCharacterTab(page,'Trang bị',()=>page.getByLabel('Cấp nhân vật để đối chiếu',{exact:true}).fill('1'))
+  await inCharacterTab(page,'Trang bị',()=>page.getByLabel('Áp dụng điều kiện trang bị',{exact:true}).check())
   await expect(ordinary).toHaveValue('')
   await expect(page.locator('.layer-row')).toHaveCount(5)
   expect(errors).toEqual([])

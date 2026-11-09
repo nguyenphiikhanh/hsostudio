@@ -1,3 +1,4 @@
+import {inCharacterTab} from './workspaceTabs.js'
 import {test,expect} from '@playwright/test'
 import fs from 'node:fs/promises'
 import {unzipSync,strFromU8} from 'fflate'
@@ -11,22 +12,22 @@ test('all titles preview, animate independently, export and equip in the actual 
  const canvases=page.locator('.direction-views canvas')
  await expect(select).toBeVisible({timeout:30000});await expect(select.locator('option')).toHaveCount(12)
  for(const d of titles.titles){
-  await select.selectOption(d.id)
+  await inCharacterTab(page,'Trang bị',()=>select.selectOption(d.id))
   await expect(canvases.first()).toHaveAttribute('data-rendered-title',d.id)
-  if(await page.getByRole('button',{name:'Tạm dừng',exact:true}).count())await page.getByRole('button',{name:'Tạm dừng',exact:true}).click()
+  await inCharacterTab(page,'Animation',async()=>{if(await page.getByRole('button',{name:'Tạm dừng',exact:true}).count())await page.getByRole('button',{name:'Tạm dừng',exact:true}).click()})
   const first=Number(await canvases.first().getAttribute('data-title-frame'))
-  for(let i=0;i<5;i++)await page.getByRole('button',{name:'Frame tiếp →',exact:true}).click()
+  for(let i=0;i<5;i++)await inCharacterTab(page,'Animation',()=>page.getByRole('button',{name:'Frame tiếp →',exact:true}).click())
   for(const canvas of await canvases.all())await expect(canvas).toHaveAttribute('data-title-frame',String((first+1)%d.rig.frames.length))
   await expect(page.getByRole('alert')).toHaveCount(0)
  }
- await select.selectOption('4720')
- await page.getByLabel('Vũ khí thường HSO',{exact:true}).selectOption('0')
- await motion.selectOption('attack')
- await page.getByRole('button',{name:'Tạm dừng',exact:true}).click()
+ await inCharacterTab(page,'Trang bị',()=>select.selectOption('4720'))
+ await inCharacterTab(page,'Trang bị',()=>page.getByLabel('Vũ khí thường HSO',{exact:true}).selectOption('0'))
+ await inCharacterTab(page,'Animation',()=>motion.selectOption('attack'))
+ await inCharacterTab(page,'Animation',()=>page.getByRole('button',{name:'Tạm dừng',exact:true}).click())
  const before=Number(await canvases.first().getAttribute('data-title-frame'))
- for(let i=0;i<30;i++)await page.getByRole('button',{name:'Frame tiếp →',exact:true}).click()
+ for(let i=0;i<30;i++)await inCharacterTab(page,'Animation',()=>page.getByRole('button',{name:'Frame tiếp →',exact:true}).click())
  await expect(canvases.first()).toHaveAttribute('data-title-frame',String(before))
- await page.getByLabel('Thú cưỡi',{exact:true}).selectOption('effect-106')
+ await inCharacterTab(page,'Trang bị',()=>page.getByLabel('Thú cưỡi',{exact:true}).selectOption('effect-106'))
  await expect(motion).toHaveValue('idle')
  await page.locator('.direction-views').screenshot({path:'/tmp/hso-titles-mounted.png'})
  const posePending=page.waitForEvent('download');await page.getByRole('button',{name:'Xuất cho Phaser',exact:false}).click()

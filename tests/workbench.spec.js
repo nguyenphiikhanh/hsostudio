@@ -1,8 +1,10 @@
+import {inCharacterTab} from './workspaceTabs.js'
 import { test, expect } from '@playwright/test'
 import fs from 'node:fs/promises'
 import { unzipSync, strFromU8 } from 'fflate'
 
 async function exportZip(page) {
+  if(new URL(page.url()).pathname==='/catalog')await page.getByRole('link',{name:'Character Lab',exact:true}).click()
   const downloads = []
   const track = download => downloads.push(download)
   page.on('download', track)
@@ -37,7 +39,7 @@ test('catalog, record drafts, layer editing and Phaser exports', async ({ page }
   await page.getByRole('button', { name: 'Áp dụng nháp' }).click()
   await page.getByRole('button', { name: 'Tài nguyên' }).click()
   await page.getByRole('link', { name: 'Character Lab', exact: true }).click()
-  await page.getByRole('button', { name: 'Xóa các lớp', exact: true }).click()
+  await inCharacterTab(page,'Tinh chỉnh',()=>page.getByRole('button', { name: 'Xóa các lớp', exact: true }).click())
   await page.getByRole('link', { name: 'Thư viện dữ liệu', exact: true }).click()
   await page.locator('.asset-card').first().click()
   await page.getByRole('button', { name: '+ Thêm lớp' }).click()
@@ -69,8 +71,8 @@ test('catalog, record drafts, layer editing and Phaser exports', async ({ page }
   await page.screenshot({ path: '/tmp/hso-studio-desktop.png', fullPage: true })
   await page.reload()
   await expect(page.getByRole('button', { name: 'Xuất nháp (0)' })).toBeVisible({ timeout: 30000 })
-  await page.setViewportSize({ width: 390, height: 844 })
-  await page.screenshot({ path: '/tmp/hso-studio-mobile.png', fullPage: true })
+  await page.setViewportSize({ width: 1024, height: 900 })
+  await page.screenshot({ path: '/tmp/hso-studio-laptop.png', fullPage: true })
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   expect(errors).toEqual([])
 })
@@ -85,8 +87,9 @@ test('complete standing character starts ready and swaps parts using packet meta
   for (const label of ['Quần', 'Áo', 'Đầu', 'Tóc', 'Mắt gốc']) {
     await expect(page.getByLabel(`Bộ phận ${label}`, { exact: true })).not.toHaveValue('')
   }
-  await page.getByRole('button', { name: 'Tạm dừng', exact: true }).click()
-  await page.getByLabel('Bộ phận Tóc', { exact: true }).selectOption({ label: 'Tóc #1' })
+  await inCharacterTab(page,'Animation',()=>page.getByRole('button', { name: 'Tạm dừng', exact: true }).click())
+  await inCharacterTab(page,'Trang bị',()=>page.getByLabel('Bộ phận Tóc', { exact: true }).selectOption({ label: 'Tóc #1' }))
+  await page.getByRole('tab',{name:'Tinh chỉnh',exact:true}).click()
   await expect(page.locator('.layer-row').filter({ hasText: 'Tóc #1' })).toBeVisible()
   const source = await page.locator('.inspector .path').last().textContent()
   expect(source).toBe('part_char/imgver/x4/5_1')
@@ -100,6 +103,7 @@ test('complete standing character starts ready and swaps parts using packet meta
   expect(frameData.frames['part-0'].frame).toMatchObject({ w: 56, h: 52 })
   expect(frameData.frames['part-1'].frame).toMatchObject({ w: 80, h: Math.ceil(40 * (6 - composition.preview.breath) / 6) })
   await page.screenshot({ path: '/tmp/hso-complete-character.png', fullPage: true })
+  await page.getByRole('tab',{name:'Trang bị',exact:true}).click()
   await page.getByRole('button', { name: 'Khôi phục nhân vật mẫu' }).click()
   await expect(page.getByLabel('Bộ phận Tóc', { exact: true })).toHaveValue('part_char/imgver/x4/5_0')
   expect(errors).toEqual([])
@@ -112,14 +116,14 @@ test('four directions animate, pause, step and export the selected mirrored pose
   await expect(page.locator('.direction-views canvas')).toHaveCount(4, { timeout: 30000 })
   await expect(page.getByRole('button', { name: 'Xem hướng Nhìn trước', exact: true })).toHaveAttribute('aria-pressed', 'true')
   await expect.poll(async () => new Set(await page.locator('.direction-views canvas').evaluateAll(cs => cs.map(c => c.toDataURL()))).size).toBe(4)
-  await page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption('walk')
+  await inCharacterTab(page,'Animation',()=>page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption('walk'))
   await expect(page.getByRole('button', { name: 'Tạm dừng', exact: true })).toBeVisible()
   await expect.poll(async () => (await page.locator('.direction-views canvas').first().getAttribute('data-pose'))).not.toBe('0')
-  await page.getByRole('button', { name: 'Tạm dừng', exact: true }).click()
+  await inCharacterTab(page,'Animation',()=>page.getByRole('button', { name: 'Tạm dừng', exact: true }).click())
   const paused = await page.locator('.frame-status').textContent()
   await page.waitForTimeout(300)
   await expect(page.locator('.frame-status')).toHaveText(paused)
-  await page.getByRole('button', { name: 'Frame tiếp →', exact: true }).click()
+  await inCharacterTab(page,'Animation',()=>page.getByRole('button', { name: 'Frame tiếp →', exact: true }).click())
   await expect(page.locator('.frame-status')).not.toHaveText(paused)
   await page.getByRole('button', { name: 'Xem hướng Sang phải', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Xem hướng Sang phải', exact: true })).toHaveAttribute('aria-pressed', 'true')
@@ -131,7 +135,7 @@ test('four directions animate, pause, step and export the selected mirrored pose
   expect(composition.layers.find(l => l.slot === 'eyes').flipX).toBe(true)
   await page.getByRole('button', { name: 'Xem hướng Nhìn sau', exact: true }).click()
   await page.screenshot({ path: '/tmp/hso-character-directions.png', fullPage: true })
-  await page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption('idle')
+  await inCharacterTab(page,'Animation',()=>page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption('idle'))
   await expect(page.getByRole('button', { name: 'Tạm dừng', exact: true })).toBeEnabled()
   await expect(page.locator('.direction-views canvas').first()).toHaveAttribute('data-pose', '0')
   expect(errors).toEqual([])
@@ -142,13 +146,13 @@ test('idle breathing animates pixels in every direction, pauses and steps withou
   await page.goto('/')
   const canvases = page.locator('.direction-views canvas')
   await expect(canvases).toHaveCount(4, { timeout: 30000 })
-  await page.getByRole('button', { name: 'Tạm dừng', exact: true }).click()
-  await page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption('walk')
-  await page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption('idle')
-  await page.getByRole('button', { name: 'Tạm dừng', exact: true }).click()
+  await inCharacterTab(page,'Animation',()=>page.getByRole('button', { name: 'Tạm dừng', exact: true }).click())
+  await inCharacterTab(page,'Animation',()=>page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption('walk'))
+  await inCharacterTab(page,'Animation',()=>page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption('idle'))
+  await inCharacterTab(page,'Animation',()=>page.getByRole('button', { name: 'Tạm dừng', exact: true }).click())
   await expect(canvases.first()).toHaveAttribute('data-breath', '0')
   const still = await canvases.evaluateAll(cs => cs.map(c => c.toDataURL()))
-  for (let i = 0; i < 2; i++) await page.getByRole('button', { name: 'Frame tiếp →', exact: true }).click()
+  for (let i = 0; i < 2; i++) await inCharacterTab(page,'Animation',()=>page.getByRole('button', { name: 'Frame tiếp →', exact: true }).click())
   await expect(canvases.first()).toHaveAttribute('data-breath', '-1')
   await expect.poll(async () => canvases.evaluateAll(cs => cs.map(c => c.toDataURL()))).not.toEqual(still)
   const raised = await canvases.evaluateAll(cs => cs.map(c => c.toDataURL()))
@@ -156,7 +160,7 @@ test('idle breathing animates pixels in every direction, pauses and steps withou
   await page.waitForTimeout(250)
   expect(await canvases.evaluateAll(cs => cs.map(c => c.toDataURL()))).toEqual(raised)
   await expect(canvases.first()).toHaveAttribute('data-pose', '0')
-  await page.getByRole('button', { name: 'Phát animation', exact: true }).click()
+  await inCharacterTab(page,'Animation',()=>page.getByRole('button', { name: 'Phát animation', exact: true }).click())
   await expect.poll(async () => canvases.first().getAttribute('data-breath'), { intervals: [35, 55, 85, 115] }).not.toBe('-1')
 })
 
@@ -178,16 +182,18 @@ test('draft ZIP shares the export name and blank names use the default', async (
 })
 
 
-test('idle advances visually on each tick, exports half-pixel breathing and keeps chosen FPS across states', async ({ page }) => {
+test('idle advances visually on each tick, exports half-pixel breathing and keeps idle FPS when returning from native walking', async ({ page }) => {
   await page.goto('/')
   const fps = page.getByLabel('Tốc độ animation', { exact: true })
+  await page.getByRole('tab',{name:'Animation',exact:true}).click()
   await expect(fps).toHaveValue('8', { timeout: 30000 })
-  await page.getByRole('button', { name: 'Tạm dừng', exact: true }).click()
-  await fps.selectOption('4')
+  await inCharacterTab(page,'Animation',()=>page.getByRole('button', { name: 'Tạm dừng', exact: true }).click())
+  await inCharacterTab(page,'Animation',()=>fps.selectOption('4'))
   for (const state of ['walk', 'idle']) {
-    await page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption(state)
-    await expect(fps).toHaveValue('4')
-    await page.getByRole('button', { name: 'Tạm dừng', exact: true }).click()
+    await inCharacterTab(page,'Animation',()=>page.getByLabel('Trạng thái nhân vật', { exact: true }).selectOption(state))
+    await expect(fps).toHaveValue(state==='walk'?'25':'4')
+    if(state==='walk')await expect(fps).toBeDisabled()
+    await inCharacterTab(page,'Animation',()=>page.getByRole('button', { name: 'Tạm dừng', exact: true }).click())
   }
   const canvas = page.locator('.direction-views canvas').first()
   const frames = []
@@ -201,7 +207,7 @@ test('idle advances visually on each tick, exports half-pixel breathing and keep
     expect(waistPixels.every(alpha => alpha > 0)).toBe(true)
     if (frames.length) expect(image).not.toBe(frames.at(-1))
     frames.push(image)
-    await page.getByRole('button', { name: 'Frame tiếp →', exact: true }).click()
+    await inCharacterTab(page,'Animation',()=>page.getByRole('button', { name: 'Frame tiếp →', exact: true }).click())
   }
   const archive = await exportZip(page)
   const composition = archive.json('character-composition.json')

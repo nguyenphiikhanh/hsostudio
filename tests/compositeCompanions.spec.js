@@ -1,3 +1,4 @@
+import {inCharacterTab} from './workspaceTabs.js'
 import{test,expect}from'@playwright/test'
 import fs from'node:fs/promises'
 import{unzipSync,strFromU8}from'fflate'
@@ -12,12 +13,13 @@ test('effect mounts and PetTool animate in Studio and the exported multi-piece P
  await expect(mount.locator('option')).toHaveCount(23);await expect(pet.locator('option')).toHaveCount(13)
  await expect(page.getByText('Các vật phẩm chưa hỗ trợ (3)',{exact:true})).toBeVisible()
  for(const d of data.mounts.filter(d=>d.rig?.kind)){
-  await mount.selectOption(d.id);await motion.selectOption('walk')
+  await inCharacterTab(page,'Trang bị',()=>mount.selectOption(d.id));await inCharacterTab(page,'Animation',()=>motion.selectOption('walk'))
+  await page.getByRole('tab',{name:'Trang bị',exact:true}).click()
   if(d.riderBinding?.status==='unverified') {
    await expect(mount.locator(`option[value="${d.id}"]`)).toContainText('ghế chưa xác minh')
    await expect(page.getByText('Ghế ngồi chưa xác minh.',{exact:false})).toBeVisible()
   }
-  await page.getByRole('button',{name:'Tạm dừng',exact:true}).click()
+  await inCharacterTab(page,'Animation',()=>page.getByRole('button',{name:'Tạm dừng',exact:true}).click())
   await expect(motion.locator('option[value="attack"]')).toHaveJSProperty('disabled',true)
   const canvases=page.locator('.direction-views canvas')
   await expect(canvases.first()).toHaveAttribute('data-rendered-mount',d.id)
@@ -25,7 +27,7 @@ test('effect mounts and PetTool animate in Studio and the exported multi-piece P
   // Sample each step: start/end can be the same pose after six ticks.
   let changed=false
   for(let i=0;i<8&&!changed;i++) {
-   await page.getByRole('button',{name:'Frame tiếp →',exact:true}).click()
+   await inCharacterTab(page,'Animation',()=>page.getByRole('button',{name:'Frame tiếp →',exact:true}).click())
    await page.evaluate(()=>new Promise(requestAnimationFrame))
    changed=await canvases.evaluateAll((cs,old)=>cs.some((c,i)=>c.toDataURL()!==old[i]),before)
   }
@@ -33,15 +35,15 @@ test('effect mounts and PetTool animate in Studio and the exported multi-piece P
   await page.locator('.direction-views').screenshot({path:`/tmp/hso-composite-${d.id}.png`})
   await expect(page.getByRole('alert')).toHaveCount(0)
  }
- await mount.selectOption('')
+ await inCharacterTab(page,'Trang bị',()=>mount.selectOption(''))
  for(const d of data.pets.filter(d=>d.rig?.kind)){
-  await pet.selectOption(d.id);await motion.selectOption('walk')
-  await page.getByRole('button',{name:'Tạm dừng',exact:true}).click()
-  await page.getByRole('button',{name:'Frame tiếp →',exact:true}).click()
+  await inCharacterTab(page,'Trang bị',()=>pet.selectOption(d.id));await inCharacterTab(page,'Animation',()=>motion.selectOption('walk'))
+  await inCharacterTab(page,'Animation',()=>page.getByRole('button',{name:'Tạm dừng',exact:true}).click())
+  await inCharacterTab(page,'Animation',()=>page.getByRole('button',{name:'Frame tiếp →',exact:true}).click())
   await expect(page.getByRole('alert')).toHaveCount(0)
   await page.locator('.direction-views').screenshot({path:`/tmp/hso-pet-tool-${d.id}.png`})
  }
- await mount.selectOption('effect-111');await pet.selectOption('21')
+ await inCharacterTab(page,'Trang bị',()=>mount.selectOption('effect-111'));await inCharacterTab(page,'Trang bị',()=>pet.selectOption('21'))
  await expect(page.getByText('Nguồn gốc có một tham chiếu frame lỗi',{exact:false})).toBeVisible()
  const poseDownload=page.waitForEvent('download');await page.getByRole('button',{name:'Xuất cho Phaser',exact:false}).click()
  const pose=unzipSync(await fs.readFile(await(await poseDownload).path()))

@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "dialect": "mysql",
+  "schemaSource": "hso/hsoodtest.sql",
+  "tables": {
+    "item3": [
+      "id",
+      "name",
+      "type",
+      "part",
+      "clazz",
+      "iconid",
+      "level",
+      "data",
+      "color"
+    ],
+    "item4": [
+      "id",
+      "icon",
+      "price",
+      "name",
+      "content",
+      "typepotion",
+      "moneytype",
+      "sell",
+      "value",
+      "canTrade"
+    ]
+  },
+  "evidence": [
+    "hso/src/main/java/core/Manager.java: load_database reads item3.part as byte, IDs as short, and adds templates to indexed lists",
+    "hso/src/main/java/client/MessageHandler.java: case -52 serves data/part_char/imgver/x{zoom}/{type}_{id}",
+    "hso/src/main/java/client/UseItem.java: use_item_mount maps item4 IDs to mount type/id_horse in Java",
+    "hso/src/main/java/client/Pet.java: get_pet maps item3 egg IDs to type/icon/nframe in Java; pet SQL table is not the appearance registry"
+  ],
+  "sourceHashes": {
+    "hso/hsoodtest.sql": "83117fe924456163e5318822968f016111bd937cf356e4ffadd84da9c50f3738",
+    "hso/src/main/java/core/Manager.java": "c2dfc1116c2b8476d3b0fc2c2e0bfc472efe93c0d8e697a840026bb44c21942f",
+    "hso/src/main/java/client/MessageHandler.java": "e6783eb05221daf2382b459260b6d46cba949ae7d2635a4492725278fca379ae",
+    "hso/src/main/java/client/UseItem.java": "96ad3d5fcb5d9fb76f0cffd22ae132b98fae46c4253cc213a0a4e52e5c28580b",
+    "hso/src/main/java/client/Pet.java": "e3e10ea089d80c42170c70307401a7d771842de2d683fd49bb79210f23dc7901"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "provenance": "official-client-4.0.3",
+  "jarSha256": "f023b34e0ba0a3dcf44249ed5f90b78f0427deee4668562b8e3a0e9e349b18c6",
+  "classes": {
+    "GameObjects/MainObject": "ad7b8c9bec4e9d72dc63c7842b4d9c4e7d09151144dca9399dd9c30b51071628",
+    "GameObjects/CharPartInfo": "7f301fecc311c92403fc0e0b55e932fa69a070205013d7577ba453882c4828ab",
+    "GameObjects/Player": "088af8515fb3bbfabe4dba52e852fc13b830fabb46133114c1607c5bde6c8330",
+    "com/silverknight/TemCanvas": "15669f09efc1d9a9661cedd903f5c77780851ee51354e47941e57bb39380f569"
+  },
+  "methods": [
+    "MainObject constructors A_Move",
+    "MainObject static ArrMount1 / resetMount",
+    "MainObject.updateActionPerson Action=1, no idHorse, no isPhiHanh",
+    "CharPartInfo.PART_OF_FRAME / paint",
+    "Player.update",
+    "TemCanvas.run"
+  ],
+  "tickMs": 40,
+  "bodyFrames": [
+    2,
+    2,
+    2,
+    0,
+    0,
+    3,
+    3,
+    3,
+    0,
+    0
+  ],
+  "clothingCropByBodyFrame": [
+    0,
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "rightMirror": {
+    "sourceDirection": 2,
+    "x": "-dx - cropWidth",
+    "anchorFrame": "bodyFrame"
+  },
+  "scope": "Walking on foot. Starting A_Move[0] is a repeatable preview phase; native f can persist across actions. Mount/flight/transform branches are excluded."
+}

@@ -44,7 +44,7 @@ Thứ tự trước/sau cơ thể theo `MainObject.paint`: Direction up luôn v�
 - Chọn vật phẩm thật ở **Vũ khí thường HSO** để thêm lớp vũ khí đã ánh xạ.
 - Chọn **Tấn công** và **kỹ năng #0**: tự chuyển sang frame client 25FPS, khóa FPS thủ công và ẩn điều khiển pose A/B.
 - Skill catalog client hiện có mapping body/WPS cho các slot 0–20. Preview effect chính áp dụng cho các nhóm đánh #1–#8, khống chế #17 và diện rộng #19–#20. Passive/buff không có chuỗi đánh vũ khí.
-- Preview đứng/đi vẫn giữ chu kỳ Studio hiện có; khi có vũ khí dùng mapping crop/anchor và mirror client để khớp rig. Nhịp thở là xử lý Studio, không khẳng định là nguyên bản.
+- Đi bộ đã dùng A_Move 10 tick ở 25 FPS và cùng mapping crop/anchor/mirror client cho nhân vật có hoặc không có vũ khí. Nhịp thở vẫn là xử lý Studio. Xem walk-verification.md.
 - WPS trong JAR này chỉ có x1. PNG đứng/đi ưu tiên x4 nguồn server; không tự tạo WPS HD.
 - Xuất tư thế giữ sprite thực tế đang xem (WPS hoặc vũ khí thường) và draw order.
 - Xuất thư viện part giữ clip body cơ bản theo client khi đang ở chế độ đó, 25FPS và provenance/hash. Thư viện vẫn chưa equip texture vũ khí/WPS; weapon được ghi vào omittedLayers. Không nhầm export tư thế với runtime trang bị vũ khí hoàn chỉnh.

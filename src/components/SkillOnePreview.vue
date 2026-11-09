@@ -40,7 +40,9 @@ onUnmounted(() => version++)
   <div class="skill-one-preview" data-testid="skill-one-preview">
     <p class="eyebrow">CHIÊU #1 · THÂN / VŨ KHÍ / HIỆU ỨNG GỐC</p>
     <canvas ref="canvas" class="checker" width="1360" height="960" style="width:100%;max-width:680px;height:auto" aria-label="Preview chiêu 1 và mục tiêu mẫu" :data-clazz="clazz" :data-tick="tick" :data-direction="direction" />
+    <details class="skill-provenance"><summary>Nguồn hiệu ứng và giới hạn preview</summary>
     <p class="muted">Khung viền là mục tiêu mẫu cao 40, cách {{ clazz &lt; 2 ? 40 : 100 }} đơn vị; không phải sprite quái. Bấm hướng bên dưới để đổi hướng. PNG hiệu ứng x4 từ server, WPS x1 từ client. Hạt ngẫu nhiên dùng seed cố định để có thể xem từng frame.</p>
     <p class="muted">Đã khôi phục hiệu ứng chính của bốn phái. Chưa đưa vào tia tụ lực trước đòn, bụi đá/rung màn hình và tương tác mặt nước; không mô phỏng sát thương, âm thanh hay cooldown. Hiệu ứng chỉ có trong preview; ZIP thư viện part xuất timeline cơ thể.</p>
+    </details>
   </div>
 </template>

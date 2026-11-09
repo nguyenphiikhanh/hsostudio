@@ -45,7 +45,9 @@ onUnmounted(() => version++)
   <div class="skill-preview" data-testid="skill-three-preview">
     <p class="eyebrow">CHIÊU #3 · THÂN / VŨ KHÍ / HIỆU ỨNG GỐC · {{ labels[clazz] }}</p>
     <canvas ref="canvas" class="checker" width="1360" height="960" style="width:100%;max-width:680px;height:auto" aria-label="Preview chiêu 3 và mục tiêu mẫu" :data-clazz="clazz" :data-tick="tick" :data-direction="direction" />
+    <details class="skill-provenance"><summary>Nguồn hiệu ứng và giới hạn preview</summary>
     <p class="muted">Hiệu ứng chính dùng sprite client HSO 4.0.3 đã đối chiếu; khung viền là mục tiêu mẫu, không phải sprite quái. Hướng hiện tại điều khiển cả nhân vật và mục tiêu.</p>
     <p class="muted">Preview tái hiện sprite chính theo nhịp kích hoạt. Mảnh vỡ ngẫu nhiên, hiệu ứng phụ, sát thương, âm thanh và cooldown chưa mô phỏng; ZIP thư viện part chỉ xuất timeline cơ thể.</p>
+    </details>
   </div>
 </template>

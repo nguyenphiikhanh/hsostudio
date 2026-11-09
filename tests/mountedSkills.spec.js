@@ -1,3 +1,4 @@
+import {inCharacterTab} from './workspaceTabs.js'
 import {test,expect} from '@playwright/test'
 import fs from 'node:fs/promises'
 import {unzipSync,strFromU8} from 'fflate'
@@ -12,22 +13,22 @@ test('offensive skills 1+ work while mounted, preserving source FX and exported 
  const weapon=page.getByLabel('Vũ khí thường HSO',{exact:true}),skill=page.getByLabel('Kỹ năng tấn công',{exact:true})
  await expect(mount).toBeVisible({timeout:30000})
  for(const [clazz,item,rig]of [[0,0,'1'],[1,5,'5'],[2,10,'10'],[3,15,'13']]){
-  await page.getByLabel('Phái nhân vật',{exact:true}).selectOption(String(clazz))
-  await weapon.selectOption(String(item));await mount.selectOption(rig);await motion.selectOption('attack')
-  await page.getByRole('button',{name:'Tạm dừng',exact:true}).click()
+  await inCharacterTab(page,'Trang bị',()=>page.getByLabel('Phái nhân vật',{exact:true}).selectOption(String(clazz)))
+  await inCharacterTab(page,'Trang bị',()=>weapon.selectOption(String(item)));await inCharacterTab(page,'Trang bị',()=>mount.selectOption(rig));await inCharacterTab(page,'Animation',()=>motion.selectOption('attack'))
+  await inCharacterTab(page,'Animation',()=>page.getByRole('button',{name:'Tạm dừng',exact:true}).click())
   for(const skillId of [1,2,3,4,5,6,7,8,17,19,20]){
-   await skill.selectOption(String(skillId))
+   await inCharacterTab(page,'Animation',()=>skill.selectOption(String(skillId)))
    await expect(page.getByTestId('client-weapon-animation')).toContainText(`#${skillId} `)
    await expect(page.locator('.direction-views canvas').first()).toHaveAttribute('data-rendered-mount',rig)
    if(skillId<=4){
     const canvas=page.getByLabel(`Preview chiêu ${skillId} và mục tiêu mẫu`,{exact:true})
     const trigger=clientSkillData(clazz,skillId).effectTick
-    for(let i=0;i<trigger;i++)await page.getByRole('button',{name:'Frame tiếp →',exact:true}).click()
+    for(let i=0;i<trigger;i++)await inCharacterTab(page,'Animation',()=>page.getByRole('button',{name:'Frame tiếp →',exact:true}).click())
     await expect(canvas).toHaveAttribute('data-effect-frame','0')
     await canvas.screenshot({path:`/tmp/hso-mounted-skill-${skillId}-class-${clazz}.png`})
    }else{
     await expect(page.getByTestId('mounted-body-only')).toBeVisible()
-    await page.getByRole('button',{name:'Frame tiếp →',exact:true}).click()
+    await inCharacterTab(page,'Animation',()=>page.getByRole('button',{name:'Frame tiếp →',exact:true}).click())
    }
    await expect(page.getByRole('alert')).toHaveCount(0)
   }
