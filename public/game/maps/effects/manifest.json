@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "jarSha256": "f023b34e0ba0a3dcf44249ed5f90b78f0427deee4668562b8e3a0e9e349b18c6",
+  "assets": {
+    "tilethac0": {
+      "image": "maps/effects/tilethac0.png",
+      "source": "KnightOnline_v403.jar!/x1/tilethac0.png",
+      "width": 24,
+      "height": 96,
+      "density": 1,
+      "sha256": "95a45b18345d39b7b65edf934383315628f29faa5788d7c9238ad85bd1e32172"
+    },
+    "tilethac1": {
+      "image": "maps/effects/tilethac1.png",
+      "source": "KnightOnline_v403.jar!/x1/tilethac1.png",
+      "width": 24,
+      "height": 96,
+      "density": 1,
+      "sha256": "293b20ec4a6331566f79e980cfed8f516e6f86edceb4f89aa076d5e7c560d60f"
+    },
+    "tilethac2": {
+      "image": "maps/effects/tilethac2.png",
+      "source": "KnightOnline_v403.jar!/x1/tilethac2.png",
+      "width": 24,
+      "height": 96,
+      "density": 1,
+      "sha256": "86b27fe03157f0a058eac3be0aec9a72a0b0f307ddfa5911296e2ffcc7458d30"
+    },
+    "tilethac3": {
+      "image": "maps/effects/tilethac3.png",
+      "source": "KnightOnline_v403.jar!/x1/tilethac3.png",
+      "width": 24,
+      "height": 96,
+      "density": 1,
+      "sha256": "d1d85c7147d3d70ed05a8c64475f86a74012ba061fc19fba0b6cc4545de98acb"
+    },
+    "tilethac4": {
+      "image": "maps/effects/tilethac4.png",
+      "source": "KnightOnline_v403.jar!/x1/tilethac4.png",
+      "width": 24,
+      "height": 96,
+      "density": 1,
+      "sha256": "2dced7b055526f0e162171b79436ab2c68a68f37e5fc0c4266c9abc769b3e00b"
+    },
+    "tilethac5": {
+      "image": "maps/effects/tilethac5.png",
+      "source": "KnightOnline_v403.jar!/x1/tilethac5.png",
+      "width": 24,
+      "height": 96,
+      "density": 1,
+      "sha256": "35e896607518727141578677184f2adeee43a98f1fc897de2cd8cd7ad8ec21c3"
+    },
+    "tilethac6": {
+      "image": "maps/effects/tilethac6.png",
+      "source": "KnightOnline_v403.jar!/x1/tilethac6.png",
+      "width": 24,
+      "height": 96,
+      "density": 1,
+      "sha256": "f0dac6e3cdbdd845480010dff0f9a8160d0877d2413e594f500e78a62da58854"
+    },
+    "tilethac7": {
+      "image": "maps/effects/tilethac7.png",
+      "source": "KnightOnline_v403.jar!/x1/tilethac7.png",
+      "width": 24,
+      "height": 96,
+      "density": 1,
+      "sha256": "c2f2f0ccab45cbd78154605c3e876b36be353c23c5ff77e228275a477b84ac39"
+    },
+    "tilethac8": {
+      "image": "maps/effects/tilethac8.png",
+      "source": "KnightOnline_v403.jar!/x1/tilethac8.png",
+      "width": 24,
+      "height": 96,
+      "density": 1,
+      "sha256": "33d4d8c3f5938e242308cc7a9a3fb35cf02305051edcdb963c1204106e060f1f"
+    },
+    "tilewater9": {
+      "image": "maps/effects/tilewater9.png",
+      "source": "KnightOnline_v403.jar!/x1/tilewater9.png",
+      "width": 24,
+      "height": 192,
+      "density": 1,
+      "sha256": "04f8fa2a59d5bb2c37e3a08e3c56c17fee9a1daaef5c30214d4db77b858ffc53"
+    },
+    "tilewater11": {
+      "image": "maps/effects/tilewater11.png",
+      "source": "KnightOnline_v403.jar!/x1/tilewater11.png",
+      "width": 48,
+      "height": 240,
+      "density": 1,
+      "sha256": "6d5756accc4896e71617cf9e448e0bd19a307c13e61704bf9489719c52f94f64"
+    },
+    "tilewater12": {
+      "image": "maps/effects/tilewater12.png",
+      "source": "KnightOnline_v403.jar!/x1/tilewater12.png",
+      "width": 48,
+      "height": 240,
+      "density": 1,
+      "sha256": "d79a04865718176d265672d79de12553b03b40b77a80d4b90a0578d1fee4c39b"
+    }
+  }
+}

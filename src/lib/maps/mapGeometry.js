@@ -1,3 +1,4 @@
+import {effectAssets} from './mapEffects.js'
 // Java 4.0.3 LoadMap.loadmap, Block_TileMap_Item, CRes.quickSort1.
 const newStand = {9:19,10:5,11:21,12:34,13:47,14:26,15:9,16:42}
 export function terrainType(tile, tileset) {
@@ -62,5 +63,5 @@ export function validateMap(map, templates) {
   return map
 }
 export function mapAssets(map, templates) {
-  return [...new Map([map.tileset.terrain,...map.objects.map(o=>templates[o.templateId].asset)].map(a=>[a.image,a])).values()]
+  return [...new Map([map.tileset.terrain,...effectAssets(map),...map.objects.map(o=>templates[o.templateId].asset)].map(a=>[a.image,a])).values()]
 }

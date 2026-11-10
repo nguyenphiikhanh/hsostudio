@@ -2,9 +2,18 @@
 import {ref,watch,onMounted,onUnmounted,onActivated,onDeactivated} from 'vue'
 import {drawMap} from '../lib/maps/mapCanvas.js'
 import {cellAt,hitObject,objectPlacement} from '../lib/maps/mapGeometry.js'
-const props=defineProps({data:Object,layers:Object,collision:Array,selectedCell:Object,selectedObject:Object,tool:{type:String,default:'pan'},editingDisabled:Boolean})
+const props=defineProps({data:Object,layers:Object,animation:Object,collision:Array,selectedCell:Object,selectedObject:Object,tool:{type:String,default:'pan'},editingDisabled:Boolean})
 const emit=defineEmits(['hover','select','edit-start','edit-move','edit-end','edit-cancel','undo','redo','delete-object','save-draft'])
 const canvas=ref(null),zoom=ref(1),pan=ref({x:0,y:0})
+let clock=0,lastTime=0,lastTick=-1,animationFrame=0
+function animate(time){
+ if(!active)return
+ if(lastTime&&props.data&&(props.animation?.water||props.animation?.waterfall)&&!document.hidden)clock+=Math.min(time-lastTime,100)
+ lastTime=time
+ const tick=Math.floor(clock/40)
+ if(tick!==lastTick&&(props.animation?.water||props.animation?.waterfall)){lastTick=tick;schedule()}
+ animationFrame=requestAnimationFrame(animate)
+}
 let width=0,height=0,observer,frame=0,active=true,fitPending=true,drag=null,space=false
 function schedule(){if(!active||frame)return;frame=requestAnimationFrame(()=>{frame=0;draw()})}
 function fit(){
@@ -21,7 +30,7 @@ function draw(){
  if(!props.data){canvas.value.dataset.renderedMapId='';return}
  const {map,templates,images}=props.data,s=map.tileSize
  ctx.save();ctx.translate(pan.value.x,pan.value.y);ctx.scale(zoom.value,zoom.value)
- drawMap(ctx,map,templates,images,props.layers)
+ drawMap(ctx,map,templates,images,{...props.layers,...props.animation,tick:Math.floor(clock/40)})
  ctx.save();ctx.beginPath();ctx.rect(0,0,map.width*s,map.height*s);ctx.clip()
  if(props.layers.collision){for(let i=0;i<props.collision.length;i++)if(props.collision[i]){ctx.fillStyle=props.collision[i]===1?'#ff655b66':'#54b8ef66';ctx.fillRect(i%map.width*s,Math.floor(i/map.width)*s,s,s)}}
  if(props.layers.grid){ctx.strokeStyle='#dbead84d';ctx.lineWidth=1/zoom.value;ctx.beginPath();for(let x=0;x<=map.width;x++){ctx.moveTo(x*s,0);ctx.lineTo(x*s,map.height*s)}for(let y=0;y<=map.height;y++){ctx.moveTo(0,y*s);ctx.lineTo(map.width*s,y*s)}ctx.stroke()}
@@ -32,6 +41,7 @@ function draw(){
  if(props.layers.objects&&props.selectedObject){const p=objectPlacement(props.selectedObject,templates[props.selectedObject.templateId],s);ctx.strokeStyle='#eeb0f2';ctx.lineWidth=2/zoom.value;ctx.strokeRect(p.x,p.y,p.width,p.height)}
  ctx.restore();ctx.restore()
  canvas.value.dataset.renderedMapId=String(map.id)
+ canvas.value.dataset.animationTick=String(Math.floor(clock/40))
 }
 function point(event){const rect=canvas.value.getBoundingClientRect();return{x:event.clientX-rect.left,y:event.clientY-rect.top}}
 function world(p){return{x:(p.x-pan.value.x)/zoom.value,y:(p.y-pan.value.y)/zoom.value}}
@@ -88,11 +98,12 @@ function key(event){
 watch(()=>props.data?`${props.data.map.id}:${props.data.map.width}:${props.data.map.height}`:'',()=>{cancelDrag();fitPending=true;if(props.data)fit();schedule()})
 watch(()=>props.data,schedule)
 watch(()=>props.tool,cancelDrag)
+watch(()=>props.animation,schedule,{deep:true})
 watch([()=>props.layers,()=>props.selectedCell,()=>props.selectedObject],schedule,{deep:true})
-onMounted(()=>{observer=new ResizeObserver(resize);observer.observe(canvas.value);resize()})
-onActivated(()=>{active=true;resize()})
-onDeactivated(()=>{cancelDrag();space=false;active=false;cancelAnimationFrame(frame);frame=0})
-onUnmounted(()=>{observer?.disconnect();cancelAnimationFrame(frame)})
+onMounted(()=>{animationFrame=requestAnimationFrame(animate);observer=new ResizeObserver(resize);observer.observe(canvas.value);resize()})
+onActivated(()=>{active=true;lastTime=0;cancelAnimationFrame(animationFrame);animationFrame=requestAnimationFrame(animate);resize()})
+onDeactivated(()=>{cancelDrag();space=false;active=false;lastTime=0;cancelAnimationFrame(animationFrame);cancelAnimationFrame(frame);frame=0})
+onUnmounted(()=>{active=false;observer?.disconnect();cancelAnimationFrame(animationFrame);cancelAnimationFrame(frame)})
 </script>
 <template>
  <div class="map-canvas-panel">

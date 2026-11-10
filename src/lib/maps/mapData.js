@@ -1,3 +1,4 @@
+import {attachEffects} from './mapEffects.js'
 import {gameUrl} from '../catalog'
 import {loadImage} from '../export'
 import {mapAssets,validateMap} from './mapGeometry.js'
@@ -23,7 +24,8 @@ export async function loadMap(id) {
   if(!Number.isInteger(Number(id))||Number(id)<0)throw new Error('Map ID không hợp lệ')
   if(!tableRequest)tableRequest=read('maps/objects.json').catch(e=>{tableRequest=null;throw e})
   if(!requests.has(String(id)))requests.set(String(id),read(`maps/${Number(id)}.json`).catch(e=>{requests.delete(String(id));throw e}))
-  const [map,table]=await Promise.all([requests.get(String(id)),tableRequest])
+  const [source,table,effects]=await Promise.all([requests.get(String(id)),tableRequest,read('maps/effects/manifest.json')])
+  const map=attachEffects(source,effects)
   const templates=Object.fromEntries(table.templates.map(t=>[t.id,t]))
   validateMap(map,templates)
   const assets=mapAssets(map,templates)

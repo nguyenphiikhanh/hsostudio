@@ -50,7 +50,7 @@ Bản đã sửa có hậu tố `-edited`, `editInfo.modified=true`, `rendering.
 2. **Spawn/cổng/NPC:** chỉnh tọa độ/loại/đích, liên kết các map và giải mã đúng vị trí NPC. Hiện vẫn là metadata/marker nguồn, chưa sửa hoặc phát actor/AI.
 3. **Thiết kế map mới:** tạo ID, resize, nhiều tileset/layer, import PNG/tileset/vật thể mới và chỉnh template/pivot/Block. Hiện chỉ dùng layout và tài nguyên đã đóng gói.
 4. **Công cụ vùng:** chọn rectangle, copy/paste tile/object nhóm, brush nhiều ô, autotile, layer tùy chọn, điều khiển z-order/tách nhóm và preview ghost trước khi đặt.
-5. **Preview gameplay/hiệu ứng:** play-test nhân vật/collision/pathfinding, animation nước/thác, background/parallax và các hiệu ứng chưa giải mã.
+5. **Preview gameplay/hiệu ứng:** play-test nhân vật/collision/pathfinding, background/parallax và các hiệu ứng chưa giải mã.
 6. **Project persistence:** autosave/IndexedDB, project workspace/file-system, khôi phục lịch sử sau reload, migration nháp khi source thay đổi. Hiện lưu bằng file JSON tải/nhập thủ công.
 
 Chưa có encoder xuất ngược `mapnew` cho HSO/server hoặc format Tiled. Đây không phải yêu cầu của ZIP Phaser hiện tại.
@@ -60,3 +60,7 @@ Chưa có encoder xuất ngược `mapnew` cho HSO/server hoặc format Tiled. �
 Unit kiểm tra gộp stroke, fill, hủy, no-op, Undo/Redo/nhánh mới, reset, source bất biến, collision object chồng nhau, import sai nguồn/cấu trúc và giới hạn lịch sử. Thứ tự vật thể dùng phiên bản iterative của thuật toán CRes gốc, kiểm tra cùng fixture Java cho cả91 map để tránh tràn stack với nháp lớn.
 
 Chrome kiểm tra tương tác bút/tẩy/fill/eyedrop, Space pan không vẽ nhầm, hủy bằng Esc, phím tắt Undo/Redo, đặt/kéo/nhân bản/xóa, nhớ nháp khi đổi map/menu, reload+nhập file, từ chối sai source/thiếu PNG, PNG đã sửa và ZIP Phaser thật với layout/collision mới. Không phụ thuộc scripts, hso, Java hoặc Python khi chạy/build.
+
+## Nước và thác
+
+Hai checkbox Nước động / Thác động cạnh các lớp hiển thị chạy theo nhịp client 4.0.3, mặc định tắt. Thử map #66 Thác reo hoặc #51 Cổng thiên đàng. Lựa chọn áp dụng cho JSON/ZIP Phaser; PNG chụp khung tick 0. Runtime có `setAnimations({water:true,waterfall:true})`. Không đổi collision hoặc dữ liệu gốc.

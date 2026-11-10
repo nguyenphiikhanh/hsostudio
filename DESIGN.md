@@ -80,3 +80,5 @@ Walking on foot uses client 4.0.3 A_Move/ArrMount1 body frames 2,2,2,0,0,3,3,3,0
 ## Copy MySQL for H5 content
 
 Part design SQL targets the new H5 MySQL content contract, not legacy item3/item4. Replace all SQL download actions with readonly, selectable SQL text and a Copy button with keyboard fallback. Provide separate one-time schema SQL and per-design registration SQL. Always show relative server PNG destinations. PNG/JSON ZIPs remain, but contain no .sql files. IDs use the H5 integer range and UTF-8 names; HSO templates remain provenance/stat sources only. Label schema/runtime requirements explicitly: registering content does not implement the future H5 server. Keep native data immutable.
+
+Map animation controls: two desktop checkboxes, Nước động and Thác động, adjacent to map layer controls. Default off preserves static inspection. A visible quality note identifies original x1 waterfall/water fallbacks. Exported Phaser runtime retains these settings and exposes independent toggles; source layouts remain unchanged.

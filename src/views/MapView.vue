@@ -11,6 +11,7 @@ const viewer=useMapViewer()
 const {index,query,selectedId,loading,error,selectedCell,selectedObject,hoverCell,layers,options,reload}=viewer
 const editor=useMapEditor(viewer.data,{selectedCell,selectedObject,hoverCell})
 const {data,collision,tool,brush,templateId,template,templateReady,assetLoading,assetError,stats,modified,history,active,count}=editor
+const animation=ref({water:false,waterfall:false})
 const draftInput=ref(null)
 const currentEntry=computed(()=>index.value?.maps.find(m=>String(m.id)===selectedId.value))
 const busy=ref(false),notice=ref(''),density=ref(1),editError=ref('')
@@ -18,7 +19,7 @@ watch(selectedId,()=>{editError.value=''})
 function select(result){selectedCell.value=result.cell;selectedObject.value=result.object}
 function act(action){if(busy.value||!data.value)return;try{editError.value='';action()}catch(e){editor.cancel();editError.value=e.message}}
 function setTool(value){act(()=>{editor.selectTool(value);if(['paint','erase','fill','eyedrop'].includes(value))layers.value.terrain=true;if(['block','unblock'].includes(value))layers.value.collision=true;if(['place','move'].includes(value))layers.value.objects=true})}
-async function run(action){if(!data.value||busy.value)return;editor.end();busy.value=true;editError.value='';notice.value='';try{await action(data.value);notice.value='Đã xuất map đang chọn.'}catch(e){editError.value=e.message}finally{busy.value=false}}
+async function run(action){if(!data.value||busy.value)return;editor.end();busy.value=true;editError.value='';notice.value='';try{await action({...data.value,animation:{...animation.value}});notice.value='Đã xuất map đang chọn.'}catch(e){editError.value=e.message}finally{busy.value=false}}
 function saveDraft(){return run(()=>{const doc=editor.draft();download(`${exportFileName(`map-${doc.base.mapId}-${data.value.map.name}`)}.map-draft.json`,new Blob([JSON.stringify(doc,null,2)],{type:'application/json'}))})}
 async function importDraft(event){
  const file=event.target.files?.[0];event.target.value=''
@@ -41,8 +42,9 @@ async function importDraft(event){
   <div class="map-workspace">
    <section class="map-viewer" aria-label="Map viewport">
     <fieldset class="map-layer-controls"><legend>Lớp hiển thị</legend><label v-for="[key,label] in [['terrain','Nền'],['objects','Vật thể'],['grid','Lưới 24×24'],['collision','Vùng chặn'],['warps','Cổng chuyển map'],['spawns','Điểm spawn quái']]" :key="key" class="inline"><input v-model="layers[key]" type="checkbox" :aria-label="`Lớp map ${label}`">{{label}}</label></fieldset>
+    <fieldset class="map-layer-controls"><legend>Animation gốc HSO</legend><label class="inline"><input v-model="animation.water" type="checkbox" aria-label="Nước động">Nước động</label><label class="inline"><input v-model="animation.waterfall" type="checkbox" aria-label="Thác động">Thác động</label><span class="muted">Thác dùng PNG gốc x1; nước tileset 9/11/12 dùng fallback x1. Tắt để xem nền tĩnh.</span></fieldset>
     <p v-if="loading" class="muted" role="status">Đang tải layout và ảnh map…</p>
-    <MapCanvas :data="data" :layers="layers" :collision="collision" :selected-cell="selectedCell" :selected-object="selectedObject" @hover="hoverCell=$event" @select="select" :tool="tool" :editing-disabled="busy||loading||(tool==='place'&&!templateReady)" @edit-start="act(()=>editor.start($event))" @edit-move="act(()=>editor.move($event))" @edit-end="editor.end" @edit-cancel="editor.cancel" @undo="act(editor.undo)" @redo="act(editor.redo)" @delete-object="act(editor.remove)" @save-draft="saveDraft"/>
+    <MapCanvas :data="data" :layers="layers" :animation="animation" :collision="collision" :selected-cell="selectedCell" :selected-object="selectedObject" @hover="hoverCell=$event" @select="select" :tool="tool" :editing-disabled="busy||loading||(tool==='place'&&!templateReady)" @edit-start="act(()=>editor.start($event))" @edit-move="act(()=>editor.move($event))" @edit-end="editor.end" @edit-cancel="editor.cancel" @undo="act(editor.undo)" @redo="act(editor.redo)" @delete-object="act(editor.remove)" @save-draft="saveDraft"/>
     <p class="map-coordinates" data-testid="map-coordinate">{{hoverCell?`World ${hoverCell.x}, ${hoverCell.y} · Ô ${hoverCell.col}, ${hoverCell.row} · Tile ${hoverCell.tile} · Collision ${hoverCell.type}`:'Trỏ vào map để xem tọa độ world/ô.'}}</p>
     <p class="muted">Overlay: đỏ = chặn, xanh = chậm (type2 client); xanh lá = cổng, cam = điểm spawn. Chưa gồm vùng chặn NPC/logic server; marker không phải sprite quái gốc. PNG tải về luôn gồm nền + vật thể, không kèm overlay.</p>
    </section>

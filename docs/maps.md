@@ -13,9 +13,9 @@ Menu **Map** mở `/maps`, độc lập Character Lab và Thư viện dữ liệ
 
 ## Render gốc và giới hạn
 
-Ô24×24 dùng logical units x1, ảnh terrain và vật thể lấy từ PNG x4. Nền tĩnh dùng nhánh LoadMap.paint ở gameTick%14==7: mọi tile được đọc trực tiếp từ ảnh terrain, không rơi vào nhánh nước động. Không sử dụng ảnh nước placeholder để giả lập. Vật thể dùng tọa độ ô×24 +dx/dy, đầy đủ ảnh gốc và thứ tự CRes.quickSort1, kể cả cách xử lý các vật thể cùng hàng.
+Ô24×24 dùng logical units x1, ảnh terrain và vật thể lấy từ PNG x4. Khi tắt animation, nền tĩnh dùng nhánh LoadMap.paint ở gameTick%14==7: mọi tile được đọc trực tiếp từ ảnh terrain, không rơi vào nhánh nước động. Không sử dụng ảnh nước placeholder để giả lập. Vật thể dùng tọa độ ô×24 +dx/dy, đầy đủ ảnh gốc và thứ tự CRes.quickSort1, kể cả cách xử lý các vật thể cùng hàng.
 
-Chưa hỗ trợ nước/thác động, background/parallax, actor NPC/quái, hiệu ứng đuôi payload và collision runtime. Những phần chưa dựng giữ raw/checksum và được báo trong inspector/JSON. Không khẳng định toàn bộ cảnh/gameplay đã được khôi phục. Layout đã sửa được ghi rõ studio-draft và có hậu tố edited khi xuất; raw/checksum trong source chỉ tham chiếu bản gốc.
+Có hai tùy chọn **Nước động** và **Thác động**, mặc định tắt. Nước đổi nguồn ảnh theo gameTick%14 và cột chẵn/lẻ; thác có 4 frame, mỗi frame 160ms. Thác dùng PNG x1 gốc; nước tileset 9/11/12 dùng fallback x1 vì bản x4 không đủ crop. Chưa hỗ trợ background/parallax, actor NPC/quái, hiệu ứng đuôi payload và collision runtime. Những phần chưa dựng giữ raw/checksum và được báo trong inspector/JSON. Không khẳng định toàn bộ cảnh/gameplay đã được khôi phục. Layout đã sửa được ghi rõ studio-draft và có hậu tố edited khi xuất; raw/checksum trong source chỉ tham chiếu bản gốc.
 
 Dữ liệu vật thể dùng307 template từ msg_1 server gửi lúc Login_Ok; không dùng table_item mặc định khác phiên bản trong JAR. Nguồn đối chiếu và cấu trúc dữ liệu được ghi bên dưới.
 
@@ -38,7 +38,7 @@ map.container.setPosition(0, 0);
 // map.destroy();
 ```
 
-Runtime chỉ dựng nền/vật thể tĩnh. Trả `terrainLayer` và `objectLayer` để game chủ động đặt actor/depth. Không tự bật physics, pathfinding, AI hay chuyển map khi chạm cổng. Dữ liệu để game xử lý các phần đó vẫn nằm trong map.json.
+Runtime dựng nền/vật thể và animation nước/thác theo lựa chọn lúc xuất. Gọi `map.setAnimations({water:true,waterfall:true})` để bật, dùng false để tắt từng lớp. `map.destroy()` hoặc Scene shutdown dọn listener update. PNG xuất là khung cố định tick 0 với các lớp animation đã chọn, không phải ảnh động. Trả `terrainLayer` và `objectLayer` để game chủ động đặt actor/depth. Không tự bật physics, pathfinding, AI hay chuyển map khi chạm cổng. Dữ liệu để game xử lý các phần đó vẫn nằm trong map.json.
 
 ## Kiểm chứng và phụ thuộc
 
@@ -55,3 +55,5 @@ Các công cụ khảo sát/nhập và harness Java chỉ chạy tạm bên ngo�
 - Có14 tileset được sử dụng. Các template vật thể mà91 layout tham chiếu đều có PNG x4; bảng msg_1 có307 template, khác bảng table_item mặc định trong JAR.
 - Map0 Ngôi Làng Nhỏ là58×30 ô (1392×720 logical),77 vật thể. Kết quả dựng nền/vật thể tĩnh không chứng minh đã khôi phục toàn bộ NPC, hiệu ứng nước hoặc gameplay.
 - Chỉ chép nguồn/metadata đã đối chiếu vào public/game/maps. Chạy/build/runtime không cần HSO, JAR, Java, Python hoặc công cụ chuẩn bị dữ liệu.
+
+Chi tiết đối chiếu, mapping và giới hạn: [map-effects-verification.md](map-effects-verification.md).

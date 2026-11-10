@@ -296,7 +296,7 @@ location / { try_files $uri $uri/ /index.html; }
 
 ### Map
 
-Menu **Map** (`/maps`) có91 layout gốc và33 mục chỉ có tên(chưa mở). Xem nền/vật thể x4, pan/zoom, lưới, collision và marker cổng/spawn; click xem dữ liệu nguồn. Xuất PNG x1/x4, JSON hoặc ZIP dựng cảnh tĩnh trong Phaser. Map gốc được giữ chỉ đọc; editor cho sửa tile/vật thể, Undo/Redo và tải/nhập nháp JSON. Xuất PNG/JSON/Phaser dùng layout đang xem. Chưa có nước/thác động, background/parallax, NPC/quái actor. Dữ liệu đã đóng gói, không cần hso/JAR/Python khi chạy. Xem [hướng dẫn Map](docs/maps.md).
+Menu **Map** (`/maps`) có91 layout gốc và33 mục chỉ có tên(chưa mở). Xem nền/vật thể x4, pan/zoom, lưới, collision và marker cổng/spawn; click xem dữ liệu nguồn. Xuất PNG x1/x4, JSON hoặc ZIP dựng cảnh trong Phaser, có tùy chọn Nước động/Thác động theo client gốc. Map gốc được giữ chỉ đọc; editor cho sửa tile/vật thể, Undo/Redo và tải/nhập nháp JSON. Xuất PNG/JSON/Phaser dùng layout đang xem. Thác dùng PNG x1 gốc; nước tileset 9/11/12 fallback x1. Chưa có background/parallax, NPC/quái actor. Dữ liệu đã đóng gói, không cần hso/JAR/Python khi chạy. Xem [hướng dẫn Map](docs/maps.md).
 
 ### Chỉnh map trên bản nháp
 
