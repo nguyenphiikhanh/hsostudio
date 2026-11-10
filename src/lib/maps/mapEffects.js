@@ -1,7 +1,8 @@
+import {terrainRect} from './mapGeometry.js'
 // HSO 4.0.3 LoadMap.paint/loadmap and ThacNuoc.update/paint.
 const waterRanges={9:[19,26],10:[4,25],11:[20,37],12:[35,44]}
 const falls={9:[27,31,0],10:[18,19,5],11:[38,39,7]}
-export function waterRange(map){return map.tileset.id<9?[map.tileset.info[0],map.tileset.info[1]-1]:(waterRanges[map.tileset.id]??[0,-1])}
+export function waterRange(map){if(map.tileset.kind==='imported-png')return [0,-1];return map.tileset.id<9?[map.tileset.info[0],map.tileset.info[1]-1]:(waterRanges[map.tileset.id]??[0,-1])}
 export function waterfallId(map,tile){const r=falls[map.tileset.id];return r&&tile>=r[0]&&tile<=r[1]?tile-r[0]+r[2]:null}
 export function attachEffects(map,manifest){
  const [start,end]=waterRange(map),native=map.tileset.water
@@ -22,7 +23,7 @@ export function terrainFrame(map,tile,col,tick=7,animate=false){
   if((x+24)*water.density>water.width||(y+24)*water.density>water.height)throw new Error('Crop nước vượt PNG gốc')
   return {asset:water,x,y}
  }
- return {asset:map.tileset.terrain,x:0,y:(tile-1)*24}
+ return {asset:map.tileset.terrain,...terrainRect(map.tileset,tile)}
 }
 export function waterfallFrames(map,tick=0,animate=false){
  const result=[]

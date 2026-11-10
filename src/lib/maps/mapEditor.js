@@ -1,8 +1,8 @@
-import {validateMap,terrainType} from './mapGeometry.js'
+import {validateMap,terrainType,terrainCount} from './mapGeometry.js'
 const clone=value=>structuredClone(value)
 const editable=map=>({tiles:[...map.tiles],objects:map.objects.map(o=>({...o})),collisionOverrides:{...(map.collisionOverrides??{})}})
 const sameObject=(a,b)=>a.index===b.index&&a.templateId===b.templateId&&a.cellX===b.cellX&&a.cellY===b.cellY
-export function tileCount(map){return Math.floor(map.tileset.terrain.height/(map.tileSize*map.tileset.terrain.density))}
+export function tileCount(map){return terrainCount(map.tileset)}
 export function lineCells(from,to){
  if(!from||!to)return to?[to]:[]
  let x=from.col,y=from.row,dx=Math.abs(to.col-x),dy=-Math.abs(to.row-y),sx=x<to.col?1:-1,sy=y<to.row?1:-1,err=dx+dy
@@ -99,7 +99,7 @@ export function createMapEditor(source,templates,objectTableSha256,historyLimit=
   undo(){if(before)return cancel();const c=past.pop();if(!c)return false;apply(c,false);future.push(c);return true},
   redo(){if(before)return false;const c=future.pop();if(!c)return false;apply(c,true);past.push(c);return true},
   reset(){return once('Khôi phục gốc',()=>replace(editable(base)))},
-  draft(){return{schema:'hso-map-draft',version:1,base:{...signature},edits:editable(map)}},
+  draft(){return{...(base.tileset.kind==='imported-png'?{importedBase:clone(base)}:{}),schema:'hso-map-draft',version:1,base:{...signature},edits:editable(map)}},
   parseDraft(doc){
    if(doc?.schema!=='hso-map-draft'||doc.version!==1)throw new Error('Đây không phải nháp Map Studio v1; dùng file từ “Tải nháp JSON”')
    for(const [key,value]of Object.entries(signature))if(doc.base?.[key]!==value)throw new Error(`Nháp không khớp map/nguồn đang mở (${key}); hãy chọn đúng map #${doc.base?.mapId ?? '?'}`)

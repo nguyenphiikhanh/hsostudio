@@ -301,3 +301,7 @@ Menu **Map** (`/maps`) có91 layout gốc và33 mục chỉ có tên(chưa mở)
 ### Chỉnh map trên bản nháp
 
 Tại `/maps`, chọn Bút tile/Tẩy tile/Tô vùng/Hút tile hoặc Đặt/Kéo vật thể. Mỗi nét/kéo là một bước Undo; Space/chuột giữa để pan khi đang dùng công cụ sửa. Nhân bản đặt cùng ô và tự chọn bản sao để kéo tiếp. Nháp giữ riêng theo map trong tab; bấm **Tải nháp JSON** trước khi reload, rồi **Nhập nháp JSON** vào đúng map để khôi phục. Map gốc/PNG nguồn không bị sửa. File PNG/JSON/ZIP đã chỉnh có hậu tố `edited` và provenance rõ ràng. [Cách dùng và các nhiệm vụ còn thiếu](docs/map-editor.md).
+
+### Import a large map PNG
+
+In Map, open **Nhập PNG lớn → tạo map nháp**, select a PNG and density x1–x4, inspect the 24-logical-unit grid and explicitly allow transparent right/bottom padding if needed. Studio deduplicates identical RGBA tiles and creates a separate editable map with a grid atlas; collision starts walkable and must be configured manually. Download the self-contained draft JSON to keep the atlas and edits, then reopen it through **Mở lại nháp PNG đã tải** after reload. Phaser ZIP supports the imported atlas/density without touching native maps. Limits and workflow: [Map editor](docs/map-editor.md#nhập-một-png-lớn-thành-map).

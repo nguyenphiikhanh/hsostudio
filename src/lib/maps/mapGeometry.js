@@ -2,10 +2,16 @@ import {effectAssets} from './mapEffects.js'
 // Java 4.0.3 LoadMap.loadmap, Block_TileMap_Item, CRes.quickSort1.
 const newStand = {9:19,10:5,11:21,12:34,13:47,14:26,15:9,16:42}
 export function terrainType(tile, tileset) {
+  if(tileset.kind==='imported-png')return tile===0?1:0
   const stand = tileset.id >= 9 ? newStand[tileset.id] : tileset.info[1]
   if (tile === 0 || tile >= stand) return 1
   return tileset.id < 9 && tile >= tileset.info[0] ? 2 : 0
 }
+export function terrainRect(tileset,tile){
+  const columns=tileset.terrain.columns??1,index=tile-1
+  return {x:index%columns*24,y:Math.floor(index/columns)*24}
+}
+export function terrainCount(tileset){const a=tileset.terrain;return a.tileCount??Math.floor(a.height/(24*a.density))}
 export function objectPlacement(object, template, tileSize = 24) {
   return { x:object.cellX*tileSize+template.dx, y:object.cellY*tileSize+template.dy,
     width:template.asset.width/template.asset.density, height:template.asset.height/template.asset.density }
@@ -54,8 +60,10 @@ export function validateMap(map, templates) {
   const overrides=map.collisionOverrides??{}
   if(!overrides||typeof overrides!=='object'||Array.isArray(overrides)||Object.entries(overrides).some(([index,type])=>!/^\d+$/.test(index)||String(Number(index))!==index||!Number.isSafeInteger(Number(index))||Number(index)>=map.width*map.height||![0,1].includes(type)))throw new Error('Vùng chặn chỉnh sửa không hợp lệ')
   const a=map.tileset?.terrain
-  if(!a || a.density!==4 || a.width<96 || !a.image || !Array.isArray(map.tileset.info) || (map.tileset.id>=9 && !newStand[map.tileset.id]))throw new Error('Thiếu tileset/metadata được hỗ trợ')
-  for(const t of map.tiles)if(!Number.isInteger(t)||t<0||t*96>a.height)throw new Error('Tile nằm ngoài PNG')
+  const custom=map.tileset?.kind==='imported-png',size=24*a?.density
+  if(!a || !(custom?[1,2,3,4].includes(a.density):a.density===4) || a.width<size || !a.image || !Array.isArray(map.tileset.info) || (!custom&&map.tileset.id>=9&&!newStand[map.tileset.id]))throw new Error('Thiếu tileset/metadata được hỗ trợ')
+  if(custom&&(!Number.isInteger(a.columns)||a.columns<1||a.width!==a.columns*size||!Number.isInteger(a.tileCount)||a.tileCount<1||a.tileCount>a.columns*Math.floor(a.height/size)||a.height%size!==0||a.width*a.height>16000000))throw new Error('Atlas PNG nhập không hợp lệ')
+  for(const t of map.tiles)if(!Number.isInteger(t)||t<0||t>terrainCount(map.tileset))throw new Error('Tile nằm ngoài PNG')
   for(const o of map.objects) {
     const d=templates[o.templateId]
     if(!d?.asset?.image || ![o.cellX,o.cellY,d.dx,d.dy].every(Number.isInteger) || !Array.isArray(d.blocks) || d.blocks.some(p=>p.length!==2||!p.every(Number.isInteger)))throw new Error(`Thiếu template vật thể #${o.templateId}`)

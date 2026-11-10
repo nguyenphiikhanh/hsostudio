@@ -1,7 +1,7 @@
 import initSqlJs from 'sql.js'
 import wasmUrl from 'sql.js/dist/sql-wasm.wasm?url'
 
-export const gameUrl = (path) => `${import.meta.env.BASE_URL}game/${path.split('/').map(encodeURIComponent).join('/')}`
+export const gameUrl = (path) => path.startsWith('data:image/png;base64,') ? path : `${import.meta.env.BASE_URL}game/${path.split('/').map(encodeURIComponent).join('/')}`
 let database
 export async function loadCatalog() {
   const [SQL, response] = await Promise.all([

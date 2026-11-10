@@ -2,7 +2,7 @@ import {effectAssets,terrainFrame,waterfallFrames} from './mapEffects.js'
 import {sortObjects,objectPlacement,collisionGrid,cellAt,validateMap} from './mapGeometry.js'
 export function preloadMap(scene,baseUrl,map,prefix=`hso-map-${map.id}`) {
   const base=baseUrl.replace(/\/$/,'')
-  scene.load.spritesheet(`${prefix}-terrain`,`${base}/${map.tileset.terrain.image}`,{frameWidth:map.tileSize*4,frameHeight:map.tileSize*4})
+  scene.load.spritesheet(`${prefix}-terrain`,`${base}/${map.tileset.terrain.image}`,{frameWidth:map.tileSize*map.tileset.terrain.density,frameHeight:map.tileSize*map.tileset.terrain.density})
   for(const a of effectAssets(map))scene.load.spritesheet(`${prefix}-effect-${a.sha256}`,`${base}/${a.image}`,{frameWidth:24*a.density,frameHeight:24*a.density})
   const loaded=new Set()
   for(const o of map.objects){const d=map.objectTemplates[o.templateId];if(loaded.has(d.image))continue;loaded.add(d.image);scene.load.image(`${prefix}-object-${d.image}`,`${base}/${d.asset.image}`)}
@@ -13,7 +13,7 @@ export function createMap(scene,map,prefix=`hso-map-${map.id}`) {
   const effectLayer=scene.add.container(0,0)
   container.add([terrainLayer,effectLayer,objectLayer])
   const tiles=[]
-  for(let i=0;i<map.tiles.length;i++)if(map.tiles[i]>0)tiles.push(terrainLayer.add(scene.add.image(i%map.width*s,Math.floor(i/map.width)*s,`${prefix}-terrain`,map.tiles[i]-1).setOrigin(0,0).setScale(1/4)).last)
+  for(let i=0;i<map.tiles.length;i++)if(map.tiles[i]>0)tiles.push(terrainLayer.add(scene.add.image(i%map.width*s,Math.floor(i/map.width)*s,`${prefix}-terrain`,map.tiles[i]-1).setOrigin(0,0).setScale(1/map.tileset.terrain.density)).last)
   for(const o of sortObjects(map.objects)){const d=map.objectTemplates[o.templateId],p=objectPlacement(o,d,s);objectLayer.add(scene.add.image(p.x,p.y,`${prefix}-object-${d.image}`).setOrigin(0,0).setScale(1/d.asset.density).setDepth(o.cellY*s))}
   objectLayer.sort('depth')
   const waterfallSprites=waterfallFrames(map).map(f=>({f,sprite:effectLayer.add(scene.add.image(f.x,f.y,`${prefix}-effect-${f.asset.sha256}`,0).setOrigin(0,0).setScale(1/f.asset.density)).last}))

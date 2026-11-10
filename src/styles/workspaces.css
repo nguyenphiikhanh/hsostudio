@@ -588,3 +588,14 @@
 .sql-copy-panel button{font-size:11px;padding:7px 9px}.design-sql-view{margin-top:12px;min-width:0}.design-sql-view summary{cursor:pointer;font-size:12px;color:#b9e581}.design-sql-view .path{overflow-wrap:anywhere}
 
 .design-schema{font-size:11px;margin:12px 0}.design-schema summary{cursor:pointer;color:#a6afa8}
+
+.map-png-import { grid-column:1/-1; padding:14px; border:1px solid var(--border,#3b4039); border-radius:4px; margin-bottom:14px; }
+.map-png-import summary { cursor:pointer; color:var(--text,#e8ece5); }
+.map-png-fields { display:flex; flex-wrap:wrap; gap:16px; margin:12px 0; }
+.map-png-fields .field { flex:1; min-width:180px; }
+.map-png-preview { display:block; max-width:100%; height:auto; margin:12px 0; border:1px solid #52594b; }
+.map-page>.map-png-import { grid-row:2; margin:0; }
+.map-page>.map-picker { grid-row:3; }
+.map-page>.map-export-tools { grid-row:4; }
+.map-page>.map-editor-panel,.map-page .map-viewer,.map-page .map-inspector { grid-row:5; }
+@media(max-width:1279px) { .map-page .map-inspector { grid-row:6; } }

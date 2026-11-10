@@ -64,3 +64,15 @@ Chrome kiểm tra tương tác bút/tẩy/fill/eyedrop, Space pan không vẽ nh
 ## Nước và thác
 
 Hai checkbox Nước động / Thác động cạnh các lớp hiển thị chạy theo nhịp client 4.0.3, mặc định tắt. Thử map #66 Thác reo hoặc #51 Cổng thiên đàng. Lựa chọn áp dụng cho JSON/ZIP Phaser; PNG chụp khung tick 0. Runtime có `setAnimations({water:true,waterfall:true})`. Không đổi collision hoặc dữ liệu gốc.
+
+## Nhập một PNG lớn thành map
+
+Mở **Nhập PNG lớn → tạo map nháp** phía trên bộ chọn map. Chọn PNG, tên map và mật độ x1–x4. Ô luôn là 24×24 logical: ở x4, mỗi ô ảnh là 96×96px. Preview hiển thị lưới và kích thước map trước khi tạo. Nếu hai chiều không chia hết cho ô, cần bật **Thêm viền trong suốt** để thêm mép phải/dưới; không cắt hay co kéo ảnh.
+
+Studio cắt theo lưới và gộp các ô chỉ khi toàn bộ pixel RGBA giống hệt. Tileset được đóng thành atlas dạng lưới với `columns`, `tileCount`, `density`; các tile ID trong layout là 1-based, ID0 là ô trống bị chặn. Map nhập có `tileset.kind: imported-png`, ID âm riêng trong Studio, không phải ID server HSO. Đây là schema Studio dùng với runtime Phaser đi kèm, không phải file Tiled TMX/JSON.
+
+Map mới xuất hiện trong bộ chọn và giữ riêng trong tab. Bút tile, tô vùng, hút tile, Undo/Redo, vùng chặn và vật thể gốc có thể dùng như editor hiện tại. Palette phân trang khi nhiều hơn128 tile. Mặc định các ô ảnh đi được; Studio không suy luận nhà/cây/nước/collision/NPC/cổng từ nội dung PNG. Animation HSO bị khóa cho map nhập để tránh dùng nhầm mapping gốc.
+
+**Tải nháp JSON** chứa atlas PNG dạng data URI, nguồn map và chỉnh sửa. Sau reload, dùng **Mở lại nháp PNG đã tải** trong khối nhập PNG để mở lại; nút Nhập nháp JSON trong editor áp dụng chỉnh sửa vào map đang chọn có nguồn khớp. Không cần tải lại PNG ban đầu. PNG/JSON/ZIP Phaser xuất layout hiện tại; ZIP gồm atlas, metadata density và runtime đọc atlas nhiều cột. JSON thường có data URI cho atlas local; ZIP được khuyến nghị khi chuyển sang game.
+
+Giới hạn: file PNG/atlas16MB, ảnh/atlas16triệu pixel, map127×127 ô, nháp tự chứa32MB. Chia map lớn hơn thành khu vực nhỏ. Không upload lên server, không ghi MySQL và không thay map gốc. API/map SQL cần được tích hợp ở giai đoạn server riêng.
