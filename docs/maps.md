@@ -17,7 +17,7 @@ Menu **Map** mở `/maps`, độc lập Character Lab và Thư viện dữ liệ
 
 Chưa hỗ trợ nước/thác động, background/parallax, actor NPC/quái, hiệu ứng đuôi payload và collision runtime. Những phần chưa dựng giữ raw/checksum và được báo trong inspector/JSON. Không khẳng định toàn bộ cảnh/gameplay đã được khôi phục. Layout đã sửa được ghi rõ studio-draft và có hậu tố edited khi xuất; raw/checksum trong source chỉ tham chiếu bản gốc.
 
-Dữ liệu vật thể dùng307 template từ msg_1 server gửi lúc Login_Ok; không dùng table_item mặc định khác phiên bản trong JAR. Đối chiếu nguồn: [báo cáo khảo sát](map-feasibility.md).
+Dữ liệu vật thể dùng307 template từ msg_1 server gửi lúc Login_Ok; không dùng table_item mặc định khác phiên bản trong JAR. Nguồn đối chiếu và cấu trúc dữ liệu được ghi bên dưới.
 
 ## Xuất
 
@@ -45,3 +45,13 @@ Runtime chỉ dựng nền/vật thể tĩnh. Trả `terrainLayer` và `objectLa
 public/game/maps/index.json liệt kê124 mục; mỗi map ready có JSON riêng. objects.json lưu bảng template và raw msg_1. Unit kiểm tra checksum raw/PNG, tile/object/warp đúng packet, collision, bounds, và so thứ tự vật thể của cả91 map với fixture chạy từ các hàm Java gốc. Chrome kiểm tra mở tất cả91 layout, pan/zoom/layers/inspector, trạng thái khi đổi menu, PNG x4/JSON/ZIP, lỗi HTML/retry và runtime Phaser thật.
 
 Các công cụ khảo sát/nhập và harness Java chỉ chạy tạm bên ngoài project khi phát triển. Build/runtime/test map chỉ dùng JSON, PNG và module JS đã đóng gói; không cần thư mục scripts, Java hay Python.
+
+
+## Nguồn đối chiếu và cấu trúc dữ liệu
+
+- Server: `Map.send_map_data`, `data/mapnew`, `msg_1`.
+- Client Java4.0.3: `ReadMessenge.Login_Ok/changeMap`, `LoadMap.loadmap/load_ItemMap/paint/Block_TileMap_Item`, `ItemMap.paint`, `ObjectData.getImagePartItemMap`, `CRes.quickSort1`.
+- SQLite có91 bản ghi maps và124 tên map_data;91 layout mapnew đã đóng gói,33 mục còn lại chỉ có tên. Payload lưới có đúng3+width×height byte; ô24×24 logical.
+- Có14 tileset được sử dụng. Các template vật thể mà91 layout tham chiếu đều có PNG x4; bảng msg_1 có307 template, khác bảng table_item mặc định trong JAR.
+- Map0 Ngôi Làng Nhỏ là58×30 ô (1392×720 logical),77 vật thể. Kết quả dựng nền/vật thể tĩnh không chứng minh đã khôi phục toàn bộ NPC, hiệu ứng nước hoặc gameplay.
+- Chỉ chép nguồn/metadata đã đối chiếu vào public/game/maps. Chạy/build/runtime không cần HSO, JAR, Java, Python hoặc công cụ chuẩn bị dữ liệu.

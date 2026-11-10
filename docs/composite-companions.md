@@ -29,7 +29,7 @@ Vật phẩm x99/vĩnh viễn dùng chung ngoại hình khi mapping đã đượ
 
 ## Renderer và nguồn
 
-Nguồn là JAR4.0.3 đã khóa checksum và dữ liệu server đã đối chiếu trong [báo cáo kiểm tra](unsupported-companions-audit.md). Không có script nhập dữ liệu trong project; runtime không đọc HSO/JAR/Python. Dữ liệu giải mã nằm trong `src/data/companions.json`.
+Nguồn là JAR4.0.3 đã khóa checksum và dữ liệu server; mapping, rig và fixture đối chiếu được ghi trong tài liệu này. Không có script nhập dữ liệu trong project; runtime không đọc HSO/JAR/Python. Dữ liệu giải mã nằm trong `src/data/companions.json`.
 
 - `rig.kind=effect-mount`: SmallImage rects, PartFrame x/y/image/flip/top, sequence và metadata raw từ packet type113; typeMount/saddle từ msg_26. `id_horse` không phải prefix hình: request type113 được xác nhận qua MainObject.getEffMatNa và ReadMessenge.loadImageDataCharPart.
 - FrameHorse: hướng down0/up7/side14 +Fhorse +phase×21. Idle Fhorse theo A_Stand12tick; đi theo horseMove `[2,2,2,3,3,4,4,4]`, thân body3. Phase hiệu ứng tăng mỗi5tick. Điểm ngồi và xMount/yMount lấy đúng bảng MountTemplate, với clock fMount riêng.
@@ -84,3 +84,11 @@ Hai rig vẫn giữ nguyên PNG, frame, offset và tọa độ người cưỡi 
 Đã chạy lại các nhánh đứng/đi của `MainObject.updateActionPerson`, `updateMount`, `getFrameHorse` trích từ JAR trong harness tạm thời. Mỗi rig được đối chiếu360tick ×4hướng ×2trạng thái: frame thú, bodyFrame, dyMount và xMount/yMount khớp renderer Studio. Vì vậy chưa có căn cứ đổi nhịp/offset để chữa lệch yên. Kiểm chứng này giữ trong fixture JSON; project không cần Java khi chạy test hoặc build.
 
 Cả hai có `riderBinding.status = "unverified"`, `policy = "preserve-original"`, lý do và nguồn tọa độ trong companion.json của ZIP. Bộ chọn ghi “ghế chưa xác minh”, preview có cảnh báo. Trạng thái part `ready` chỉ nói ảnh/clip có thể render; **không xác nhận ghế ngồi của hai rig này đã đúng**. Để gỡ cảnh báo cần nguồn bổ sung xác nhận binding người cưỡi (client/data tương ứng hoặc bản ghi client gốc để đối chiếu), không chỉ một crop/frame hợp lệ.
+
+
+## Ba vật phẩm còn thiếu mapping
+
+- **Trâu rừng item4 #271 / x99 #272:** chưa có case xác minh trong `UseItem.use_item_mount`. Ảnh candidate icon/x4/10714.png chỉ16×16px, không đủ chứng minh là sheet thú; không tự gán type14 theo thứ tự ID.
+- **Mô tô item4 #283:** chưa có handler xác nhận dùng cùng ngoại hình với item279. Tên trùng không phải bằng chứng mapping.
+
+Các mục này vẫn cần client/packet hoặc mapping phù hợp trước khi bật preview/equip/export; không tạo art thay thế. Bảng alias, raw packet và checksum hiện nằm trong `src/data/companions.json`.

@@ -83,7 +83,7 @@ Click **Chơi thử H5** after selecting character parts. The arena opens in an 
 
 Character standing/walking textures use the Studio preview mapping and the selected HSO parts. Ground and slime art are code-drawn prototype assets; they do not claim to decode the original HSO map or monster formats. No dedicated weapon/attack sprite animation yet: a visible melee ring indicates attack range. This is a desktop prototype; touch controls and multiplayer are outside this milestone.
 
-Decisions and scope: `docs/h5-plan.md`. Browser tests cover movement, diagonal speed, pause, combat victory, obstacle collision, defeat, restart and closing/reopening the game.
+Browser tests cover movement, diagonal speed, pause, combat victory, obstacle collision, defeat, restart and closing/reopening the game.
 
 
 ## Export a reusable part library for Phaser
@@ -181,7 +181,7 @@ character.setState('attack', 'left'); // one shot; call again to replay
 character.setState('idle', 'left');   // return to breathing
 ```
 
-Cooldown data remains separate from animation timing. `performDur` is zero throughout the original packets; no original FPS is inferred from it. The H5 arena's sample combat is unchanged by this experiment. See [the evidence and binary format](docs/attack-investigation.md).
+Cooldown data remains separate from animation timing. `performDur` is zero throughout the original packets; no original FPS is inferred from it. The H5 arena's sample combat is unchanged by this experiment. See [the evidence and binary format](docs/client403-verification.md#dữ-liệu-kỹ-năng-từ-server).
 
 ## HSO weapon preview: verified against client 4.0.3
 

@@ -134,3 +134,50 @@ Các sprite x4 và kích thước frame lấy từ `arrInfoEff`; SHA-256 lưu tr
 | #20 | 120 / 121 / 123 / 122 | `83,68,30,31,40` / `33,18,51` / `23,24` / `21,59` |
 
 Preview dùng trigger tick trong catalog client, sprite frame tuần tự và fixture mục tiêu tĩnh. Các tia trong nhánh không có FrameImage là hình minh họa cố định; đường bay nhiều mục tiêu, số lượng/hướng ngẫu nhiên, hiệu ứng trạng thái phụ, sát thương, âm thanh và cooldown không được tái hiện. Slot passive/buff không bật renderer đánh.
+
+
+## Bộ chọn ngoại hình và biến thể
+
+Mỗi phái có24 ngoại hình vũ khí thường, tương ứng141 template vật phẩm. Bộ chọn chính gom theo `(phái hiện tại, part)`; bộ chọn biến thể giữ nguyên toàn bộ ID/tên/cấp/màu. Không gộp hoặc xóa vật phẩm trong catalog, không thêm part24 vì dump không có item thường tương ứng.
+
+Preview mặc định cho chọn mọi cấp. Checkbox “Áp dụng điều kiện trang bị” bật lại kiểm tra cấp của server; khi bật và vật phẩm đang chọn không đủ điều kiện, Studio bỏ lựa chọn và lớp vũ khí. Việc bỏ giới hạn cấp trong preview không thay quy tắc game. Đổi phái xóa lựa chọn cũ, ánh xạ ảnh/animation vẫn theo phái hiện tại.
+
+9 vật phẩm thời trang vẫn chọn được để đối chiếu ở chế độ preview. Chúng chưa có renderer được xác minh; lựa chọn này báo rõ chưa thay đổi ảnh trên nhân vật và giữ vũ khí thường. Không dùng icon hoặc part+41 để giả làm sheet thường. Hệ thống hiện **chưa đầy đủ renderer thời trang**.
+
+Kiểm thử Chrome duyệt96 ngoại hình của bốn phái tại cấp1, chọn biến thể, đối chiếu9 món thời trang, kiểm tra bật/tắt điều kiện và WPS. Kiểm thử unit xác nhận564 template thường được giữ đủ trong96 nhóm.
+
+## Dữ liệu kỹ năng từ server
+
+### Bằng chứng từ server
+
+- `hso/src/main/java/core/Manager.java`: nạp bốn file `data/msg/msg_29_chienbinh`, `msg_29_satthu`, `msg_29_phapsu`, `msg_29_xathu`.
+- `hso/src/main/java/client/Player.java`, `load_skill()`: chọn packet theo clazz 0–3 và đọc cấu trúc bên dưới. Thư mục Java `client/` ở đây là code server quản lý người chơi/session, không phải renderer game.
+- `hso/src/main/java/core/Service.java`, `send_skill()`: gửi nguyên packet theo phái bằng message 29.
+- `hso/src/main/java/map/MapService.java`, `use_skill()`: đọc skill ID, yêu cầu `wear[0]` có vũ khí, kiểm tra level/MP/cooldown và tính sát thương. Cooldown dùng `System.currentTimeMillis()`, với giá trị delay điều chỉnh `delay * 199 / 200`.
+- `fire_mob()` gửi message 9 gồm người đánh, skill ID, mục tiêu, sát thương và HP. Đây không phải bảng thứ tự sprite.
+
+Catalog đóng gói sẵn chứa **21 kỹ năng × 4 phái = 84**, đã kiểm tra hết byte, ID duy nhất liên tục và SHA-256 packet. Dữ liệu được lưu trong cùng SQLite và xuất trong `combat.json`; không tải JSON sidecar riêng.
+
+| clazz | Phái | item3.type vũ khí | Số item | Skill 0 | delay cấp đầu | typePaint | subEff | performDur |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | Chiến binh | 8 | 141 | Trọng kiếm | 1000 | 0 | -1 | 0 |
+| 1 | Sát thủ | 9 | 141 | Đoản kiếm | 1000 | 0 | -1 | 0 |
+| 2 | Pháp sư | 11 | 141 | Gậy tự vệ | 1000 | 0 | -1 | 0 |
+| 3 | Xạ thủ | 10 | 141 | Bắn thường | 1000 | 0 | -1 | 0 |
+
+Tên kỹ năng và tất cả cấp kỹ năng lấy từ packet, không suy ra bằng tên vật phẩm. `performDur` bằng 0 trong cả 84 kỹ năng. `typePaint` 0/1 và `subEff` được giữ nguyên; chưa tìm thấy code giải nghĩa chúng thành một chuỗi crop/ảnh hiệu ứng. Không coi `subEff` là ID file PNG. Delay là cooldown, không phải thời lượng animation hay thời điểm hit.
+
+### Cấu trúc packet được đối chiếu
+
+Theo thứ tự đọc của `Player.load_skill()` (big endian):
+
+- byte: số kỹ năng.
+- Mỗi kỹ năng: byte id, byte icon, Java modified UTF name, byte type, short range, Java modified UTF detail, byte typeBuff, byte subEff, byte số cấp.
+- Mỗi cấp: short mpLost, short LvRe, int delay, int timeBuff, byte per_Sub_Eff, short time_Sub_Eff, short plus_Hp, short plus_Mp; byte số option; mỗi option có unsigned byte id và int param; byte nTarget; short range_lan.
+- Sau các cấp: short performDur và byte typePaint.
+
+Parser không lấy thứ tự record làm skill ID: nó sắp theo id để khớp `skills[skill.id]`. Không bỏ qua byte dư hoặc chấp nhận packet bị cắt.
+
+### Chế độ thử pose
+
+Khi chưa dùng renderer vũ khí/clip client đã xác minh, Studio vẫn có chuỗi thử pose A/B và anchor A/B từ crop gốc. Chuỗi này giữ nhãn `experimental: true`, `provenance: studio-trial`; chỉnh pose không tự biến nó thành animation HSO đã xác minh. Không suy FPS, thời điểm hit hay liên kết PNG từ cooldown, subEff hoặc tên file. Runtime phát đòn thử một lần rồi giữ pose cuối; `setState('idle')` quay về đứng. Các mục client/body/WPS đã xác minh được mô tả ở các phần phía trên.
