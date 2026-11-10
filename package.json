@@ -10,7 +10,8 @@
     "test:e2e": "playwright test",
     "test:poses": "node --test tests/characterPose.test.js",
     "test:x4": "node --test tests/x4.test.js",
-    "test:attack": "node --test tests/attackTrial.test.js"
+    "test:attack": "node --test tests/attackTrial.test.js",
+    "test:mysql": "node tests/h5Mysql.integration.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.4",

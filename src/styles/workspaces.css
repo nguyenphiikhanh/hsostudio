@@ -583,3 +583,8 @@
 .design-create {width:100%;font-size:12px}.design-drafts h3 {font-size:13px;margin:16px 0 8px}
 .design-draft {border-top:1px solid #383e39;padding-top:12px;margin-top:12px;overflow-wrap:anywhere}.design-draft>strong {font-size:12px}
 .design-draft pre {max-height:180px;overflow:auto;font:10px/1.6 monospace;background:#17191b;padding:8px;white-space:pre-wrap;overflow-wrap:anywhere}
+
+.sql-copy-panel textarea{font:10px/1.6 monospace;max-width:100%;min-width:0;resize:vertical;background:#17191b;color:#e8ece5}
+.sql-copy-panel button{font-size:11px;padding:7px 9px}.design-sql-view{margin-top:12px;min-width:0}.design-sql-view summary{cursor:pointer;font-size:12px;color:#b9e581}.design-sql-view .path{overflow-wrap:anywhere}
+
+.design-schema{font-size:11px;margin:12px 0}.design-schema summary{cursor:pointer;color:#a6afa8}

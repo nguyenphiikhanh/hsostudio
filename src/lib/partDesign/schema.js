@@ -1,6 +1,6 @@
 import { compilePart } from '../library/partSchema.js'
 import { validateCompanion } from '../companionPose.js'
-import { serverIntegration } from './mysql.js'
+import { serverIntegration, H5_ID_MAX } from './mysql.js'
 const clone = value => JSON.parse(JSON.stringify(value))
 const canonical = value => JSON.stringify(value, function(_key,v){return v && typeof v==='object' && !Array.isArray(v)?Object.fromEntries(Object.keys(v).sort().map(k=>[k,v[k]])):v})
 const body = slot => slot==='pants'||slot==='shirt'
@@ -11,11 +11,11 @@ export function textureDensity(asset,width,height) {
   return density
 }
 export function validateIdentity(template,id,label) {
-  const max=body(template.slot)||template.slot==='weapon'?127:32767
+  const max=H5_ID_MAX
   if(!Number.isInteger(id)||id<0||id>max)throw new Error(`ID thiết kế phải là số nguyên 0–${max}`)
   if(typeof label!=='string'||!label.trim()||[...label].length>255||/[\u0000-\u001f]/.test(label))throw new Error('Tên thiết kế cần 1–255 ký tự và không chứa ký tự điều khiển')
 }
-export function makeDesign(template,{id,label,item,resources,reference=false}) {
+export function makeDesign(template,{id,label,item,resources,itemId,reference=false}) {
   if(reference){if(!/^[a-zA-Z0-9_-]+$/.test(String(id)))throw new Error('ID nguồn không hợp lệ')}else validateIdentity(template,id,label)
   if(!resources.sheet)throw new Error('Thiếu PNG chính')
   const slot=template.slot,definition=clone(template.definition)
@@ -40,14 +40,15 @@ export function makeDesign(template,{id,label,item,resources,reference=false}) {
   let serverItem=null
   if(item){
     const row=clone(item.row)
-    if(!Number.isInteger(row.id)||row.id<0||row.id>32767)throw new Error('ID vật phẩm HSO phải trong 0–32767 (Java short)')
-    if(!reference){row.name=label.trim();if(body(slot)||slot==='weapon')row.part=id}
-    if(typeof row.name==='string'&&[...row.name].some(c=>c.codePointAt(0)>0xffff))throw new Error('Tên có ký tự 4-byte (ví dụ emoji); schema MySQL HSO gốc dùng utf8, cần tên tương thích utf8 3-byte')
     serverItem={table:item.table,sourceId:item.sourceId??item.row.id,row}
   }
-  return {schema:'hso-part-design',version:1,mode:reference?'source-reference':'draft',slot,id,label:label.trim(),provenance:reference?template.layer.provenance:'custom-design',
+  const requestedItemId=itemId??(!reference?item?.row.id:undefined)
+  if(requestedItemId!==undefined&&(!Number.isInteger(requestedItemId)||requestedItemId<0||requestedItemId>H5_ID_MAX))throw new Error('ID vật phẩm H5 phải trong 0–2147483647')
+  const sourceRow=serverItem?.row
+  const h5Item=requestedItemId===undefined?null:{id:requestedItemId,label:label.trim(),requirements:sourceRow?{clazz:sourceRow.clazz??null,level:sourceRow.level??null}:{},stats:{format:'hso-template-options-v1',options:sourceRow?.data?JSON.parse(sourceRow.data):[]},source:serverItem?clone(serverItem):{kind:'custom-design',noGameplayStats:true}}
+  return {schema:'hso-part-design' ,version:1,mode:reference?'source-reference':'draft',slot,id,label:label.trim(),provenance:reference?template.layer.provenance:'custom-design',
     template:{key:template.key,id:template.id,clazz:template.clazz??null,assets:clone(template.assets)},coordinateUnits:'x1',
-    resources:clone(resources),definition,serverItem,serverIntegration:serverIntegration(slot),
+    resources:clone(resources),definition,serverItem,h5Item,serverIntegration:serverIntegration(slot),
     preview:{layout:'inherited-template',weaponAttack:slot==='weapon'?(resources.splash?'custom-wps':'hidden-until-wps-uploaded'):null}}
 }
 export function designLayer(template,document,images) {

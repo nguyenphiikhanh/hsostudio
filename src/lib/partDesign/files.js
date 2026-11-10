@@ -1,6 +1,6 @@
 import { gameUrl } from '../catalog'
 import { download, downloadZip } from '../export'
-import { designSQL } from './mysql.js'
+import { h5Content } from './mysql.js'
 import { textureDensity } from './schema.js'
 const signature=[137,80,78,71,13,10,26,10]
 export const sha256 = async bytes => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('')
@@ -27,13 +27,15 @@ export async function readSourcePNG(asset) {
 }
 export async function exportDesign(document,files,format='zip') {
   const stem=`${document.slot}-${document.id}`
+  if(!['json','zip'].includes(format))throw new Error('SQL chỉ hiển thị để sao chép trong Studio, không tải file')
   if(format==='json')return download(`${stem}.design.json`,document)
-  if(format==='sql')return download(`${stem}.mysql.sql`,designSQL(document),'text/plain;charset=utf-8')
-  const entries={'design.json':document,'item.mysql.sql':designSQL(document),
-    'README.md':`# ${document.label}\n\n${document.mode==='draft'?'Thiết kế nháp của người dùng; rig/frame kế thừa mẫu.':'Tham chiếu tài nguyên gốc.'}\n\nĐơn vị frame/anchor: x1. PNG có density riêng. design.json giữ định nghĩa và SHA-256 PNG. Để mở lại trong Studio: nhập JSON nháp rồi chọn lại các PNG có checksum khớp.\n\nSQL chỉ INSERT template vào bảng ${document.serverItem?.table??'(không có vật phẩm mẫu)'} của MySQL HSO, không chứa PNG/rig. Không có lệnh ghi đè dữ liệu. Không import SQL vào catalog.sqlite của Studio. Kiểm tra ID trên database đích trước khi dùng. ID gợi ý chỉ biết catalog đóng gói, không biết database đang chạy.\n\nCần làm tiếp để dùng trong HSO:\n${document.serverIntegration.remaining.map(s=>'- '+s).join('\n')}\n\nManager dùng list theo index; ID vật phẩm phải liên tục và thứ tự nạp phải khớp ID. PNG/JSON này không phải packet -52 và không được tự động chép vào server/client. SQL không thêm mapping thú/pet trong Java. Thiết kế mới chỉ preview trong Studio cho tới khi tích hợp nguồn game.\n`}
+  const content=h5Content(document)
+  const entries={'design.json':document,'h5-content.json':content,
+    'README.md':`# ${document.label}\n\nGói PNG/JSON; SQL chỉ hiển thị để sao chép trong Studio, không có file SQL trong ZIP.\n\nChạy SQL khởi tạo MySQL H5 một lần. Chép thư mục assets/ vào asset root của server, giữ nguyên đường dẫn bên trong. Sau đó sao chép SQL đăng ký part trong Studio và chạy trong database H5.\n\nĐường dẫn PNG:\n${content.assets.map(a=>'- '+a.path).join('\n')}\n\nSQL chỉ ghi h5_* tables, không sửa HSO item3/item4. Cùng ID đã có sẽ báo lỗi, không ghi đè. Chạy lại cần ID mới hoặc migration riêng. Server H5 cần đọc contract v1, phục vụ PNG, cache theo content_revision và triển khai các renderer đã khai báo; đăng ký dữ liệu không tự tạo server/gameplay. Không tự cấp vật phẩm vào túi người chơi.\n\nMở lại nháp: nhập design.json và các PNG sheet/splash tương ứng (checksum phải khớp).\n`}
+
   for(const key of Object.keys(document.resources)){
     if(!files[key])throw new Error('Thiếu PNG trong gói thiết kế: '+key)
-    entries[`${key}.png`]=files[key]
+    entries[`assets/${content.assets.find(a=>a.role===key).path}`]=files[key]
   }
   return downloadZip(stem+'-design',entries)
 }

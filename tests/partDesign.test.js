@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import {readFile} from 'node:fs/promises'
 import initSqlJs from 'sql.js'
 import {textureDensity,makeDesign,designLayer,validateRestoredDesign} from '../src/lib/partDesign/schema.js'
-import {designSQL,sqlValue} from '../src/lib/partDesign/mysql.js'
+import {designSQL,sqlValue,h5Content} from '../src/lib/partDesign/mysql.js'
 import {resolvePose} from '../src/lib/characterPose.js'
 
 const SQL=await initSqlJs(),db=new SQL.Database(await readFile(new URL('../public/game/catalog.sqlite',import.meta.url)))
@@ -26,18 +26,24 @@ test('every garment template clones geometry without mutating native data, prese
  }
  assert.throws(()=>textureDensity({width:292,height:172,density:4},291,172),/giữ bố cục/)
 })
-test('MySQL uses exact native columns and preserves item stats; malicious names stay UTF-8 hex data',()=>{
- const row=query('SELECT * FROM item3 WHERE id=0')[0],t=template(rows[0]),name="Áo'; DROP TABLE item3; -- \\ thử"
- const d=makeDesign(t,{id:122,label:name,item:{table:'item3',sourceId:0,row:{...row,id:4792}},resources:{sheet:meta(t.assets.sheet)}})
- assert.equal(d.serverItem.row.data,row.data);assert.equal(d.serverItem.row.part,122)
- const sql=designSQL(d)
- assert.ok(sql.includes('INSERT INTO `item3` (`id`, `name`, `type`, `part`, `clazz`, `iconid`, `level`, `data`, `color`)'))
- assert.ok(sql.includes(Buffer.from(name).toString('hex')));assert.ok(!sql.includes('DROP TABLE'))
- assert.throws(()=>makeDesign(t,{id:122,label:'Áo 😀',item:{table:'item3',row:{...row,id:4792}},resources:{sheet:meta(t.assets.sheet)}}),/3-byte/)
+test('H5 MySQL registration preserves source metadata, stores full content and never writes legacy tables',()=>{
+ const row=query('SELECT * FROM item3 WHERE id=0')[0],t=template(rows[0]),name="Áo'; DROP TABLE item3; -- \\ 😀"
+ const d=makeDesign(t,{id:9000,label:name,item:{table:'item3',sourceId:0,row},itemId:100000,resources:{sheet:meta(t.assets.sheet)}})
+ assert.deepEqual(d.serverItem.row,row)
+ const content=h5Content(d),sql=designSQL(d)
+ assert.equal(content.item.id,100000);assert.deepEqual(content.item.stats.options,JSON.parse(row.data))
+ assert.deepEqual(content.part.definition.frames,t.definition.frames)
+ assert.equal(content.part.animation.walk.fps,25);assert.equal(content.part.rigId,'humanoid-part-v1')
+ assert.ok(content.assets[0].path.startsWith('parts/'+t.slot+'/9000/x4/'))
+ assert.equal(content.part.definition.image,content.assets[0].path)
+ assert.ok(sql.includes('CALL h5_register_part_v1('))
+ assert.ok(sql.includes(Buffer.from(JSON.stringify(content)).toString('hex')));assert.ok(!sql.includes('DROP TABLE'))
+ assert.ok(!sql.includes('INSERT INTO `item3`'))
  assert.equal(sqlValue(null),'NULL');assert.throws(()=>sqlValue(Infinity))
- assert.throws(()=>makeDesign(t,{id:128,label:'X',resources:{sheet:meta(t.assets.sheet)}}),/0–127/)
- assert.throws(()=>makeDesign(t,{id:122,label:'X',item:{table:'item3',row:{...row,id:32768}},resources:{sheet:meta(t.assets.sheet)}}),/0–32767/)
- assert.ok(designSQL({...d,serverItem:null}).includes('No INSERT generated'))
+ assert.equal(makeDesign(t,{id:2147483647,label:'X',resources:{sheet:meta(t.assets.sheet)}}).id,2147483647)
+ assert.throws(()=>makeDesign(t,{id:2147483648,label:'X',resources:{sheet:meta(t.assets.sheet)}}),/2147483647/)
+ assert.throws(()=>makeDesign(t,{id:9000,label:'X',itemId:2147483648,resources:{sheet:meta(t.assets.sheet)}}),/2147483647/)
+ assert.equal(h5Content({...d,h5Item:null}).item,null)
  const changed=structuredClone(d);changed.definition.frames[0].sx++
  assert.throws(()=>validateRestoredDesign(changed,t),/đổi frame/)
 })

@@ -30,9 +30,9 @@ Tab controls support Left/Right, Home and End. Long contextual panels scroll ind
 
 ## Upload/export part designs
 
-Character Lab → Trang bị → **Thiết kế part · PNG / JSON / MySQL** supports pants, shirts, ordinary weapons, mounts and pets. Download original sheets and metadata, repaint with the same logical layout at x1–x4, upload and preview a separate design draft. Weapon standing/walking sheets and attack WPS are separate uploads. Download individual PNG/JSON/MySQL or a ZIP; import draft JSON plus matching PNGs to restore.
+Character Lab → Trang bị → **Thiết kế part · PNG / JSON / MySQL** supports pants, shirts, ordinary weapons, mounts and pets. Download original sheets and metadata, repaint with the same logical layout at x1–x4, upload and preview a separate design draft. Weapon standing/walking sheets and attack WPS are separate uploads. Download PNG/JSON or a ZIP; view/copy MySQL SQL directly in Studio (no SQL download). Import draft JSON plus matching PNGs to restore.
 
-MySQL export creates native item3/item4 templates only. PNG/frame/rig data lives outside MySQL; new resource packets/client lookup and hard-coded mount/pet Java mappings still need integration. Studio does not modify source data or run SQL. See [part designs](docs/part-designs.md) for the workflow, limits and integration scope.
+SQL targets the new H5 MySQL content contract: h5_* tables store part/rig/animation/item metadata and versioned PNG paths. Run the one-time setup SQL, copy the ZIP assets/ directory to the server asset root, then copy/run the part registration SQL. Studio does not run SQL or modify original data. The future H5 backend must implement the contract; this is not a legacy HSO item3/item4 export. See [part designs](docs/part-designs.md) for the workflow, limits and integration scope.
 
 ## Workflows
 
