@@ -1,5 +1,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, onActivated, onDeactivated, ref, watch, nextTick } from 'vue'
+import FrameAssetInspector from './FrameAssetInspector.vue'
+import { inspectedEffect } from '../lib/frameAssets'
 import AttackControls from './AttackControls.vue'
 import SkillOnePreview from './SkillOnePreview.vue'
 import SkillTwoPreview from './SkillTwoPreview.vue'
@@ -56,6 +58,16 @@ const attackPhase = computed(() => trial.value.frames[(hasCompanion.value && !ha
 const walkPhase = computed(()=>clientWalkPhase(tick.value))
 const baseAttackOptions = computed(() => nativeWalk.value ? {clientWalk:true,clientBodyFrame:walkPhase.value.clientBodyFrame} : clientVerified.value ? { clientAttack: true, clientBodyFrame: nativePhase.value.bodyFrame, clientWeaponFrame: nativePhase.value.weaponFrame } : motion.value === 'attack' ? { experimentalAttack: true, anchorPose: attackPhase.value.anchorPose } : {})
 const attackOptions = computed(()=>hasCompanion.value ? {...baseAttackOptions.value,motion:motion.value,tick:tick.value,titleTick:titleTick.value,...(hasMount.value && motion.value==='attack'?{mountEntry:mountEntry.value,clientSkillId:trial.value.skillId}:{})} : baseAttackOptions.value)
+const inspectorOpen=ref(false)
+const inspectedLayers=computed(()=>inspectorOpen.value?resolvePose(props.layers,direction.value,pose.value,breath.value,attackOptions.value):[])
+const effectInspection=computed(()=>inspectedEffect(props.layers,props.clazz,trial.value.skillId,direction.value,tick.value,{enabled:inspectorOpen.value&&showingEffect.value,mounted:hasMount.value}))
+function toggleInspector(){inspectorOpen.value=!inspectorOpen.value;if(inspectorOpen.value)playing.value=false}
+function inspectFrame(value){
+ playing.value=false
+ const next=Math.max(0,Math.min(cycleLength.value-1,Math.trunc(value)))
+ titleTick.value=((titleTick.value+next-tick.value)%titleClockCycle.value+titleClockCycle.value)%titleClockCycle.value
+ tick.value=next
+}
 const views = new Map()
 const viewport=computed(()=>companionViewport(props.layers))
 const gcdClock = (a,b) => b ? gcdClock(b,a%b) : a
@@ -119,6 +131,7 @@ onUnmounted(() => { stopTimer(); renderVersion++ })
       <label class="field">Trạng thái<select v-model="motion" aria-label="Trạng thái nhân vật" @change="changeMotion"><option value="idle">Đứng yên</option><option value="walk">Di chuyển</option><option value="attack" :disabled="hasMount && (!mountedCombat || !hasClientWeapon)">Tấn công · thử nghiệm</option></select></label>
       <button @click="playing = !playing">{{ playing ? 'Tạm dừng' : 'Phát animation' }}</button>
       <button @click="nextFrame">Frame tiếp →</button>
+      <button :aria-pressed="inspectorOpen" :disabled="!layers.length" @click="toggleInspector">Soi asset theo frame</button>
       <label class="field">Tốc độ<select :value="effectiveFps" :disabled="clientVerified || hasCompanion || nativeWalk" aria-label="Tốc độ animation" @change="fps = Number($event.target.value)"><option v-for="value in [4,6,8,10,12,25]" :key="value" :value="value">{{ value }} fps</option></select></label>
       <span class="frame-status" role="status">{{ clientVerified ? `Client tick ${tick + 1}/${cycleLength} · body ${nativePhase.bodyFrame} · WPS ${nativePhase.weaponFrame}` : nativeWalk ? `Đi bộ ${tick % WALK_CYCLE.length + 1}/${WALK_CYCLE.length} · body ${walkPhase.clientBodyFrame} · ${WALK_FPS} FPS` : hasCompanion ? `Client tick ${tick + 1}/${cycleLength} · ${motion} · 25 FPS` : motion === 'attack' ? `Đòn ${tick + 1}/${cycleLength} · pose ${pose} · anchor ${attackPhase.anchorPose}` : motion === 'walk' ? `Bước ${tick + 1}/${WALK_CYCLE.length} · pose ${pose}` : `Thở ${tick + 1}/${cycleLength} · lệch ${breath}px` }}</span>
     </div>
@@ -144,6 +157,7 @@ onUnmounted(() => { stopTimer(); renderVersion++ })
         <span>{{ view.label }}</span>
       </button>
     </div>
+    <FrameAssetInspector v-if="inspectorOpen" :layers="inspectedLayers" :effect="effectInspection" :direction="direction" :tick="tick" :cycle-length="cycleLength" :fps="effectiveFps" :motion="motion" :playing="playing" @frame="inspectFrame" @direction="direction=$event" @play="playing=!playing" @close="inspectorOpen=false"/>
     <details class="animation-provenance"><summary>Nguồn và giới hạn animation</summary><p class="muted">Bấm một hướng để xem lớn. Đứng yên có chuyển động thở 1px do Studio dựng, giữ chân cố định; không phải animation gốc. Hướng phải dùng ảnh ngang lật lại. Đi bộ dùng A_Move 10 tick, PART_OF_FRAME và anchor body frame của client 4.0.3; nhịp thở vẫn là xử lý Studio. Lớp ghép tay giữ nguyên tư thế.</p></details>
   </section>
 </template>

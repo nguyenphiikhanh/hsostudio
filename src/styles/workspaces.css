@@ -599,3 +599,22 @@
 .map-page>.map-export-tools { grid-row:4; }
 .map-page>.map-editor-panel,.map-page .map-viewer,.map-page .map-inspector { grid-row:5; }
 @media(max-width:1279px) { .map-page .map-inspector { grid-row:6; } }
+
+.frame-asset-inspector { margin-top:16px; border:1px solid var(--line); padding:14px; background:var(--panel); min-width:0; }
+.frame-asset-inspector h2 { font-size:16px; }
+.frame-asset-inspector h3 { font-size:13px; margin:0 0 8px; }
+.frame-inspector-controls { display:flex; gap:10px; flex-wrap:wrap; align-items:end; }
+.frame-inspector-controls .field { flex:1; min-width:140px; }
+.frame-inspector-controls input[type=range] { width:100%; }
+.frame-assembled { margin:16px 0; }
+.frame-assembled canvas { display:block; max-width:100%; max-height:360px; object-fit:contain; image-rendering:pixelated; }
+.frame-source-sheets { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr)); gap:12px; margin-top:12px; }
+.frame-source-sheet { border:1px solid var(--line); padding:10px; min-width:0; }
+.frame-source-sheet .path { overflow-wrap:anywhere; }
+.frame-sheet-scroll { max-height:400px; overflow:auto; }
+.frame-source-sheet canvas { max-width:100%; height:auto; image-rendering:pixelated; display:block; }
+.frame-source-sheet canvas.frame-sheet-native { max-width:none; }
+.frame-source-sheet ol { margin:10px 0 0; padding-left:24px; }
+.frame-source-sheet li { font-size:11px; margin-top:8px; }
+.frame-source-sheet li::marker { color:var(--frame-marker); font-weight:bold; }
+.frame-source-sheet li span { display:block; margin-top:3px; color:var(--muted); overflow-wrap:anywhere; }
