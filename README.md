@@ -16,6 +16,8 @@ npm run build
 npm run preview
 ```
 
+`npm run build` also generates gzip (`.gz`) and Brotli (`.br`) sidecars for compressible assets, including the SQLite catalog and WASM. `npm run preview` negotiates these for local verification. Deploy with the supplied [production compression guide](docs/production-compression.md) and Caddy/Nginx examples; the host must serve the correct Content-Encoding.
+
 Deploy the entire `dist/` directory to static hosting. For a subdirectory, build with `npm run build -- --base=/your-path/`. SQLite and WASM must be served as files, not rewritten to the HTML fallback. The checked-in game bundle occupies about 170 MB. Browse images load on demand; the SQLite catalog loads once in memory.
 
 ## Desktop workspaces

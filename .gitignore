@@ -27,3 +27,4 @@ dist-ssr
 __pycache__/
 playwright-report/
 test-results/
+.vscode

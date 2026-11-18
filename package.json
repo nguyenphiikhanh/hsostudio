@@ -11,7 +11,8 @@
     "test:poses": "node --test tests/characterPose.test.js",
     "test:x4": "node --test tests/x4.test.js",
     "test:attack": "node --test tests/attackTrial.test.js",
-    "test:mysql": "node tests/h5Mysql.integration.mjs"
+    "test:mysql": "node tests/h5Mysql.integration.mjs",
+    "test:compression": "node --test tests/compression.test.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.4",
