@@ -1,10 +1,12 @@
 <script setup>
-import {ref,watch,onMounted,onUnmounted,onActivated,onDeactivated} from 'vue'
+import {ref,computed,watch,onMounted,onUnmounted,onActivated,onDeactivated} from 'vue'
 import {drawMap} from '../lib/maps/mapCanvas.js'
-import {cellAt,hitObject,objectPlacement} from '../lib/maps/mapGeometry.js'
+import {cellAt,hitObject,objectPlacement,sortObjects} from '../lib/maps/mapGeometry.js'
 const props=defineProps({data:Object,layers:Object,animation:Object,collision:Array,selectedCell:Object,selectedObject:Object,tool:{type:String,default:'pan'},editingDisabled:Boolean})
+const objectOrder=computed(()=>props.data?sortObjects(props.data.map.objects):[])
 const emit=defineEmits(['hover','select','edit-start','edit-move','edit-end','edit-cancel','undo','redo','delete-object','save-draft'])
 const canvas=ref(null),zoom=ref(1),pan=ref({x:0,y:0})
+let terrainCanvas,terrainKey=[],moveFrame=0,pendingMove
 let clock=0,lastTime=0,lastTick=-1,animationFrame=0
 function animate(time){
  if(!active)return
@@ -25,14 +27,26 @@ function resize(){const rect=canvas.value?.getBoundingClientRect();if(!rect?.wid
 function draw(){
  if(!canvas.value)return
  const ratio=Math.min(devicePixelRatio||1,2),ctx=canvas.value.getContext('2d')
- canvas.value.width=Math.round(width*ratio);canvas.value.height=Math.round(height*ratio)
- ctx.setTransform(ratio,0,0,ratio,0,0);ctx.fillStyle='#17191b';ctx.fillRect(0,0,width,height)
+ if(canvas.value.width!==Math.round(width*ratio))canvas.value.width=Math.round(width*ratio)
+ if(canvas.value.height!==Math.round(height*ratio))canvas.value.height=Math.round(height*ratio)
+ ctx.setTransform(ratio,0,0,ratio,0,0);ctx.imageSmoothingEnabled=false;ctx.fillStyle='#17191b';ctx.fillRect(0,0,width,height)
  if(!props.data){canvas.value.dataset.renderedMapId='';return}
  const {map,templates,images}=props.data,s=map.tileSize
+ const tick=Math.floor(clock/40),viewport={x:-pan.value.x/zoom.value,y:-pan.value.y/zoom.value,width:width/zoom.value,height:height/zoom.value}
+ const key=[map.id,map.tileset.terrain,props.data.terrainRevision,map.tiles,width,height,ratio,zoom.value,pan.value.x,pan.value.y,props.layers.terrain,props.animation?.water?tick:-1,props.animation?.waterfall?tick:-1]
+ if(!terrainCanvas||key.some((value,i)=>value!==terrainKey[i])){
+  terrainCanvas??=document.createElement('canvas');terrainCanvas.width=canvas.value.width;terrainCanvas.height=canvas.value.height
+  const tc=terrainCanvas.getContext('2d');tc.setTransform(ratio,0,0,ratio,0,0);tc.translate(pan.value.x,pan.value.y);tc.scale(zoom.value,zoom.value)
+  drawMap(tc,map,templates,images,{terrain:props.layers.terrain,objects:false,...props.animation,tick,viewport});terrainKey=key
+ }
+ ctx.drawImage(terrainCanvas,0,0,width,height)
  ctx.save();ctx.translate(pan.value.x,pan.value.y);ctx.scale(zoom.value,zoom.value)
- drawMap(ctx,map,templates,images,{...props.layers,...props.animation,tick:Math.floor(clock/40)})
+ drawMap(ctx,map,templates,images,{terrain:false,objects:props.layers.objects,viewport,sortedObjects:objectOrder.value})
  ctx.save();ctx.beginPath();ctx.rect(0,0,map.width*s,map.height*s);ctx.clip()
- if(props.layers.collision){for(let i=0;i<props.collision.length;i++)if(props.collision[i]){ctx.fillStyle=props.collision[i]===1?'#ff655b66':'#54b8ef66';ctx.fillRect(i%map.width*s,Math.floor(i/map.width)*s,s,s)}}
+ if(props.layers.collision){
+  const x0=Math.max(0,Math.floor(viewport.x/s)),y0=Math.max(0,Math.floor(viewport.y/s)),x1=Math.min(map.width,Math.ceil((viewport.x+viewport.width)/s)),y1=Math.min(map.height,Math.ceil((viewport.y+viewport.height)/s))
+  for(let row=y0;row<y1;row++)for(let col=x0;col<x1;col++){const type=props.collision[row*map.width+col];if(type){ctx.fillStyle=type===1?'#ff655b66':'#54b8ef66';ctx.fillRect(col*s,row*s,s,s)}}
+ }
  if(props.layers.grid){ctx.strokeStyle='#dbead84d';ctx.lineWidth=1/zoom.value;ctx.beginPath();for(let x=0;x<=map.width;x++){ctx.moveTo(x*s,0);ctx.lineTo(x*s,map.height*s)}for(let y=0;y<=map.height;y++){ctx.moveTo(0,y*s);ctx.lineTo(map.width*s,y*s)}ctx.stroke()}
  const marker=(point,color,label)=>{ctx.fillStyle=color;ctx.beginPath();ctx.arc(point.x,point.y,5/zoom.value,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#17191b';ctx.lineWidth=1/zoom.value;ctx.stroke();if(label){ctx.font=`${11/zoom.value}px system-ui`;ctx.fillText(label,point.x+8/zoom.value,point.y-7/zoom.value)}}
  if(props.layers.warps)for(const p of map.warps)marker(p,'#b9e581',p.name)
@@ -46,25 +60,38 @@ function draw(){
 function point(event){const rect=canvas.value.getBoundingClientRect();return{x:event.clientX-rect.left,y:event.clientY-rect.top}}
 function world(p){return{x:(p.x-pan.value.x)/zoom.value,y:(p.y-pan.value.y)/zoom.value}}
 function zoomAt(factor,p={x:width/2,y:height/2}){const w=world(p),next=Math.max(.1,Math.min(8,zoom.value*factor));zoom.value=next;pan.value={x:p.x-w.x*next,y:p.y-w.y*next};schedule()}
-function editPoint(event){
- const w=world(point(event));let object=props.data&&props.layers.objects?hitObject(props.data.map,props.data.templates,w.x,w.y):null
- if(props.data&&props.layers.objects&&props.tool==='move'&&props.selectedObject){const p=objectPlacement(props.selectedObject,props.data.templates[props.selectedObject.templateId],24);if(w.x>=p.x&&w.y>=p.y&&w.x<p.x+p.width&&w.y<p.y+p.height)object=props.selectedObject}
+function editPoint(event,hit=false){
+ const w=world(point(event));let object=null
+ if(hit&&props.data&&props.layers.objects){
+  const selected=props.tool==='move'&&props.selectedObject
+  if(selected){const p=objectPlacement(selected,props.data.templates[selected.templateId],24);if(w.x>=p.x&&w.y>=p.y&&w.x<p.x+p.width&&w.y<p.y+p.height)object=selected}
+  if(!object)object=hitObject(props.data.map,props.data.templates,w.x,w.y,objectOrder.value)
+ }
  return{world:w,cell:props.data?cellAt(props.data.map,props.collision,w.x,w.y):null,object}
 }
+function discardMove(){cancelAnimationFrame(moveFrame);moveFrame=0;pendingMove=null}
+function flushMove(){const event=pendingMove;discardMove();if(event)processMove(event)}
+function leave(){if(!drag){discardMove();emit('hover',null)}}
 function cancelDrag(){
+ discardMove()
  if(drag?.kind==='edit')emit('edit-cancel')
  const pointerId=drag?.pointerId;drag=null
  if(pointerId!==undefined&&canvas.value?.hasPointerCapture(pointerId))canvas.value.releasePointerCapture(pointerId)
 }
 function down(event){
  if(!props.data||![0,1].includes(event.button))return
+ discardMove()
  const kind=props.tool==='pan'||space||event.button===1?'pan':'edit'
  if(kind==='edit'&&props.editingDisabled)return
  const p=point(event);drag={kind,start:p,last:p,moved:false,pointerId:event.pointerId}
  canvas.value.focus({preventScroll:true});canvas.value.setPointerCapture(event.pointerId)
- if(kind==='edit')emit('edit-start',editPoint(event))
+ if(kind==='edit')emit('edit-start',editPoint(event,props.tool==='move'))
 }
 function move(event){
+ pendingMove={clientX:event.clientX,clientY:event.clientY}
+ if(!moveFrame)moveFrame=requestAnimationFrame(flushMove)
+}
+function processMove(event){
  const p=point(event)
  if(drag?.kind==='pan'){
   if(Math.hypot(p.x-drag.start.x,p.y-drag.start.y)>4)drag.moved=true
@@ -75,8 +102,9 @@ function move(event){
 }
 function up(event){
  if(!drag)return
+ if(pendingMove){pendingMove={clientX:event.clientX,clientY:event.clientY};flushMove()}
  if(drag.kind==='edit'){emit('edit-move',editPoint(event));emit('edit-end')}
- else if(!drag.moved&&props.data){const p=editPoint(event);emit('select',{cell:p.cell,object:p.object})}
+ else if(!drag.moved&&props.data){const p=editPoint(event,true);emit('select',{cell:p.cell,object:p.object})}
  drag=null;if(canvas.value.hasPointerCapture(event.pointerId))canvas.value.releasePointerCapture(event.pointerId)
 }
 function key(event){
@@ -84,7 +112,7 @@ function key(event){
  if((event.ctrlKey||event.metaKey)&&['z','y','s'].includes(event.key.toLowerCase())){
   event.preventDefault()
   const k=event.key.toLowerCase()
-  if(k==='s'){emit('save-draft');cancelDrag()}
+  if(k==='s'){flushMove();emit('save-draft');cancelDrag()}
   else if(drag?.kind==='edit')cancelDrag()
   else emit(k==='y'||event.shiftKey?'redo':'undo')
   return
@@ -103,12 +131,12 @@ watch([()=>props.layers,()=>props.selectedCell,()=>props.selectedObject],schedul
 onMounted(()=>{animationFrame=requestAnimationFrame(animate);observer=new ResizeObserver(resize);observer.observe(canvas.value);resize()})
 onActivated(()=>{active=true;lastTime=0;cancelAnimationFrame(animationFrame);animationFrame=requestAnimationFrame(animate);resize()})
 onDeactivated(()=>{cancelDrag();space=false;active=false;lastTime=0;cancelAnimationFrame(animationFrame);cancelAnimationFrame(frame);frame=0})
-onUnmounted(()=>{active=false;observer?.disconnect();cancelAnimationFrame(animationFrame);cancelAnimationFrame(frame)})
+onUnmounted(()=>{active=false;discardMove();terrainCanvas=null;terrainKey=[];observer?.disconnect();cancelAnimationFrame(animationFrame);cancelAnimationFrame(frame)})
 </script>
 <template>
  <div class="map-canvas-panel">
   <div class="map-camera-tools"><button :disabled="!data" @click="zoomAt(.8)" aria-label="Thu nhỏ map">−</button><span data-testid="map-zoom">{{Math.round(zoom*100)}}%</span><button :disabled="!data" @click="zoomAt(1.25)" aria-label="Phóng to map">+</button><button :disabled="!data" @click="fit">Vừa khung</button></div>
-  <div class="map-canvas-shell"><canvas ref="canvas" aria-label="Khung xem bản đồ" role="img" tabindex="0" aria-describedby="map-pan-help" :data-map-id="data?.map.id ?? ''" :data-tool="tool" :data-zoom="zoom" :data-pan-x="pan.x" :data-pan-y="pan.y" @pointerdown="down" @pointermove="move" @pointerup="up" @pointercancel="cancelDrag" @lostpointercapture="drag && cancelDrag()" @pointerleave="!drag && emit('hover',null)" @wheel.prevent="!drag && zoomAt($event.deltaY<0?1.15:1/1.15,point($event))" @keydown="key" @keyup.space="space=false" @blur="space=false"></canvas></div>
+  <div class="map-canvas-shell"><canvas ref="canvas" aria-label="Khung xem bản đồ" role="img" tabindex="0" aria-describedby="map-pan-help" :data-map-id="data?.map.id ?? ''" :data-tool="tool" :data-zoom="zoom" :data-pan-x="pan.x" :data-pan-y="pan.y" @pointerdown="down" @pointermove="move" @pointerup="up" @pointercancel="cancelDrag" @lostpointercapture="drag && cancelDrag()" @pointerleave="leave" @wheel.prevent="!drag && zoomAt($event.deltaY<0?1.15:1/1.15,point($event))" @keydown="key" @keyup.space="space=false" @blur="space=false"></canvas></div>
   <p id="map-pan-help" class="muted">Chọn/Pan: kéo để di chuyển, click chọn ô/vật thể. Công cụ sửa: kéo để vẽ tile, vùng chặn hoặc kéo vật thể. Giữ Space hoặc chuột giữa để pan · Cuộn/+− zoom · 0 vừa khung · Ctrl/Cmd+Z Undo, Shift+Z Redo · Esc hủy nét/kéo · Delete xóa vật thể chọn.</p>
  </div>
 </template>

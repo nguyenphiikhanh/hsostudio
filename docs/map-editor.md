@@ -67,7 +67,7 @@ Hai checkbox Nước động / Thác động cạnh các lớp hiển thị ch�
 
 ## Nhập một PNG lớn thành map
 
-Mở **Nhập PNG lớn → tạo map nháp** phía trên bộ chọn map. Chọn PNG, tên map và mật độ x1–x4. Ô luôn là 24×24 logical: ở x4, mỗi ô ảnh là 96×96px. Preview hiển thị lưới và kích thước map trước khi tạo. Nếu hai chiều không chia hết cho ô, cần bật **Thêm viền trong suốt** để thêm mép phải/dưới; không cắt hay co kéo ảnh.
+Mở **Nhập PNG lớn → tạo map nháp** phía trên bộ chọn map. Chọn PNG, tên map và mật độ x1–x4. Kích thước map có hai chế độ: Theo kích thước ảnh hoặc Tự chọn số ô ngang/dọc (1–127 mỗi chiều, trong giới hạn pixel). Có thể nhập số ô trước hoặc sau khi chọn file; tải file không ghi đè số ô tự chọn. Ô luôn là 24×24 logical: ở x4, mỗi ô ảnh là 96×96px. Preview hiển thị lưới và kích thước map trước khi tạo. Khi lấy kích thước theo ảnh, nếu hai chiều không chia hết cho ô, cần bật **Thêm viền trong suốt** để thêm mép phải/dưới. Với kích thước tự chọn, chọn Giữ pixel gốc (góc trên trái), Vừa map (giữ tỷ lệ/căn giữa), hoặc Phủ kín map (giữ tỷ lệ/cắt mép). Preview báo canvas đích, tỷ lệ và vùng thiếu/bị cắt; cần cho phép thêm vùng trong suốt hoặc cắt ảnh trước khi tạo. Không tự kéo méo tỷ lệ ảnh.
 
 Studio cắt theo lưới và gộp các ô chỉ khi toàn bộ pixel RGBA giống hệt. Tileset được đóng thành atlas dạng lưới với `columns`, `tileCount`, `density`; các tile ID trong layout là 1-based, ID0 là ô trống bị chặn. Map nhập có `tileset.kind: imported-png`, ID âm riêng trong Studio, không phải ID server HSO. Đây là schema Studio dùng với runtime Phaser đi kèm, không phải file Tiled TMX/JSON.
 
@@ -76,3 +76,19 @@ Map mới xuất hiện trong bộ chọn và giữ riêng trong tab. Bút tile,
 **Tải nháp JSON** chứa atlas PNG dạng data URI, nguồn map và chỉnh sửa. Sau reload, dùng **Mở lại nháp PNG đã tải** trong khối nhập PNG để mở lại; nút Nhập nháp JSON trong editor áp dụng chỉnh sửa vào map đang chọn có nguồn khớp. Không cần tải lại PNG ban đầu. PNG/JSON/ZIP Phaser xuất layout hiện tại; ZIP gồm atlas, metadata density và runtime đọc atlas nhiều cột. JSON thường có data URI cho atlas local; ZIP được khuyến nghị khi chuyển sang game.
 
 Giới hạn: file PNG/atlas16MB, ảnh/atlas16triệu pixel, map127×127 ô, nháp tự chứa32MB. Chia map lớn hơn thành khu vực nhỏ. Không upload lên server, không ghi MySQL và không thay map gốc. API/map SQL cần được tích hợp ở giai đoạn server riêng.
+
+### Xử lý PNG lớn
+
+Preview chỉ giải mã ảnh thu nhỏ tối đa900×360; không giữ bitmap ảnh gốc trên luồng giao diện. Khi tạo map, Worker giải mã nguồn đầy đủ, đặt ảnh vào canvas đích, cắt/gộp tile, ghép atlas, nén PNG, tạo data URL và checksum. Thanh tiến độ cập nhật theo giai đoạn; Hủy xử lý PNG chấm dứt worker và không mở map đang tạo. Rời menu Map cũng hủy tác vụ đang chạy. Chỉ nạp metadata vật thể, không tải texture map0 để nhập PNG.
+
+Với fixture3072×3072 trong lần đo Chrome desktop, pipeline cũ gây long task539ms; bản worker không ghi nhận long task từ50ms trong cùng phép đo, nhịp phản hồi dài nhất khoảng59ms. Tổng thời gian có thể tương đương hoặc tăng nhẹ do khởi tạo worker; mục tiêu là giao diện vẫn phản hồi. Kết quả phụ thuộc ảnh/máy. Kiểm thử trình duyệt bao gồm heartbeat/long-task, hủy, kích thước custom, contain/cover và giữ khớp pixel/nháp/Phaser của chế độ gốc.
+
+### Độ phản hồi khi thao tác vật thể
+
+Editor gộp pointermove theo nhịp màn hình, áp dụng vị trí cuối trước khi kết thúc nét/kéo và bỏ hàng đợi khi Escape/pointercancel. Kéo trong cùng ô không tính lại nháp; đối tượng đã chọn được giữ trong gesture, không hit-test lại mỗi pixel. Thứ tự vẽ/hit-test vẫn theo quickSort HSO, được dùng lại khi tài liệu chưa đổi.
+
+Viewport giữ cache nền ở độ phân giải màn hình, không tạo canvas toàn map x4. Thao tác vật thể không làm vẽ lại terrain; đổi tile, Undo/Redo, camera, kích thước viewport hoặc tick nước/thác sẽ làm mới cache phù hợp. Canvas chỉ đổi backing size khi kích thước thực sự đổi; tile/vật thể/collision ngoài vùng nhìn không được vẽ. Bản xuất vẫn dựng đầy đủ layout, không dùng viewport cache.
+
+Palette tile chỉ được mount khi mở. Atlas PNG nhập được chuyển thành Blob URL ngắn để dùng chung giữa swatch, không lặp base64 lớn trong CSS của từng ô hoặc dựng lại các swatch đang ẩn lúc kéo vật thể. URL được thu hồi khi đổi atlas/unmount.
+
+Fixture Chrome desktop: atlas PNG768×768 nhiễu,64tile và một vật thể kéo qua40pointermove. Trước sửa, p95 khoảng1050ms/khung, long task lớn nhất1087ms; sau sửa p95 khoảng16.8ms, không ghi nhận long task từ50ms trong cùng phép đo. Đây là phép đo trên fixture/máy thử, không phải cam kết FPS cho mọi map. Kiểm thử riêng xác nhận palette Blob/lazy, kéo/Escape/Undo/Redo, collision, và cache nền không bị cũ sau tẩy tile hoặc Undo/Redo.

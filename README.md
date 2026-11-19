@@ -306,7 +306,7 @@ Tại `/maps`, chọn Bút tile/Tẩy tile/Tô vùng/Hút tile hoặc Đặt/Ké
 
 ### Import a large map PNG
 
-In Map, open **Nhập PNG lớn → tạo map nháp**, select a PNG and density x1–x4, inspect the 24-logical-unit grid and explicitly allow transparent right/bottom padding if needed. Studio deduplicates identical RGBA tiles and creates a separate editable map with a grid atlas; collision starts walkable and must be configured manually. Download the self-contained draft JSON to keep the atlas and edits, then reopen it through **Mở lại nháp PNG đã tải** after reload. Phaser ZIP supports the imported atlas/density without touching native maps. Limits and workflow: [Map editor](docs/map-editor.md#nhập-một-png-lớn-thành-map).
+In Map, open **Nhập PNG lớn → tạo map nháp**, select a PNG and density x1–x4, choose automatic size or custom columns/rows, inspect the 24-logical-unit grid and explicitly allow transparent right/bottom padding if needed. Custom dimensions offer original-pixel placement, contain or cover with explicit padding/cropping permission. Full PNG processing runs in a cancellable worker with progress; the interface uses a bounded thumbnail. Studio deduplicates identical RGBA tiles and creates a separate editable map with a grid atlas; collision starts walkable and must be configured manually. Download the self-contained draft JSON to keep the atlas and edits, then reopen it through **Mở lại nháp PNG đã tải** after reload. Phaser ZIP supports the imported atlas/density without touching native maps. Limits and workflow: [Map editor](docs/map-editor.md#nhập-một-png-lớn-thành-map).
 
 ### Inspect animation source assets on screen
 

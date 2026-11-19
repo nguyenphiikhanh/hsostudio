@@ -1,16 +1,29 @@
 <script setup>
-import {ref,computed,watch} from 'vue'
+import {ref,computed,watch,onBeforeUnmount} from 'vue'
 import {terrainRect} from '../lib/maps/mapGeometry.js'
 import {gameUrl} from '../lib/catalog'
 const props=defineProps({data:Object,tool:String,brush:Number,templateId:Number,count:Number,template:Object,templateReady:Boolean,assetLoading:Boolean,assetError:String,stats:Object,history:Object,active:Boolean,busy:Boolean,modified:Boolean,selectedObject:Object})
 const emit=defineEmits(['tool','tile','template','undo','redo','duplicate','delete','reset','save','import','retry-asset'])
-const search=ref(''),tilePage=ref(0)
+const search=ref(''),tilePage=ref(0),paletteOpen=ref(false),atlasURL=ref('')
+const terrain=computed(()=>props.data?.map.tileset.terrain),sourceTemplates=computed(()=>props.data?.templates)
+let atlasVersion=0,localURL
+watch(()=>terrain.value?.image,async image=>{
+ const version=++atlasVersion;atlasURL.value='';if(localURL){URL.revokeObjectURL(localURL);localURL=null}
+ if(!image)return
+ if(!image.startsWith('data:')){atlasURL.value=gameUrl(image);return}
+ try{const blob=await(await fetch(image)).blob();if(version!==atlasVersion)return;localURL=URL.createObjectURL(blob);atlasURL.value=localURL}catch{}
+},{immediate:true})
+onBeforeUnmount(()=>{atlasVersion++;if(localURL)URL.revokeObjectURL(localURL)})
+watch(()=>props.tool,tool=>{paletteOpen.value=['paint','fill','erase','eyedrop'].includes(tool)},{immediate:true})
 const tilePages=computed(()=>Math.ceil((props.count+1)/128))
 const visibleTiles=computed(()=>{const page=Math.min(tilePage.value,tilePages.value-1);return Array.from({length:Math.min(128,props.count+1-page*128)},(_,i)=>page*128+i)})
-const templates=computed(()=>Object.values(props.data?.templates??{}).filter(t=>`${t.id} ${t.image}`.includes(search.value.trim())))
+const templates=computed(()=>Object.values(sourceTemplates.value??{}).filter(t=>`${t.id} ${t.image}`.includes(search.value.trim())))
 watch(()=>props.data?.map.id,()=>{tilePage.value=0})
 const tools=[['pan','Chọn / Pan'],['paint','Bút tile'],['erase','Tẩy tile'],['fill','Tô vùng'],['eyedrop','Hút tile'],['block','Thêm vùng chặn'],['unblock','Xóa vùng chặn'],['place','Đặt vật thể'],['move','Kéo vật thể']]
-function tileStyle(id){const a=props.data.map.tileset.terrain,r=terrainRect(props.data.map.tileset,id);return id?{backgroundImage:`url("${gameUrl(a.image)}")`,backgroundSize:`${a.width/a.density*2}px ${a.height/a.density*2}px`,backgroundPosition:`-${r.x*2}px -${r.y*2}px`}:{}}
+const tileStyles=computed(()=>{
+ const a=terrain.value;if(!a)return {}
+ return Object.fromEntries(visibleTiles.value.map(id=>{const r=terrainRect({terrain:a},id);return [id,id?{backgroundImage:atlasURL.value?`url("${atlasURL.value}")`:undefined,backgroundSize:`${a.width/a.density*2}px ${a.height/a.density*2}px`,backgroundPosition:`-${r.x*2}px -${r.y*2}px`}:{}]}))
+})
 </script>
 <template>
  <section class="map-editor-panel" aria-label="Chỉnh sửa map">
@@ -20,9 +33,9 @@ function tileStyle(id){const a=props.data.map.tileset.terrain,r=terrainRect(prop
   <div class="map-edit-tools"><button :disabled="!data||busy" @click="emit('save')">Tải nháp JSON</button><button :disabled="!data||busy" @click="emit('import')">Nhập nháp JSON</button><span v-if="stats" class="muted" data-testid="map-edit-count">Tile đổi: {{stats.tiles}} · Vùng chặn đổi: {{stats.collision}} ô · Vật thể thêm: {{stats.added}}, đổi: {{stats.changed}}, xóa: {{stats.removed}}{{stats.order?' · đổi thứ tự':''}}</span></div>
   <details class="map-edit-help"><summary>Cách dùng và lưu nháp</summary><p class="muted">Nháp giữ riêng theo từng map trong tab; tải lại trang sẽ mất nháp chưa tải JSON. Mỗi nét/kéo là một bước Undo. Xóa tile đặt ID0: ô trống và bị chặn. Map nhập PNG mặc định các tile khác đều đi được. Thêm vùng chặn ép ô thành chặn; Xóa vùng chặn ép ô thành đi được, kể cả tile/vật thể gốc. Nhân bản đặt cùng ô, sau đó dùng Kéo vật thể.</p></details>
   <template v-if="data">
-   <details :open="['paint','fill','erase','eyedrop'].includes(tool)"><summary>{{data.map.tileset.kind==='imported-png'?'Tileset PNG nhập':'Tileset #'+data.map.tileset.id}} · {{count}} tile · đang chọn #{{brush}}</summary>
-    <div v-if="tilePages>1" class="map-edit-tools"><button :disabled="tilePage<=0" @click="tilePage=Math.max(0,tilePage-1)">Tile trước</button><button :disabled="tilePage>=tilePages-1" @click="tilePage++">Tile tiếp</button></div>
-    <div class="map-tile-palette" aria-label="Bảng tile"><button v-for="tile in visibleTiles" :key="tile" class="map-tile-choice" :disabled="busy" :aria-label="`Chọn tile ${tile}`" :aria-pressed="brush===tile" :class="{active:brush===tile}" @click="emit('tile',tile)"><span class="map-tile-swatch checker" :style="tileStyle(tile)"></span><small>#{{tile}}{{tile===0?' trống':''}}</small></button></div>
+   <details :open="paletteOpen" @toggle="paletteOpen=$event.target.open"><summary>{{data.map.tileset.kind==='imported-png'?'Tileset PNG nhập':'Tileset #'+data.map.tileset.id}} · {{count}} tile · đang chọn #{{brush}}</summary>
+    <div v-if="paletteOpen&&tilePages>1" class="map-edit-tools"><button :disabled="tilePage<=0" @click="tilePage=Math.max(0,tilePage-1)">Tile trước</button><button :disabled="tilePage>=tilePages-1" @click="tilePage++">Tile tiếp</button></div>
+    <div v-if="paletteOpen" class="map-tile-palette" aria-label="Bảng tile"><button v-for="tile in visibleTiles" :key="tile" class="map-tile-choice" :disabled="busy" :aria-label="`Chọn tile ${tile}`" :aria-pressed="brush===tile" :class="{active:brush===tile}" @click="emit('tile',tile)"><span class="map-tile-swatch checker" :style="tileStyles[tile]"></span><small>#{{tile}}{{tile===0?' trống':''}}</small></button></div>
    </details>
    <details :open="['place','move'].includes(tool)"><summary>Vật thể gốc · template #{{templateId}}</summary>
     <div class="map-template-picker"><label class="field">Tìm template / PNG ID<input v-model="search" :disabled="busy" aria-label="Tìm template vật thể" placeholder="Template hoặc PNG ID"></label><label class="field">Template vật thể<select :value="templateId" :disabled="busy" aria-label="Template vật thể" @change="emit('template',Number($event.target.value))"><option v-if="template&&!templates.some(t=>t.id===templateId)" :value="templateId">Đang chọn #{{templateId}}</option><option v-for="t in templates" :key="t.id" :value="t.id" :disabled="!t.asset">#{{t.id}} · PNG #{{t.image}}{{!t.asset?' · chưa có ảnh':''}}</option></select></label></div>

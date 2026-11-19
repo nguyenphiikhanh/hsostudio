@@ -48,8 +48,9 @@ export function cellAt(map, collision, x, y) {
   const col=Math.floor(x/map.tileSize),row=Math.floor(y/map.tileSize),index=row*map.width+col
   return {col,row,x:Math.floor(x),y:Math.floor(y),index,tile:map.tiles[index],type:collision[index],terrainType:terrainType(map.tiles[index],map.tileset)}
 }
-export function hitObject(map, templates, x, y) {
-  for(const o of sortObjects(map.objects).reverse()) {
+export function hitObject(map, templates, x, y, ordered=sortObjects(map.objects)) {
+  for(let i=ordered.length-1;i>=0;i--) {
+    const o=ordered[i]
     const p=objectPlacement(o,templates[o.templateId],map.tileSize)
     if(x>=p.x&&y>=p.y&&x<p.x+p.width&&y<p.y+p.height)return o
   }

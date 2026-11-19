@@ -20,6 +20,11 @@ export async function loadMapAsset(asset) {
   if(image.naturalWidth!==asset.width || image.naturalHeight!==asset.height)throw new Error('Kích thước PNG không khớp metadata map: '+asset.source)
   return image
 }
+export async function loadMapReference(){
+ if(!tableRequest)tableRequest=read('maps/objects.json').catch(e=>{tableRequest=null;throw e})
+ const table=await tableRequest
+ return {templates:Object.fromEntries(table.templates.map(t=>[t.id,t])),tableSource:table.source}
+}
 export async function loadMap(id) {
   if(!Number.isInteger(Number(id))||Number(id)<0)throw new Error('Map ID không hợp lệ')
   if(!tableRequest)tableRequest=read('maps/objects.json').catch(e=>{tableRequest=null;throw e})

@@ -4,19 +4,20 @@ import {collisionGrid,cellAt} from '../lib/maps/mapGeometry.js'
 import {loadMapAsset} from '../lib/maps/mapData'
 
 export function useMapEditor(source,{selectedCell,selectedObject,hoverCell}){
- const sessions=new Map(),session=shallowRef(null),revision=ref(0),tool=ref('pan'),brush=ref(1),templateId=ref(0)
+ const sessions=new Map(),session=shallowRef(null),revision=ref(0),terrainRevision=ref(0),tool=ref('pan'),brush=ref(1),templateId=ref(0)
  const assetLoading=ref(false),assetError=ref('')
  let gesture=null,assetGeneration=0
  const stats=computed(()=>{revision.value;return session.value?.editor.stats??{tiles:0,added:0,removed:0,changed:0}})
  const modified=computed(()=>Object.values(stats.value).some(n=>n>0))
  const history=computed(()=>{revision.value;return session.value?.editor.history??{undo:0,redo:0}})
  const active=computed(()=>{revision.value;return Boolean(session.value?.editor.active)})
- const data=computed(()=>{revision.value;const s=session.value;return s?{...s.baseData,map:s.editor.map,images:s.images,editInfo:{modified:modified.value,stats:stats.value,base:s.editor.signature}}:null})
+ const data=computed(()=>{revision.value;const s=session.value;return s?{...s.baseData,map:s.editor.map,images:s.images,terrainRevision:terrainRevision.value,editInfo:{modified:modified.value,stats:stats.value,base:s.editor.signature}}:null})
  const collision=computed(()=>data.value?collisionGrid(data.value.map,data.value.templates):[])
  const count=computed(()=>data.value?tileCount(data.value.map):0)
  const template=computed(()=>data.value?.templates[templateId.value])
  const templateReady=computed(()=>{revision.value;return Boolean(template.value?.asset&&session.value?.images.has(template.value.asset.image))})
- function changed(){
+ function changed(terrainChanged=false){
+  if(terrainChanged)terrainRevision.value++
   revision.value++
   const d=data.value
   if(!d)return
@@ -24,7 +25,7 @@ export function useMapEditor(source,{selectedCell,selectedObject,hoverCell}){
   if(selectedCell.value)selectedCell.value=cellAt(d.map,collision.value,selectedCell.value.x,selectedCell.value.y)
   if(hoverCell.value)hoverCell.value=cellAt(d.map,collision.value,hoverCell.value.x,hoverCell.value.y)
  }
- function cancel(){gesture=null;if(session.value?.editor.cancel())changed()}
+ function cancel(){gesture=null;if(session.value?.editor.cancel())changed(true)}
  async function ensureTemplate(){
   const generation=++assetGeneration,s=session.value,d=s?.baseData.templates[templateId.value]
   assetError.value='';assetLoading.value=false
@@ -40,7 +41,7 @@ export function useMapEditor(source,{selectedCell,selectedObject,hoverCell}){
   if(!baseData){session.value=null;revision.value++;return}
   let s=sessions.get(baseData.map.id)
   if(!s){s={baseData,images:new Map(baseData.images),editor:createMapEditor(baseData.map,baseData.templates,baseData.tableSource.sha256)};sessions.set(baseData.map.id,s)}
-  session.value=s;tool.value='pan';brush.value=Math.min(brush.value,tileCount(s.editor.map));changed();ensureTemplate()
+  session.value=s;tool.value='pan';brush.value=Math.min(brush.value,tileCount(s.editor.map));changed(true);ensureTemplate()
  },{immediate:true})
  watch(templateId,ensureTemplate)
  watch(tool,()=>{cancel()})
@@ -53,8 +54,8 @@ export function useMapEditor(source,{selectedCell,selectedObject,hoverCell}){
   const e=editor(),{cell}=point
   selectedCell.value=cell
   if(tool.value==='paint'||tool.value==='erase'){
-   e.begin(tool.value==='erase'?'Tẩy tile':'Vẽ tile');gesture={kind:'tiles',last:cell,tile:tool.value==='erase'?0:brush.value};e.paint([cell],gesture.tile);changed()
-  }else if(tool.value==='fill'){e.fill(cell.col,cell.row,brush.value);changed()}
+   e.begin(tool.value==='erase'?'Tẩy tile':'Vẽ tile');gesture={kind:'tiles',last:cell,tile:tool.value==='erase'?0:brush.value};e.paint([cell],gesture.tile);changed(true)
+  }else if(tool.value==='fill'){e.fill(cell.col,cell.row,brush.value);changed(true)}
   else if(tool.value==='eyedrop'){brush.value=cell.tile;selectTool('paint')}
   else if(tool.value==='block'||tool.value==='unblock'){
    const type=tool.value==='block'?1:0
@@ -69,26 +70,29 @@ export function useMapEditor(source,{selectedCell,selectedObject,hoverCell}){
  function move(point){
   if(!gesture||!data.value)return
   const e=editor()
-  if(point.cell)selectedCell.value=point.cell
   if(gesture.kind==='tiles'){
+   if(point.cell&&gesture.last&&point.cell.col===gesture.last.col&&point.cell.row===gesture.last.row)return
    if(point.cell)e.paint(lineCells(gesture.last,point.cell),gesture.tile)
    gesture.last=point.cell
   }else if(gesture.kind==='collision'){
+   if(point.cell&&gesture.last&&point.cell.col===gesture.last.col&&point.cell.row===gesture.last.row)return
    if(point.cell)e.paintCollision(lineCells(gesture.last,point.cell),gesture.type)
    gesture.last=point.cell
   }else{
    const x=gesture.col+Math.floor(point.world.x/24)-Math.floor(gesture.start.x/24),y=gesture.row+Math.floor(point.world.y/24)-Math.floor(gesture.start.y/24)
-   if(x===gesture.col&&y===gesture.row){changed();return}
-   e.move(gesture.id,Math.max(0,Math.min(e.map.width-1,x)),Math.max(0,Math.min(e.map.height-1,y)))
+   const col=Math.max(0,Math.min(e.map.width-1,x)),row=Math.max(0,Math.min(e.map.height-1,y)),object=selectedObject.value
+   if(object?.cellX===col&&object?.cellY===row)return
+   e.move(gesture.id,col,row)
   }
-  changed()
+  if(point.cell)selectedCell.value=point.cell
+  changed(gesture.kind==='tiles')
  }
  function end(){if(session.value?.editor.active){session.value.editor.commit();changed()}gesture=null}
- function undo(){gesture=null;if(editor().undo())changed()}
- function redo(){if(editor().redo())changed()}
+ function undo(){gesture=null;if(editor().undo())changed(true)}
+ function redo(){if(editor().redo())changed(true)}
  function duplicate(){cancel();if(!selectedObject.value)return;const e=editor(),id=e.duplicate(selectedObject.value.index);selectedObject.value=e.map.objects.find(o=>o.index===id);selectTool('move');changed()}
  function remove(){cancel();if(!selectedObject.value)return;editor().remove(selectedObject.value.index);selectedObject.value=null;changed()}
- function reset(){cancel();editor().reset();selectedObject.value=null;changed()}
+ function reset(){cancel();editor().reset();selectedObject.value=null;changed(true)}
  function draft(){end();return editor().draft()}
  async function importDraft(doc){
   cancel();const s=session.value;if(!s)throw new Error('Hãy chọn map trước khi nhập nháp')
@@ -97,7 +101,7 @@ export function useMapEditor(source,{selectedCell,selectedObject,hoverCell}){
   const images=await Promise.all(assets.map(async a=>[a.image,s.images.get(a.image)??await loadMapAsset(a)]))
   if(session.value!==s||JSON.stringify(s.editor.draft().edits)!==initialEdits)throw new Error('Map đã thay đổi trong lúc nhập; hãy thử lại')
   for(const [path,image]of images)s.images.set(path,image)
-  s.editor.importEdits(edits);selectedObject.value=null;selectedCell.value=null;changed()
+  s.editor.importEdits(edits);selectedObject.value=null;selectedCell.value=null;changed(true)
  }
  return {data,collision,tool,brush,templateId,template,templateReady,assetLoading,assetError,stats,modified,history,active,count,selectTool,chooseTile,start,move,end,cancel,undo,redo,duplicate,remove,reset,draft,importDraft,ensureTemplate}
 }

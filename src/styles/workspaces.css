@@ -618,3 +618,5 @@
 .frame-source-sheet li { font-size:11px; margin-top:8px; }
 .frame-source-sheet li::marker { color:var(--frame-marker); font-weight:bold; }
 .frame-source-sheet li span { display:block; margin-top:3px; color:var(--muted); overflow-wrap:anywhere; }
+.map-png-progress { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:12px 0; font-size:12px; }
+.map-png-progress progress { width:160px; accent-color:var(--accent); }

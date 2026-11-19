@@ -1,0 +1,42 @@
+import {test,expect} from '@playwright/test'
+import fs from 'node:fs/promises'
+async function exported(page){const p=page.waitForEvent('download');await page.getByRole('button',{name:'Tải JSON map',exact:true}).click();return JSON.parse(await fs.readFile(await(await p).path(),'utf8'))}
+async function screen(canvas,x,y){await canvas.scrollIntoViewIfNeeded();const b=await canvas.boundingBox();return{x:b.x+Number(await canvas.getAttribute('data-pan-x'))+x*Number(await canvas.getAttribute('data-zoom')),y:b.y+Number(await canvas.getAttribute('data-pan-y'))+y*Number(await canvas.getAttribute('data-zoom'))}}
+test('large imported atlas uses lazy Blob palette; object dragging stays responsive and commits/cancels correctly',async({page})=>{
+ test.setTimeout(90000)
+ const errors=[];page.on('pageerror',e=>errors.push(e.message))
+ await page.goto('/maps');const canvas=page.locator('.map-canvas-shell canvas');await expect(canvas).toHaveAttribute('data-rendered-map-id','0',{timeout:30000})
+ const png=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=768;const ctx=c.getContext('2d'),p=ctx.createImageData(768,768);let seed=42;for(let i=0;i<p.data.length;i+=4){seed=(Math.imul(seed,1664525)+1013904223)>>>0;p.data[i]=seed&255;p.data[i+1]=(seed>>>8)&255;p.data[i+2]=(seed>>>16)&255;p.data[i+3]=255}ctx.putImageData(p,0,0);return c.toDataURL().split(',')[1]})
+ await page.getByText('Nhập PNG lớn → tạo map nháp',{exact:true}).click();await page.getByLabel('Ảnh nền PNG',{exact:true}).setInputFiles({name:'object-perf.png',mimeType:'image/png',buffer:Buffer.from(png,'base64')});await page.getByRole('button',{name:'Tạo map nháp từ PNG',exact:true}).click()
+ await expect(page.locator('.map-inspector')).toContainText('object-perf')
+ await expect(page.getByLabel('Bảng tile',{exact:true})).toHaveCount(0)
+ await page.getByRole('button',{name:'Bút tile',exact:true}).click()
+ await expect.poll(()=>page.locator('.map-tile-swatch').nth(1).evaluate(e=>e.style.backgroundImage)).toContain('blob:')
+ await page.getByRole('button',{name:'Đặt vật thể',exact:true}).click();await expect(page.getByText('Sẵn sàng đặt.',{exact:false})).toBeVisible();await expect(page.getByLabel('Bảng tile',{exact:true})).toHaveCount(0)
+ let a=await screen(canvas,84,108);await page.mouse.click(a.x,a.y)
+ await page.getByRole('button',{name:'Kéo vật thể',exact:true}).click()
+ a=await screen(canvas,83,87);const b=await screen(canvas,131,111)
+ await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))))
+ await page.evaluate(()=>{window.tasks=[];window.observer=new PerformanceObserver(l=>window.tasks.push(...l.getEntries().map(e=>e.duration)));window.observer.observe({type:'longtask'});window.gaps=[];let last=performance.now();const loop=t=>{window.gaps.push(t-last);last=t;window.frameId=requestAnimationFrame(loop)};window.frameId=requestAnimationFrame(loop)})
+ await page.mouse.move(a.x,a.y);await page.mouse.down()
+ for(let i=1;i<=40;i++)await page.mouse.move(a.x+(b.x-a.x)*i/40,a.y+(b.y-a.y)*i/40)
+ await page.mouse.up();await page.waitForTimeout(80)
+ const perf=await page.evaluate(()=>{window.observer.disconnect();cancelAnimationFrame(window.frameId);const g=window.gaps.slice(1).sort((a,b)=>a-b);return{maxTask:Math.max(0,...window.tasks),p95:g[Math.floor(g.length*.95)]}})
+ await test.info().attach('object-drag-performance',{body:JSON.stringify(perf),contentType:'application/json'})
+ expect(perf.maxTask).toBeLessThan(250);expect(perf.p95).toBeLessThan(100)
+ let map=await exported(page);expect(map.objects[0]).toMatchObject({cellX:5,cellY:5});expect(map.collision[5*8+5]).toBe(1)
+ await page.getByRole('button',{name:'Undo',exact:true}).click();map=await exported(page);expect(map.objects[0]).toMatchObject({cellX:3,cellY:4})
+ await page.getByRole('button',{name:'Redo',exact:true}).click()
+ a=await screen(canvas,131,111);b.x=a.x+24*Number(await canvas.getAttribute('data-zoom'));b.y=a.y
+ await page.mouse.move(a.x,a.y);await page.mouse.down();await page.mouse.move(b.x,b.y);await page.keyboard.press('Escape');await page.mouse.up()
+ map=await exported(page);expect(map.objects[0]).toMatchObject({cellX:5,cellY:5})
+ // Cached terrain must refresh on edits, undo and redo, not on object drags.
+ await page.getByRole('button',{name:'Tẩy tile',exact:true}).click()
+ const p=await screen(canvas,36,36)
+ const pixel=()=>canvas.evaluate((c,p)=>{const r=c.getBoundingClientRect();return Array.from(c.getContext('2d').getImageData(Math.floor((p.x-r.x)*c.width/r.width),Math.floor((p.y-r.y)*c.height/r.height),1,1).data)},{x:p.x,y:p.y})
+ const original=await pixel();await page.mouse.click(p.x,p.y)
+ await expect.poll(pixel).toEqual([23,25,27,255])
+ await page.getByRole('button',{name:'Undo',exact:true}).click();await expect.poll(pixel).toEqual(original)
+ await page.getByRole('button',{name:'Redo',exact:true}).click();await expect.poll(pixel).toEqual([23,25,27,255])
+ expect(errors).toEqual([])
+})

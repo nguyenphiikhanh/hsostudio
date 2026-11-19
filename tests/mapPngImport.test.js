@@ -30,3 +30,17 @@ test('imported grid atlas has independent collision and round-trips tile/collisi
  assert.throws(()=>validateMap({...map,tiles:[1,3]},{}),/ngoài PNG/)
  assert.throws(()=>validateMap({...map,tileset:{...map.tileset,terrain:{...a,columns:3}}},{}),/Atlas/)
 })
+
+test('custom rows/columns require explicit padding/cropping and preserve aspect ratio',()=>{
+ const original=pngMapSize(480,240,1,false,{cols:4,rows:4})
+ assert.equal(original.ready,false);assert.equal(original.needsCrop,true);assert.deepEqual(original.placement,{x:0,y:0,width:480,height:240})
+ assert.equal(pngMapSize(480,240,1,false,{cols:4,rows:4,crop:true}).ready,true)
+ const contain=pngMapSize(480,240,1,true,{cols:4,rows:4,mode:'contain'})
+ assert.equal(contain.ready,true);assert.equal(contain.scale,.2);assert.deepEqual(contain.placement,{x:0,y:24,width:96,height:48})
+ const cover=pngMapSize(480,240,1,false,{cols:4,rows:4,mode:'cover'})
+ assert.equal(cover.ready,false);assert.equal(cover.needsCrop,true);assert.deepEqual(cover.placement,{x:-48,y:0,width:192,height:96})
+ assert.equal(pngMapSize(480,240,1,false,{cols:4,rows:4,mode:'cover',crop:true}).ready,true)
+ assert.throws(()=>pngMapSize(24,24,1,true,{cols:0,rows:4}),/127/)
+ assert.throws(()=>pngMapSize(24,24,1,true,{cols:4.5,rows:4}),/127/)
+ assert.throws(()=>pngMapSize(24,24,4,true,{cols:127,rows:127}),/16 triệu/)
+})
