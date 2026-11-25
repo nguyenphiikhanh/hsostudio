@@ -1,7 +1,8 @@
-import {validateMap,terrainType,terrainCount} from './mapGeometry.js'
+import {validateMap,terrainType,terrainCount,objectScale} from './mapGeometry.js'
 const clone=value=>structuredClone(value)
 const editable=map=>({tiles:[...map.tiles],objects:map.objects.map(o=>({...o})),collisionOverrides:{...(map.collisionOverrides??{})}})
-const sameObject=(a,b)=>a.index===b.index&&a.templateId===b.templateId&&a.cellX===b.cellX&&a.cellY===b.cellY
+const sameAnchor=(a,b)=>a.index===b.index&&a.templateId===b.templateId&&a.cellX===b.cellX&&a.cellY===b.cellY
+const sameObject=(a,b)=>sameAnchor(a,b)&&(a.scaleX??1)===(b.scaleX??1)&&(a.scaleY??1)===(b.scaleY??1)
 export function tileCount(map){return terrainCount(map.tileset)}
 export function lineCells(from,to){
  if(!from||!to)return to?[to]:[]
@@ -18,11 +19,12 @@ export function validateEdits(edits,base,templates){
  const ids=new Set(),source=new Map(base.objects.map(o=>[o.index,o]))
  const objects=edits.objects.map(o=>{
   if(!o||!['index','templateId','cellX','cellY'].every(k=>Number.isSafeInteger(o[k]))||o.index<0||o.index>2147483647||ids.has(o.index)||!templates[o.templateId]?.asset)throw new Error('ID/template vật thể trong nháp không hợp lệ hoặc bị trùng')
-  if(Object.keys(o).some(k=>!['index','templateId','cellX','cellY'].includes(k)))throw new Error('Nháp có thuộc tính vật thể chưa hỗ trợ')
+  if(Object.keys(o).some(k=>!['index','templateId','cellX','cellY','scaleX','scaleY'].includes(k)))throw new Error('Nháp có thuộc tính vật thể chưa hỗ trợ')
+  const scale=objectScale(o)
   const within=o.cellX>=0&&o.cellX<base.width&&o.cellY>=0&&o.cellY<base.height
-  if(!within&&(!source.has(o.index)||!sameObject(o,source.get(o.index))))throw new Error('Vật thể chỉnh sửa phải có ô neo nằm trong map')
+  if(!within&&(!source.has(o.index)||!sameAnchor(o,source.get(o.index))))throw new Error('Vật thể chỉnh sửa phải có ô neo nằm trong map')
   ids.add(o.index)
-  return {index:o.index,templateId:o.templateId,cellX:o.cellX,cellY:o.cellY}
+  return {index:o.index,templateId:o.templateId,cellX:o.cellX,cellY:o.cellY,...(scale.scaleX!==1?{scaleX:scale.scaleX}:{}),...(scale.scaleY!==1?{scaleY:scale.scaleY}:{})}
  })
  const collisionOverrides=edits.collisionOverrides??{}
  if(!collisionOverrides||typeof collisionOverrides!=='object'||Array.isArray(collisionOverrides)||Object.entries(collisionOverrides).some(([index,type])=>!/^\d+$/.test(index)||String(Number(index))!==index||!Number.isSafeInteger(Number(index))||Number(index)>=base.width*base.height||![0,1].includes(type)))throw new Error('Nháp có vùng chặn không hợp lệ')
@@ -94,7 +96,12 @@ export function createMapEditor(source,templates,objectTableSha256,historyLimit=
   },
   add(templateId,col,row){let id;once('Thêm vật thể',()=>{id=add(templateId,col,row)});return id},
   move(index,col,row){if(!before)throw new Error('Chưa bắt đầu kéo vật thể');assertCell(col,row);const o=map.objects.find(o=>o.index===index);if(!o)throw new Error('Không tìm thấy vật thể');o.cellX=col;o.cellY=row},
-  duplicate(index){const o=map.objects.find(o=>o.index===index);if(!o)throw new Error('Không tìm thấy vật thể');let id;once('Nhân bản vật thể',()=>{id=add(o.templateId,o.cellX,o.cellY)});return id},
+  resize(index,scaleX,scaleY){
+   const scale=objectScale({scaleX,scaleY}),o=map.objects.find(o=>o.index===index)
+   if(!o)throw new Error('Không tìm thấy vật thể')
+   return once('Đổi kích thước vật thể',()=>{for(const key of ['scaleX','scaleY']){if(scale[key]===1)delete o[key];else o[key]=scale[key]}})
+  },
+  duplicate(index){const o=map.objects.find(o=>o.index===index);if(!o)throw new Error('Không tìm thấy vật thể');let id;once('Nhân bản vật thể',()=>{id=add(o.templateId,o.cellX,o.cellY);const next=map.objects.find(n=>n.index===id);for(const key of ['scaleX','scaleY'])if(o[key]!==undefined)next[key]=o[key]});return id},
   remove(index){const o=map.objects.find(o=>o.index===index);if(!o)return false;return once('Xóa vật thể',()=>{map.objects=map.objects.filter(o=>o.index!==index)})},
   undo(){if(before)return cancel();const c=past.pop();if(!c)return false;apply(c,false);future.push(c);return true},
   redo(){if(before)return false;const c=future.pop();if(!c)return false;apply(c,true);past.push(c);return true},

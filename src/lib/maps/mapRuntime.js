@@ -1,5 +1,5 @@
 import {effectAssets,terrainFrame,waterfallFrames} from './mapEffects.js'
-import {sortObjects,objectPlacement,collisionGrid,cellAt,validateMap} from './mapGeometry.js'
+import {sortObjects,objectPlacement,objectScale,collisionGrid,cellAt,validateMap} from './mapGeometry.js'
 export function preloadMap(scene,baseUrl,map,prefix=`hso-map-${map.id}`) {
   const base=baseUrl.replace(/\/$/,'')
   scene.load.spritesheet(`${prefix}-terrain`,`${base}/${map.tileset.terrain.image}`,{frameWidth:map.tileSize*map.tileset.terrain.density,frameHeight:map.tileSize*map.tileset.terrain.density})
@@ -14,7 +14,7 @@ export function createMap(scene,map,prefix=`hso-map-${map.id}`) {
   container.add([terrainLayer,effectLayer,objectLayer])
   const tiles=[]
   for(let i=0;i<map.tiles.length;i++)if(map.tiles[i]>0)tiles.push(terrainLayer.add(scene.add.image(i%map.width*s,Math.floor(i/map.width)*s,`${prefix}-terrain`,map.tiles[i]-1).setOrigin(0,0).setScale(1/map.tileset.terrain.density)).last)
-  for(const o of sortObjects(map.objects)){const d=map.objectTemplates[o.templateId],p=objectPlacement(o,d,s);objectLayer.add(scene.add.image(p.x,p.y,`${prefix}-object-${d.image}`).setOrigin(0,0).setScale(1/d.asset.density).setDepth(o.cellY*s))}
+  for(const o of sortObjects(map.objects)){const d=map.objectTemplates[o.templateId],p=objectPlacement(o,d,s),scale=objectScale(o);objectLayer.add(scene.add.image(p.x,p.y,`${prefix}-object-${d.image}`).setOrigin(0,0).setScale(scale.scaleX/d.asset.density,scale.scaleY/d.asset.density).setDepth(o.cellY*s))}
   objectLayer.sort('depth')
   const waterfallSprites=waterfallFrames(map).map(f=>({f,sprite:effectLayer.add(scene.add.image(f.x,f.y,`${prefix}-effect-${f.asset.sha256}`,0).setOrigin(0,0).setScale(1/f.asset.density)).last}))
   let animations={water:false,waterfall:false,...map.rendering?.animation},elapsed=0,lastTick=-1,destroyed=false

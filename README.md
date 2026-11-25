@@ -311,3 +311,5 @@ In Map, open **Nhập PNG lớn → tạo map nháp**, select a PNG and density 
 ### Inspect animation source assets on screen
 
 Character Lab → Animation → **Soi asset theo frame** pauses playback and shows the assembled current frame alongside full source sheets with numbered crop highlights. Select any of the four directions, seek/step frames, or play while inspecting. Legends retain pixel/logical coordinates, density, mirroring and layer order. Supported skill effects share the existing preview scene; procedural lines are labeled separately. No new ZIP or download is created. See [desktop UI](docs/desktop-ui.md#soi-asset-theo-frame).
+
+Map objects support per-instance Scale X/Y in the selected-object inspector, proportional locking, reset and Undo/Redo. Scaling preserves the authored anchor and does not change collision automatically. Draft/JSON/PNG/Phaser ZIP exports retain scale; see [map object sizing](docs/map-editor.md#kích-thước-từng-vật-thể).

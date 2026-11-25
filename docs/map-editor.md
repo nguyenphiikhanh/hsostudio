@@ -92,3 +92,13 @@ Viewport giữ cache nền ở độ phân giải màn hình, không tạo canva
 Palette tile chỉ được mount khi mở. Atlas PNG nhập được chuyển thành Blob URL ngắn để dùng chung giữa swatch, không lặp base64 lớn trong CSS của từng ô hoặc dựng lại các swatch đang ẩn lúc kéo vật thể. URL được thu hồi khi đổi atlas/unmount.
 
 Fixture Chrome desktop: atlas PNG768×768 nhiễu,64tile và một vật thể kéo qua40pointermove. Trước sửa, p95 khoảng1050ms/khung, long task lớn nhất1087ms; sau sửa p95 khoảng16.8ms, không ghi nhận long task từ50ms trong cùng phép đo. Đây là phép đo trên fixture/máy thử, không phải cam kết FPS cho mọi map. Kiểm thử riêng xác nhận palette Blob/lazy, kéo/Escape/Undo/Redo, collision, và cache nền không bị cũ sau tẩy tile hoặc Undo/Redo.
+
+## Kích thước từng vật thể
+
+Chọn vật thể trên map, tìm **Kích thước vật thể** trong Chi tiết map. Scale X/Y nằm trong khoảng0.1–8, mặc định1. **Khóa tỷ lệ** bật mặc định: chỉnh một chiều sẽ đổi chiều còn lại theo tỷ lệ hiện tại. Bỏ khóa để chỉnh riêng; **Kích thước gốc ×1** đặt lại cả hai chiều. Mỗi lần xác nhận trường số (Enter/Tab/rời ô) là một lệnh Undo; nhân bản giữ scale của bản gốc.
+
+Scale áp dụng quanh điểm neo của template: `x=cellX×24+dx×scaleX`, `y=cellY×24+dy×scaleY`, kích thước ảnh logical nhân theo hai hệ số. Ô neo và depth theo cellY không thay đổi. Selection/hit-test/culling dùng khung ảnh đã scale. Chỉ chỉnh bản nháp, không resize PNG hoặc sửa template/packet gốc.
+
+Collision từ template.Block không tự phóng theo hình. Nút **Chỉnh vùng chặn trên map** mở bút thêm vùng chặn; có thể dùng Xóa vùng chặn để mở ô. Đây là collision override theo ô trên map, không phải collider tự gắn/di chuyển theo từng vật thể.
+
+Nháp JSON, JSON map, PNG và ZIP Phaser giữ kết quả scale. `scaleX`/`scaleY` là trường tùy chọn trên từng object; không có nghĩa là1, giá trị1 được bỏ khi lưu nháp để tương thích dữ liệu gốc. Runtime trong ZIP dùng scale/density và giữ nguyên anchor/depth/collision. Khi cập nhật map có scale, dùng runtime đi kèm bản ZIP mới thay vì runtime cũ chưa hỗ trợ trường này.

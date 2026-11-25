@@ -12,9 +12,15 @@ export function terrainRect(tileset,tile){
   return {x:index%columns*24,y:Math.floor(index/columns)*24}
 }
 export function terrainCount(tileset){const a=tileset.terrain;return a.tileCount??Math.floor(a.height/(24*a.density))}
+export function objectScale(object){
+  const scaleX=object.scaleX===undefined?1:object.scaleX,scaleY=object.scaleY===undefined?1:object.scaleY
+  if(![scaleX,scaleY].every(n=>typeof n==='number'&&Number.isFinite(n)&&n>=0.1&&n<=8))throw new Error('Scale vật thể phải nằm trong khoảng 0.1–8')
+  return {scaleX,scaleY}
+}
 export function objectPlacement(object, template, tileSize = 24) {
-  return { x:object.cellX*tileSize+template.dx, y:object.cellY*tileSize+template.dy,
-    width:template.asset.width/template.asset.density, height:template.asset.height/template.asset.density }
+  const {scaleX,scaleY}=objectScale(object)
+  return { x:object.cellX*tileSize+template.dx*scaleX, y:object.cellY*tileSize+template.dy*scaleY,
+    width:template.asset.width/template.asset.density*scaleX, height:template.asset.height/template.asset.density*scaleY }
 }
 export function sortObjects(objects) {
   const a = [...objects]
@@ -66,6 +72,7 @@ export function validateMap(map, templates) {
   if(custom&&(!Number.isInteger(a.columns)||a.columns<1||a.width!==a.columns*size||!Number.isInteger(a.tileCount)||a.tileCount<1||a.tileCount>a.columns*Math.floor(a.height/size)||a.height%size!==0||a.width*a.height>16000000))throw new Error('Atlas PNG nhập không hợp lệ')
   for(const t of map.tiles)if(!Number.isInteger(t)||t<0||t>terrainCount(map.tileset))throw new Error('Tile nằm ngoài PNG')
   for(const o of map.objects) {
+    objectScale(o)
     const d=templates[o.templateId]
     if(!d?.asset?.image || ![o.cellX,o.cellY,d.dx,d.dy].every(Number.isInteger) || !Array.isArray(d.blocks) || d.blocks.some(p=>p.length!==2||!p.every(Number.isInteger)))throw new Error(`Thiếu template vật thể #${o.templateId}`)
   }

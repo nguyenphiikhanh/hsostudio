@@ -91,6 +91,7 @@ export function useMapEditor(source,{selectedCell,selectedObject,hoverCell}){
  function undo(){gesture=null;if(editor().undo())changed(true)}
  function redo(){if(editor().redo())changed(true)}
  function duplicate(){cancel();if(!selectedObject.value)return;const e=editor(),id=e.duplicate(selectedObject.value.index);selectedObject.value=e.map.objects.find(o=>o.index===id);selectTool('move');changed()}
+ function resizeObject(scale){cancel();if(!selectedObject.value)return;editor().resize(selectedObject.value.index,scale.scaleX,scale.scaleY);changed()}
  function remove(){cancel();if(!selectedObject.value)return;editor().remove(selectedObject.value.index);selectedObject.value=null;changed()}
  function reset(){cancel();editor().reset();selectedObject.value=null;changed(true)}
  function draft(){end();return editor().draft()}
@@ -103,5 +104,5 @@ export function useMapEditor(source,{selectedCell,selectedObject,hoverCell}){
   for(const [path,image]of images)s.images.set(path,image)
   s.editor.importEdits(edits);selectedObject.value=null;selectedCell.value=null;changed(true)
  }
- return {data,collision,tool,brush,templateId,template,templateReady,assetLoading,assetError,stats,modified,history,active,count,selectTool,chooseTile,start,move,end,cancel,undo,redo,duplicate,remove,reset,draft,importDraft,ensureTemplate}
+ return {data,collision,tool,brush,templateId,template,templateReady,assetLoading,assetError,stats,modified,history,active,count,selectTool,chooseTile,start,move,end,cancel,undo,redo,duplicate,resizeObject,remove,reset,draft,importDraft,ensureTemplate}
 }

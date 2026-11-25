@@ -620,3 +620,5 @@
 .frame-source-sheet li span { display:block; margin-top:3px; color:var(--muted); overflow-wrap:anywhere; }
 .map-png-progress { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:12px 0; font-size:12px; }
 .map-png-progress progress { width:160px; accent-color:var(--accent); }
+.map-object-scale { display:grid; gap:10px; margin:12px 0; border:1px solid var(--line); padding:10px; min-width:0; }
+.map-object-scale input[type=number] { width:100%; }

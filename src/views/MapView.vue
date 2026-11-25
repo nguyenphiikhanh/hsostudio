@@ -54,7 +54,7 @@ async function importDraft(event){
     <p class="map-coordinates" data-testid="map-coordinate">{{hoverCell?`World ${hoverCell.x}, ${hoverCell.y} · Ô ${hoverCell.col}, ${hoverCell.row} · Tile ${hoverCell.tile} · Collision ${hoverCell.type}`:'Trỏ vào map để xem tọa độ world/ô.'}}</p>
     <p class="muted">Overlay: đỏ = chặn, xanh = chậm (type2 client); xanh lá = cổng, cam = điểm spawn. Chưa gồm vùng chặn NPC/logic server; marker không phải sprite quái gốc. PNG tải về luôn gồm nền + vật thể, không kèm overlay.</p>
    </section>
-   <MapInspector :data="data" :cell="selectedCell" :object="selectedObject"/>
+   <MapInspector :data="data" :cell="selectedCell" :object="selectedObject" :disabled="busy||loading||active" @scale="act(()=>editor.resizeObject($event))" @collision="setTool('block')"/>
   </div>
  </div>
 </template>
